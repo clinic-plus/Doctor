@@ -2079,8 +2079,14 @@ async function submitSecretaryBooking(e){
 }
 
 /* ---- عرض قائمة الحجوزات (السكرتير) — الترقيم بالطابور يُحسب تلقائيًا حسب أسبقية الحجز ---- */
+function apptOrderKey(r){
+  // ترتيب زمني ثابت للزيارة: التاريخ+الوقت أولًا، وعند التساوي (نفس اليوم بدون وقت محدد)
+  // يُستخدم وقت إنشاء الحجز كفيصل — بدلها لا يمكن تمييز أسبقية الزيارات بنفس اليوم.
+  return (r.date||'') + (r.time||'') + '__' + (r.createdAt||'') + '__' + (r.id||'');
+}
 function apptRowHtml(a, context){
-  const visitCount = appointments.filter(x=> x.phone && x.phone===a.phone && x.doctorId===a.doctorId && (x.date+x.time) <= (a.date+a.time)).length;
+  const aKey = apptOrderKey(a);
+  const visitCount = appointments.filter(x=> x.phone && x.phone===a.phone && x.doctorId===a.doctorId && apptOrderKey(x) <= aKey).length;
   const visitBadge = visitCount<=1
     ? '<span class="badge examtype">🆕 مريض جديد</span>'
     : `<span class="badge reviewtype">📖 الزيارة رقم ${visitCount}</span>`;
@@ -2311,7 +2317,7 @@ async function savePatientForm(e){
 function openHistoryByPhone(phone, doctorId){
   const p = doctorId ? patients.find(x=>x.phone===phone && x.doctorId===doctorId) : patients.find(x=>x.phone===phone);
   const effectiveDoctorId = doctorId || (p ? p.doctorId : null);
-  const visits = appointments.filter(a=>a.phone===phone && (!effectiveDoctorId || a.doctorId===effectiveDoctorId)).sort((a,b)=> (a.date+a.time) < (b.date+b.time) ? 1 : -1);
+  const visits = appointments.filter(a=>a.phone===phone && (!effectiveDoctorId || a.doctorId===effectiveDoctorId)).sort((a,b)=> apptOrderKey(a) < apptOrderKey(b) ? 1 : -1);
   document.getElementById('historyModalTitle').textContent = 'السجل الطبي — ' + (p ? p.name : (visits[0]?visits[0].patientName:'—'));
   const body = document.getElementById('historyModalBody');
 
@@ -2945,8 +2951,6 @@ function printPrescription(apptId){
   const patientName = v.patientName || (p?p.name:'—');
   const phone = v.phone || (p?p.phone:'—');
   const age = v.age || (p?p.age:'') || '—';
-  const allergies = p && p.pmh ? p.pmh : '';
-  const labResultsChips = formatLabResultsDisplay(v.labResults);
   const treatmentLines = (v.treatment||'').split('\n').map(l=>l.trim()).filter(Boolean);
   const printedAt = new Date().toLocaleString('ar-IQ');
 
@@ -2965,15 +2969,9 @@ function printPrescription(apptId){
   .rx-clinic-line{font-size:12.5px;color:#5A6C85;margin-top:4px;}
   .rx-fields{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;font-size:14px;}
   .rx-fields-row{display:flex;justify-content:space-between;}
-  .rx-allergy{background:#FBEAEA;color:#D2574F;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:10px;}
-  .rx-diagnosis-row{margin-bottom:8px;font-size:14.5px;}
-  .rx-lab-row{margin-bottom:10px;font-size:13.5px;}
-  .lab-result-list{display:inline-flex;flex-wrap:wrap;gap:6px 10px;}
-  .lab-result-chip{background:#E9F1FB;border-radius:8px;padding:3px 9px;font-size:12.5px;color:#132338;white-space:nowrap;}
-  .lab-result-chip b{color:#1D5FC9;}
   .rx-body{display:flex;gap:14px;min-height:90px;}
   .rx-symbol{font-weight:900;font-size:26px;color:#1D5FC9;flex-shrink:0;}
-  .rx-list{margin:2px 0 0;padding-right:4px;list-style:none;font-size:14.5px;line-height:2.3;flex:1;}
+  .rx-list{margin:2px 0 0;padding-left:4px;list-style:none;font-size:14.5px;line-height:2.3;flex:1;}
   .rx-list li{border-bottom:1px dotted #DCE6F4;padding-bottom:6px;margin-bottom:6px;}
   .rx-list li:last-child{border-bottom:none;}
   .rx-empty{color:#7C8CA6;font-size:13.5px;}
@@ -3001,10 +2999,7 @@ function printPrescription(apptId){
     <div class="rx-fields-row"><span><b>اسم المريض:</b> ${escapeHtml(patientName)}</span><span><b>العمر:</b> ${escapeHtml(String(age))}</span></div>
     <div class="rx-fields-row"><span><b>الهاتف:</b> ${escapeHtml(phone)}</span><span><b>التاريخ:</b> ${escapeHtml(v.date||'—')}</span></div>
   </div>
-  ${allergies ? `<div class="rx-allergy">⚠️ ملاحظات مرضية / حساسية: ${escapeHtml(allergies)}</div>` : ''}
-  <div class="rx-diagnosis-row"><b>التشخيص:</b> ${escapeHtml(v.diagnosis||'—')}</div>
-  ${labResultsChips ? `<div class="rx-lab-row"><b>ملاحظات الفحص:</b> <span class="lab-result-list">${labResultsChips}</span></div>` : ''}
-  <div class="rx-body">
+  <div class="rx-body" dir="ltr">
     <div class="rx-symbol">RX/</div>
     ${treatmentLines.length
       ? '<ul class="rx-list">' + treatmentLines.map(l=>`<li>${escapeHtml(l)}</li>`).join('') + '</ul>'
