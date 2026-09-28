@@ -57,6 +57,11 @@
     padding:14px 28px;
   }
   .brand{display:flex;align-items:center;gap:10px;font-size:22px;color:var(--primary-dark);}
+  .brand .logo-mark.has-img{background:transparent;overflow:hidden;}
+  .brand .logo-mark img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
+  .growth-card img.hero-img{width:100%;max-height:340px;object-fit:contain;border-radius:16px;display:block;}
+  .appearance-preview{background:var(--surface-2);border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:center;min-height:110px;margin-bottom:12px;}
+  .appearance-preview img{max-width:100%;max-height:220px;border-radius:12px;}
   .brand .logo-mark{
     width:38px;height:38px;border-radius:50%;
     background:linear-gradient(135deg,var(--accent),var(--sun));
@@ -497,7 +502,7 @@
 
 <div id="syncBanner"></div>
 <nav id="navbar">
-  <div class="brand"><span class="logo-mark">🦷</span> عيادة د. مصطفى واثق</div>
+  <div class="brand"><span class="logo-mark" id="siteLogoMark">🦷</span> عيادة د. مصطفى واثق</div>
   <div class="nav-links" id="navLinks">
     <button class="nav-btn" onclick="showView('home')">الرئيسية</button>
     <button class="nav-btn" onclick="showView('booking')">حجز موعد</button>
@@ -519,8 +524,8 @@
           <button class="btn btn-outline" onclick="document.getElementById('servicesSec').scrollIntoView({behavior:'smooth'})">خدماتنا</button>
         </div>
       </div>
-      <div class="growth-card">
-        <svg viewBox="0 0 320 170" fill="none">
+      <div class="growth-card" id="siteHeroCard">
+        <svg viewBox="0 0 320 170" fill="none" id="siteHeroSvg">
           <circle cx="160" cy="85" r="70" fill="#DCE9FB"/>
           <path d="M110 70 q50 -30 100 0 q10 45 -10 70 q-15 20 -40 15 q-8 -25 -10 -25 q-2 0 -10 25 q-25 5 -40 -15 q-20 -25 -10 -70 Z" fill="#FFFFFF" stroke="#1D5FC9" stroke-width="3"/>
         </svg>
@@ -813,6 +818,7 @@
       <button class="side-btn" data-tab="doc-records" onclick="switchDashTab(this,'doc')">🗂️ سجل المرضى</button>
       <button class="side-btn" data-tab="doc-income" onclick="switchDashTab(this,'doc')">💰 الدخل</button>
       <button class="side-btn" data-tab="doc-medications" onclick="switchDashTab(this,'doc')">💊 قائمة الأدوية</button>
+      <button class="side-btn" data-tab="doc-appearance" id="doc-appearance-btn" style="display:none;" onclick="switchDashTab(this,'doc')">🎨 مظهر الموقع</button>
       <button class="side-btn" data-tab="doc-accounts" id="doc-accounts-btn" style="display:none;" onclick="switchDashTab(this,'doc')">👥 إدارة الحسابات</button>
       <button class="side-btn" data-tab="doc-backup" id="doc-backup-btn" style="display:none;" onclick="switchDashTab(this,'doc')">💾 نسخ احتياطي</button>
     </aside>
@@ -900,6 +906,27 @@
             <button class="btn btn-primary btn-sm" onclick="openNewMed()">➕ إضافة دواء</button>
           </div>
           <div id="medsTableWrap"></div>
+        </div>
+      </div>
+
+      <div class="dash-tab" id="doc-appearance">
+        <div class="panel">
+          <h3 style="color:var(--primary-dark);margin-bottom:6px;font-size:17px;">🖼️ شعار العيادة</h3>
+          <p class="hint" style="margin:0 0 12px;">يظهر في أعلى الموقع بجانب اسم العيادة (يُقصّ على شكل دائرة). يُفضّل صورة مربعة.</p>
+          <div class="appearance-preview" id="ap_logoPreview"></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <label class="btn btn-primary btn-sm" style="cursor:pointer;">📤 اختيار صورة الشعار<input type="file" accept="image/*" style="display:none;" onchange="uploadSiteImage('logo', this)"></label>
+            <button class="btn btn-outline btn-sm" onclick="resetSiteImage('logo')">↩︎ استعادة الافتراضي</button>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:16px;">
+          <h3 style="color:var(--primary-dark);margin-bottom:6px;font-size:17px;">🦷 صورة الصفحة الرئيسية</h3>
+          <p class="hint" style="margin:0 0 12px;">تظهر في البطاقة البيضاء بجانب عنوان الصفحة الرئيسية.</p>
+          <div class="appearance-preview" id="ap_heroPreview"></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <label class="btn btn-primary btn-sm" style="cursor:pointer;">📤 اختيار الصورة<input type="file" accept="image/*" style="display:none;" onchange="uploadSiteImage('hero', this)"></label>
+            <button class="btn btn-outline btn-sm" onclick="resetSiteImage('hero')">↩︎ استعادة الافتراضي</button>
+          </div>
         </div>
       </div>
 
@@ -1460,6 +1487,7 @@ function switchDashTab(btn, prefix){
   if(btn.dataset.tab==='doc-hours'){ renderDocHoursDashboard(); }
   if(btn.dataset.tab==='doc-timeoff'){ initTimeOffTab(); }
   if(btn.dataset.tab==='doc-accounts'){ renderAccounts(); }
+  if(btn.dataset.tab==='doc-appearance'){ renderAppearanceTab(); }
   if(btn.dataset.tab==='doc-medications') renderMedications();
 }
 
@@ -1469,6 +1497,8 @@ function updateBackupTabVisibility(){
   if(btn) btn.style.display = isFullAccess ? 'flex' : 'none';
   const accBtn = document.getElementById('doc-accounts-btn');
   if(accBtn) accBtn.style.display = isAdmin ? 'flex' : 'none';
+  const apBtn = document.getElementById('doc-appearance-btn');
+  if(apBtn) apBtn.style.display = isAdmin ? 'flex' : 'none';
 }
 function downloadBlob(filename, blob){
   const url = URL.createObjectURL(blob);
@@ -2179,6 +2209,142 @@ async function cancelMyBooking(){
   }catch(err){
     console.error(err);
     showToast(isNetworkError(err) ? 'تعذر الاتصال — تحقق من الإنترنت' : 'تعذر إلغاء الحجز، حاول مجددًا');
+  }
+}
+
+/* ===================== مظهر الموقع: الشعار وصورة الواجهة (للمدير فقط) ===================== */
+const SITE_SETTINGS_CACHE_KEY = 'siteSettingsCache_v1';
+let siteSettings = {};
+function applySiteSettings(cfg){
+  siteSettings = cfg || {};
+  // الشعار
+  const mark = document.getElementById('siteLogoMark');
+  if(mark){
+    if(siteSettings.logo_url){
+      mark.classList.add('has-img');
+      let img = mark.querySelector('img');
+      if(!img){ mark.textContent = ''; img = document.createElement('img'); img.alt = 'شعار العيادة'; mark.appendChild(img); }
+      if(img.getAttribute('src') !== siteSettings.logo_url) img.src = siteSettings.logo_url;
+    }else{
+      mark.classList.remove('has-img');
+      mark.textContent = '🦷';
+    }
+  }
+  // صورة الصفحة الرئيسية
+  const card = document.getElementById('siteHeroCard');
+  const svg = document.getElementById('siteHeroSvg');
+  if(card && svg){
+    let img = card.querySelector('img.hero-img');
+    if(siteSettings.hero_image_url){
+      if(!img){ img = document.createElement('img'); img.className = 'hero-img'; img.alt = ''; card.insertBefore(img, svg); }
+      if(img.getAttribute('src') !== siteSettings.hero_image_url) img.src = siteSettings.hero_image_url;
+      svg.style.display = 'none';
+    }else{
+      if(img) img.remove();
+      svg.style.display = '';
+    }
+  }
+}
+async function loadSiteSettings(){
+  try{
+    const cached = localStorage.getItem(SITE_SETTINGS_CACHE_KEY);
+    if(cached) applySiteSettings(JSON.parse(cached));
+  }catch(e){}
+  try{
+    const {data, error} = await sbPublic.rpc('public_get_site_settings');
+    if(error) throw error;
+    const cfg = {};
+    (data||[]).forEach(r=>{ cfg[r.key] = r.value; });
+    applySiteSettings(cfg);
+    try{ localStorage.setItem(SITE_SETTINGS_CACHE_KEY, JSON.stringify(cfg)); }catch(e){}
+  }catch(e){ console.warn('loadSiteSettings', e); }
+}
+function renderAppearanceTab(){
+  const logo = document.getElementById('ap_logoPreview');
+  const hero = document.getElementById('ap_heroPreview');
+  const mk = (url, fallback, round)=>{
+    if(!url) return `<span class="hint">${fallback}</span>`;
+    const img = document.createElement('img');
+    img.src = url;
+    if(round){ img.style.cssText = 'width:96px;height:96px;object-fit:cover;border-radius:50%;'; }
+    return img;
+  };
+  if(logo){ logo.innerHTML = ''; const x = mk(siteSettings.logo_url, 'الشعار الافتراضي (رمز السن 🦷)', true); typeof x==='string' ? logo.innerHTML = x : logo.appendChild(x); }
+  if(hero){ hero.innerHTML = ''; const x = mk(siteSettings.hero_image_url, 'الرسمة الافتراضية', false); typeof x==='string' ? hero.innerHTML = x : hero.appendChild(x); }
+}
+// تصغير الصورة قبل الرفع (أخف وأسرع، ويحلّ مشكلة الصور الكبيرة من كاميرا الجوال)
+function resizeImageToBlob(file, maxSide, mime, quality){
+  return new Promise((resolve, reject)=>{
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = ()=>{
+      URL.revokeObjectURL(url);
+      const ratio = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * ratio));
+      const h = Math.max(1, Math.round(img.naturalHeight * ratio));
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      if(mime === 'image/jpeg'){ ctx.fillStyle = '#fff'; ctx.fillRect(0,0,w,h); }
+      ctx.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(b => b ? resolve(b) : reject(new Error('تعذر معالجة الصورة')), mime, quality);
+    };
+    img.onerror = ()=>{ URL.revokeObjectURL(url); reject(new Error('تعذر قراءة الصورة، جرّب صورة أخرى')); };
+    img.src = url;
+  });
+}
+const SITE_IMAGE_KINDS = {
+  logo: {key:'logo_url',       path:'logo.png', mime:'image/png',  maxSide:256,  quality:undefined},
+  hero: {key:'hero_image_url', path:'hero.jpg', mime:'image/jpeg', maxSide:1200, quality:0.85}
+};
+// حذف أي ملف قديم في حاوية الصور لا تستخدمه الإعدادات الحالية (يبقى فقط الشعار والصورة المعتمدان)
+async function cleanupSiteAssets(){
+  try{
+    const keep = new Set();
+    Object.values(SITE_IMAGE_KINDS).forEach(c=>{ if(siteSettings[c.key]) keep.add(c.path); });
+    const {data, error} = await sb.storage.from('site-assets').list('', {limit:100});
+    if(error || !data) return;
+    const stale = data.filter(f=> f.name && f.id && !keep.has(f.name)).map(f=>f.name);
+    if(stale.length) await sb.storage.from('site-assets').remove(stale);
+  }catch(e){ console.warn('cleanupSiteAssets', e); }
+}
+async function uploadSiteImage(kind, input){
+  const file = input.files && input.files[0];
+  input.value = '';
+  if(!file) return;
+  if(!isAdmin){ showToast('هذه الصفحة للمدير فقط'); return; }
+  const cfg = SITE_IMAGE_KINDS[kind]; if(!cfg) return;
+  try{
+    showToast('⏳ جارِ رفع الصورة...');
+    const blob = await resizeImageToBlob(file, cfg.maxSide, cfg.mime, cfg.quality);
+    const {error: upErr} = await sb.storage.from('site-assets').upload(cfg.path, blob, {upsert:true, contentType: cfg.mime, cacheControl:'3600'});
+    if(upErr) throw upErr;
+    const base = sb.storage.from('site-assets').getPublicUrl(cfg.path).data.publicUrl;
+    const url = base + '?v=' + Date.now();
+    const {error} = await sb.rpc('admin_set_site_setting', {p_key: cfg.key, p_value: url});
+    if(error) throw error;
+    await loadSiteSettings();
+    renderAppearanceTab();
+    await cleanupSiteAssets();
+    showToast('✅ تم تحديث الصورة');
+  }catch(err){
+    console.error(err);
+    showToast(isNetworkError(err) ? 'تعذر الاتصال — تحقق من الإنترنت' : (err && err.message ? err.message : 'تعذر رفع الصورة'));
+  }
+}
+async function resetSiteImage(kind){
+  const cfg = SITE_IMAGE_KINDS[kind]; if(!cfg) return;
+  if(!(await customConfirm('استعادة الصورة الافتراضية؟', 'استعادة'))) return;
+  try{
+    const {error} = await sb.rpc('admin_set_site_setting', {p_key: cfg.key, p_value: null});
+    if(error) throw error;
+    await loadSiteSettings();
+    renderAppearanceTab();
+    await cleanupSiteAssets();
+    showToast('تمت الاستعادة');
+  }catch(err){
+    console.error(err);
+    showToast('تعذر الاستعادة');
   }
 }
 
@@ -3538,6 +3704,7 @@ function printPrescription(apptId){
 
 /* ===================== التشغيل الأولي ===================== */
 (async function init(){
+  loadSiteSettings();
   await loadDoctorsList();
   populateDoctorSelects();
   initLabHighlighter('ex_labResults');
