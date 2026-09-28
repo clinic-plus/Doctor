@@ -223,6 +223,13 @@
   .badge.scheduled{background:var(--primary-light);color:var(--primary-dark);}
   .badge.done{background:var(--success-bg);color:var(--success);}
   .badge.cancelled{background:var(--danger-bg);color:var(--danger);}
+  .badge.debt{background:var(--danger-bg);color:var(--danger);}
+  .paid-remaining-box{background:var(--surface-2);border-radius:12px;padding:10px 14px;margin:-4px 0 14px;font-weight:700;color:var(--text-muted);display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .paid-remaining-box .pr-val{font-weight:900;color:var(--success);}
+  .paid-remaining-box.has-debt .pr-val{color:var(--danger);}
+  .debt-group{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow);}
+  .debt-group-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .debt-visit{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0;border-top:1px dashed var(--line);font-size:14px;}
   .badge.free{background:var(--surface-2);color:var(--accent-dark);}
   .queue-cell{display:flex;align-items:center;gap:4px;}
   .queue-num{font-weight:800;color:var(--primary-dark);min-width:18px;text-align:center;display:inline-block;background:var(--primary-light);border-radius:99px;padding:2px 9px;}
@@ -521,7 +528,7 @@
         <p class="lead">عيادة الدكتور مصطفى واثق لطب وجراحة الأسنان — تشخيص دقيق وعلاج مريح بأحدث الطرق، لعائلتك بالكامل.</p>
         <div class="hero-actions">
           <button class="btn btn-primary" onclick="showView('booking')">احجز موعدًا الآن ←</button>
-          <button class="btn btn-outline" onclick="document.getElementById('servicesSec').scrollIntoView({behavior:'smooth'})">خدماتنا</button>
+          <button class="btn btn-outline" onclick="showView('track')">متابعة الحجز</button>
         </div>
       </div>
       <div class="growth-card" id="siteHeroCard">
@@ -588,7 +595,7 @@
             <label>سبب الزيارة</label>
             <select id="b_visitType" onchange="onBookingContextChanged('b')">
               <option value="">—</option>
-              <option>فحص وتنظيف</option><option>حشوة</option><option>حشوات الجذور</option>
+              <option>فحص</option><option>تنظيف</option><option>حشوة</option><option>حشوات الجذور</option>
               <option>تقويم</option><option>قلع</option><option>تبييض</option><option>زراعة</option><option>أخرى</option>
             </select>
           </div>
@@ -777,7 +784,7 @@
                 <label>سبب الزيارة</label>
                 <select id="s_visitType" onchange="onSecretaryPatientContextChanged()">
                   <option value="">—</option>
-                  <option>فحص وتنظيف</option><option>حشوة</option><option>حشوات الجذور</option>
+                  <option>فحص</option><option>تنظيف</option><option>حشوة</option><option>حشوات الجذور</option>
                   <option>تقويم</option><option>قلع</option><option>تبييض</option><option>زراعة</option><option>أخرى</option>
                 </select>
               </div>
@@ -794,9 +801,12 @@
               <div class="field full"><label>الأمراض المزمنة والعلاجات المزمنة — إن وجدت</label><textarea id="s_pmh" placeholder="مثال: ضغط دم، سكري، أدوية دائمة..."></textarea></div>
               <div class="field full"><label>ملاحظات</label><textarea id="s_notes"></textarea></div>
             </div>
-            <div class="field"><label>الكشفية</label><input type="number" min="0" id="s_fee"></div>
+            <div class="field"><label>الكشفية</label><input type="number" min="0" id="s_fee" oninput="calcRemaining('s')"></div>
+            <div class="field"><label>المدفوع — اتركه فارغًا إن دفع المريض كامل الكشفية</label><input type="number" min="0" id="s_paid" placeholder="مثال: 5000" oninput="calcRemaining('s')"></div>
+            <div class="paid-remaining-box" id="s_remainingBox"><span>المتبقي (دين)</span><span class="pr-val" id="s_remaining">0 د.ع</span></div>
+
             <div class="switch-row" style="margin-bottom:16px;">
-              <label class="switch"><input type="checkbox" id="s_free"><span class="slider-toggle"></span></label>
+              <label class="switch"><input type="checkbox" id="s_free" onchange="calcRemaining('s')"><span class="slider-toggle"></span></label>
               <div><strong>كشفية مجانية</strong></div>
             </div>
             <button class="btn btn-primary" type="submit">حفظ الحجز</button>
@@ -819,6 +829,7 @@
       <button class="side-btn" data-tab="doc-records" onclick="switchDashTab(this,'doc')">🗂️ سجل المرضى</button>
       <button class="side-btn" data-tab="doc-income" onclick="switchDashTab(this,'doc')">💰 الدخل</button>
       <button class="side-btn" data-tab="doc-medications" onclick="switchDashTab(this,'doc')">💊 قائمة الأدوية</button>
+      <button class="side-btn" data-tab="doc-debts" onclick="switchDashTab(this,'doc')">💳 قائمة الديون</button>
       <button class="side-btn" data-tab="doc-appearance" id="doc-appearance-btn" style="display:none;" onclick="switchDashTab(this,'doc')">🎨 مظهر الموقع</button>
       <button class="side-btn" data-tab="doc-accounts" id="doc-accounts-btn" style="display:none;" onclick="switchDashTab(this,'doc')">👥 إدارة الحسابات</button>
       <button class="side-btn" data-tab="doc-backup" id="doc-backup-btn" style="display:none;" onclick="switchDashTab(this,'doc')">💾 نسخ احتياطي</button>
@@ -900,6 +911,18 @@
         </div>
       </div>
 
+      <div class="dash-tab" id="doc-debts">
+        <div class="stat-grid" id="docDebtStats"></div>
+        <div class="panel">
+          <div class="toolbar">
+            <input class="search-input" placeholder="ابحث بالاسم أو رقم الهاتف..." id="docDebtSearch" oninput="renderDebts('doc')">
+            <select id="docDebtDoctor" onchange="renderDebts('doc')" style="display:none;"></select>
+          </div>
+          <p class="hint" style="margin:0 0 12px;">تُضاف الزيارة المكتملة إلى هنا تلقائيًا عندما يكون المدفوع أقل من الكشفية، وتُحذف تلقائيًا عند تسديد كامل المتبقي.</p>
+          <div id="docDebtWrap"></div>
+        </div>
+      </div>
+
       <div class="dash-tab" id="doc-medications">
         <div class="panel">
           <div class="toolbar">
@@ -963,6 +986,18 @@
 </section>
 
 <!-- ================= MODALS ================= -->
+<div class="modal-overlay" id="debtPayModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>💳 تسديد دفعة</h3><div class="close-x" onclick="closeModal('debtPayModal')">✕</div></div>
+    <form id="debtPayForm" onsubmit="submitDebtPayment(event)">
+      <input type="hidden" id="dp_apptId">
+      <div class="paid-remaining-box has-debt"><span id="dp_info">—</span><span class="pr-val" id="dp_remaining">0 د.ع</span></div>
+      <div class="field"><label>المبلغ المسدَّد الآن *</label><input required type="number" min="1" id="dp_amount"></div>
+      <button class="btn btn-primary btn-block" type="submit">تسجيل التسديد</button>
+    </form>
+  </div>
+</div>
+
 <div class="modal-overlay" id="medModal">
   <div class="modal-box">
     <div class="modal-head"><h3 id="medModalTitle">إضافة دواء</h3><div class="close-x" onclick="closeModal('medModal')">✕</div></div>
@@ -1070,9 +1105,12 @@
       <div id="ex_interactionResult"></div>
       <div class="field"><label>ملاحظات إضافية</label><textarea id="ex_notes"></textarea></div>
       <div class="field"><label>التاريخ المرضي والأدوية الحالية</label><textarea id="ex_medicalInfo" placeholder="مثال: حساسية من البنسلين، سكري — يتناول حاليًا: ..."></textarea></div>
-      <div class="field"><label>الكشفية</label><input type="number" min="0" id="ex_fee"></div>
+      <div class="field"><label>الكشفية</label><input type="number" min="0" id="ex_fee" oninput="calcRemaining('ex')"></div>
+      <div class="field"><label>المدفوع — اتركه فارغًا إن دفع المريض كامل الكشفية</label><input type="number" min="0" id="ex_paid" placeholder="مثال: 5000" oninput="calcRemaining('ex')"></div>
+      <div class="paid-remaining-box" id="ex_remainingBox"><span>المتبقي (دين)</span><span class="pr-val" id="ex_remaining">0 د.ع</span></div>
+
       <div class="switch-row" style="margin-bottom:16px;">
-        <label class="switch"><input type="checkbox" id="ex_free"><span class="slider-toggle"></span></label>
+        <label class="switch"><input type="checkbox" id="ex_free" onchange="calcRemaining('ex')"><span class="slider-toggle"></span></label>
         <div><strong>كشفية مجانية</strong></div>
       </div>
       <button class="btn btn-primary btn-block" type="submit">إنهاء الكشف وتسجيل الدخل</button>
@@ -1123,21 +1161,23 @@
         <label>سبب الزيارة</label>
         <select id="vm_visitType">
           <option value="">—</option>
-          <option>فحص وتنظيف</option><option>حشوة</option><option>حشوات الجذور</option>
+          <option>فحص</option><option>تنظيف</option><option>حشوة</option><option>حشوات الجذور</option>
           <option>تقويم</option><option>قلع</option><option>تبييض</option><option>زراعة</option><option>أخرى</option>
         </select>
       </div>
       <div class="field"><label>الوقت المقترح للزيارة (يحدده السكرتير للمريض)</label><input id="vm_suggestedTime" placeholder="مثال: 12:30 أو «خلال 20 دقيقة»"></div>
       <div class="field"><label>ملاحظات</label><textarea id="vm_notes"></textarea></div>
       <div class="form-grid">
-        <div class="field"><label>الكشفية</label><input type="number" min="0" id="vm_fee"></div>
+        <div class="field"><label>الكشفية</label><input type="number" min="0" id="vm_fee" oninput="calcRemaining('vm')"></div>
         <div class="field">
           <label>الحالة</label>
           <select id="vm_status"><option value="مجدول">مجدول</option><option value="مكتمل">مكتمل</option><option value="ملغى">ملغى</option></select>
         </div>
       </div>
+      <div class="field"><label>المدفوع — اتركه فارغًا إن دفع المريض كامل الكشفية</label><input type="number" min="0" id="vm_paid" placeholder="مثال: 5000" oninput="calcRemaining('vm')"></div>
+      <div class="paid-remaining-box" id="vm_remainingBox"><span>المتبقي (دين)</span><span class="pr-val" id="vm_remaining">0 د.ع</span></div>
       <div class="switch-row" style="margin-bottom:16px;">
-        <label class="switch"><input type="checkbox" id="vm_free"><span class="slider-toggle"></span></label>
+        <label class="switch"><input type="checkbox" id="vm_free" onchange="calcRemaining('vm')"><span class="slider-toggle"></span></label>
         <div><strong>كشفية مجانية</strong></div>
       </div>
       <button class="btn btn-primary btn-block" type="submit">حفظ التعديلات</button>
@@ -1211,7 +1251,7 @@ function apptFromRow(r){
   return {id:r.id, patientName:r.patient_name, phone:r.phone, age:r.age||'', sex:r.sex||'',
     address:r.address||'', pmh:r.pmh||'', dh:r.dh||'', teeth:r.teeth||'', doctorId:r.doctor_id,
     visitType:r.visit_type||'', date:r.appt_date, time:(r.appt_time||'').slice(0,5),
-    status:r.status, fee:r.fee, isFree:r.is_free,
+    status:r.status, fee:r.fee, paid:r.paid, isFree:r.is_free,
     diagnosis:r.diagnosis||'', labResults:r.lab_results||'', treatment:r.treatment||'',
     notes:r.notes||'', suggestedTime:r.suggested_time||'', sessionNumber:r.session_number||1, createdAt:r.created_at};
 }
@@ -1332,6 +1372,41 @@ function showToast(msg){
   showToast._t = setTimeout(()=>t.classList.remove('show'), Math.max(2600, String(msg).length*70));
 }
 function fmtMoney(n){ return (Number(n)||0).toLocaleString('en-US')+' د.ع'; }
+
+/* ===================== المدفوع / المتبقي / الديون ===================== */
+// paid فارغ (null) = المريض دفع كامل الكشفية (متوافق مع السجلات القديمة)
+function apptPaidAmount(a){
+  if(a.isFree) return 0;
+  const fee = Number(a.fee)||0;
+  if(a.paid===null || a.paid===undefined || a.paid==='') return fee;
+  return Math.min(Math.max(0, Number(a.paid)||0), fee);
+}
+function apptRemaining(a){
+  if(a.isFree) return 0;
+  return Math.max(0, (Number(a.fee)||0) - apptPaidAmount(a));
+}
+// يحسب المتبقي مباشرة داخل النماذج (s = حجز السكرتير، ex = الكشف، vm = تعديل الزيارة)
+function calcRemaining(pfx){
+  const free = document.getElementById(pfx+'_free')?.checked;
+  const fee = Number(document.getElementById(pfx+'_fee').value)||0;
+  const raw = document.getElementById(pfx+'_paid').value;
+  const paid = free ? 0 : (raw==='' ? fee : Math.min(Math.max(0, Number(raw)||0), fee));
+  const rem = free ? 0 : Math.max(0, fee - paid);
+  document.getElementById(pfx+'_remaining').textContent = fmtMoney(rem);
+  document.getElementById(pfx+'_remainingBox').classList.toggle('has-debt', rem>0);
+}
+// القيمة التي تُحفظ بعمود paid: null = مدفوع بالكامل
+function readPaidForSave(pfx, fee, isFree){
+  if(isFree) return null;
+  const raw = document.getElementById(pfx+'_paid').value;
+  if(raw==='') return null;
+  return Math.min(Math.max(0, Number(raw)||0), fee);
+}
+function setPaidInput(pfx, a){
+  document.getElementById(pfx+'_paid').value = (a.paid===null || a.paid===undefined || a.isFree) ? '' : a.paid;
+  calcRemaining(pfx);
+}
+
 function todayStr(){
   const d = new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -1472,6 +1547,7 @@ async function refreshDoctorDash(){
   await loadData(); await loadMedications();
   renderTodayAppointments(); renderDocPatients(); renderIncome();
   if(document.getElementById('doc-medications')?.classList.contains('active')) renderMedications();
+  if(document.getElementById('doc-debts')?.classList.contains('active')) renderDebts('doc');
   refreshDocHoursIfActive();
 }
 function switchDashTab(btn, prefix){
@@ -1490,6 +1566,7 @@ function switchDashTab(btn, prefix){
   if(btn.dataset.tab==='doc-accounts'){ renderAccounts(); }
   if(btn.dataset.tab==='doc-appearance'){ renderAppearanceTab(); }
   if(btn.dataset.tab==='doc-medications') renderMedications();
+  if(btn.dataset.tab==='doc-debts') renderDebts('doc');
 }
 
 /* ===================== النسخ الاحتياطي والاستعادة (متاح فقط لصاحب الصلاحية الكاملة) ===================== */
@@ -1549,7 +1626,7 @@ async function exportExcel(){
     const apptsSheet = (aRes.data||[]).map(a=>({
       'المريض': a.patient_name, 'الهاتف': a.phone, 'الطبيب': doctorLabel(a.doctor_id),
       'التاريخ': a.appt_date, 'الوقت': (a.appt_time||'').slice(0,5), 'نوع الزيارة': a.visit_type,
-      'الجلسة': a.session_number, 'الحالة': a.status, 'الكشفية': a.fee, 'مجاني': a.is_free ? 'نعم' : 'لا',
+      'الجلسة': a.session_number, 'الحالة': a.status, 'الكشفية': a.fee, 'المدفوع': a.is_free ? 0 : (a.paid ?? a.fee), 'المتبقي': a.is_free ? 0 : Math.max(0,(Number(a.fee)||0) - Number(a.paid ?? a.fee)), 'مجاني': a.is_free ? 'نعم' : 'لا',
       'التشخيص': a.diagnosis, 'العلاج': a.treatment
     }));
     const wb = XLSX.utils.book_new();
@@ -2511,6 +2588,7 @@ async function renderSecretaryDash(){
   await loadData();
   document.getElementById('secGreeting').textContent = 'مرحبًا بك 👋';
   if(!document.getElementById('s_fee').value) document.getElementById('s_fee').value = DEFAULT_FEE;
+  calcRemaining('s');
   const hoursDate = document.getElementById('secHoursDate');
   if(hoursDate && !hoursDate.value) hoursDate.value = todayStr();
   const hoursDoctor = document.getElementById('secHoursDoctor');
@@ -2692,7 +2770,8 @@ async function submitSecretaryBooking(e){
     const {error} = await sb.from('appointments').insert({
       doctor_id: doctorId, patient_name:name, phone, age, visit_type:visitType||null,
       appt_date:date, appt_time:time, notes: notes||null, session_number: sessionNumber,
-      status:'مجدول', fee: isFree?0:fee, is_free:isFree
+      status:'مجدول', fee: isFree?0:fee, is_free:isFree,
+      paid: readPaidForSave('s', fee, isFree)
     });
     if(error) throw error;
 
@@ -2704,6 +2783,7 @@ async function submitSecretaryBooking(e){
     document.getElementById('s_sessionNumber').value = '1';
     Array.from(document.getElementById('s_sessionNumber').options).forEach(o=>o.disabled=false);
     document.getElementById('s_fee').value = DEFAULT_FEE;
+    document.getElementById('s_paid').value = ''; calcRemaining('s');
     document.getElementById('s_calendarWrap').innerHTML = '<div class="hint">اختر الطبيب أولًا لعرض التقويم</div>';
     document.getElementById('s_timeWrap').innerHTML = '';
     document.getElementById('s_sessionBadgeWrap').innerHTML = '';
@@ -2775,7 +2855,7 @@ function apptRowHtml(a, context){
     </div>`;
   }
 
-  const feeLabel = a.isFree ? '<span class="badge free">مجاني</span>' : fmtMoney(a.fee);
+  const feeLabel = a.isFree ? '<span class="badge free">مجاني</span>' : (fmtMoney(a.fee) + (apptRemaining(a)>0 ? ` <span class="badge debt">متبقي ${fmtMoney(apptRemaining(a))}</span>` : ''));
   return `<div class="item-card">
     <div class="ic-top">
       <div class="ic-name">${escapeHtml(a.patientName)}</div>
@@ -3007,7 +3087,7 @@ function openHistoryByPhone(phone, doctorId){
   if(visits.length===0){ body.innerHTML = patientCard + emptyState('📭','لا توجد زيارات مسجّلة'); openModal('historyModal'); return; }
   const visitsHtml = visits.map(v=>{
     const labChips = formatLabResultsDisplay(v.labResults);
-    const feeLabel = v.isFree ? 'مجاني' : fmtMoney(v.fee);
+    const feeLabel = v.isFree ? 'مجاني' : (fmtMoney(v.fee) + (apptRemaining(v)>0 ? ` — متبقي ${fmtMoney(apptRemaining(v))}` : ''));
     return `<div class="item-card">
       <div class="ic-top"><div class="ic-name">📅 ${v.date}${v.time?(' ⏰ '+v.time):''}</div>${statusBadge(v.status)}</div>
       <div class="ic-meta">
@@ -3132,6 +3212,12 @@ function openEditVisit(id){
   document.getElementById('vm_fee').value = a.fee ?? DEFAULT_FEE;
   document.getElementById('vm_status').value = a.status||'مجدول';
   document.getElementById('vm_free').checked = !!a.isFree;
+  setPaidInput('vm', a);
+  // سجلات قديمة بسبب زيارة "فحص وتنظيف" تبقى ظاهرة بدل أن تُمسح عند الحفظ
+  const vmSel = document.getElementById('vm_visitType');
+  if(a.visitType && vmSel.value !== a.visitType){
+    const o = document.createElement('option'); o.textContent = a.visitType; vmSel.appendChild(o); vmSel.value = a.visitType;
+  }
   openModal('visitModal');
 }
 async function saveVisitForm(e){
@@ -3139,6 +3225,7 @@ async function saveVisitForm(e){
   const restore = setFormSaving(e.target, '⏳ جارِ الحفظ...');
   const id = document.getElementById('vm_apptId').value;
   const isFree = document.getElementById('vm_free').checked;
+  const vmFee = isFree ? 0 : (Number(document.getElementById('vm_fee').value)||DEFAULT_FEE);
   const fields = {
     patient_name: document.getElementById('vm_name').value.trim() || null,
     phone: document.getElementById('vm_phone').value.trim() || null,
@@ -3149,8 +3236,9 @@ async function saveVisitForm(e){
     visit_type: document.getElementById('vm_visitType').value || null,
     suggested_time: document.getElementById('vm_suggestedTime').value.trim() || null,
     notes: document.getElementById('vm_notes').value.trim() || null,
-    fee: isFree ? 0 : (Number(document.getElementById('vm_fee').value)||DEFAULT_FEE),
+    fee: vmFee,
     is_free: isFree,
+    paid: readPaidForSave('vm', vmFee, isFree),
     status: document.getElementById('vm_status').value
   };
   if(isFullAccess){
@@ -3162,7 +3250,7 @@ async function saveVisitForm(e){
     if(error) throw error;
     closeModal('visitModal');
     await loadData();
-    renderSecAppointments(); renderTodayAppointments(); refreshSecHoursIfActive();
+    renderSecAppointments(); renderTodayAppointments(); refreshSecHoursIfActive(); renderDebts('doc');
     showToast('تم حفظ التعديلات');
   }catch(err){
     console.error(err);
@@ -3284,6 +3372,7 @@ async function openExam(apptId){
   document.getElementById('ex_treatment').value = a.treatment||'';
   document.getElementById('ex_free').checked = !!a.isFree;
   document.getElementById('ex_fee').value = a.fee ?? DEFAULT_FEE;
+  setPaidInput('ex', a);
   document.getElementById('ex_interactionResult').innerHTML = '';
   document.getElementById('ex_medicalInfo').value = '';
   document.getElementById('ex_sessionCurrentLabel').textContent = 'الجلسة الحالية: —';
@@ -3334,6 +3423,7 @@ async function submitExam(e){
   const id = document.getElementById('ex_apptId').value;
   const isFree = document.getElementById('ex_free').checked;
   const medicalInfo = document.getElementById('ex_medicalInfo').value.trim();
+  const exFee = isFree ? 0 : (Number(document.getElementById('ex_fee').value)||DEFAULT_FEE);
   const fields = {
     diagnosis: document.getElementById('ex_diagnosis').value.trim() || null,
     teeth: document.getElementById('ex_teeth').value.trim() || null,
@@ -3341,7 +3431,8 @@ async function submitExam(e){
     treatment: document.getElementById('ex_treatment').value.trim() || null,
     notes: document.getElementById('ex_notes').value.trim() || null,
     is_free: isFree,
-    fee: isFree ? 0 : (Number(document.getElementById('ex_fee').value)||DEFAULT_FEE),
+    fee: exFee,
+    paid: readPaidForSave('ex', exFee, isFree),
     status: 'مكتمل'
   };
   try{
@@ -3368,7 +3459,7 @@ async function submitExam(e){
     }
     closeModal('examModal');
     await loadData();
-    renderTodayAppointments(); renderIncome();
+    renderTodayAppointments(); renderIncome(); renderDebts('doc');
     showToast('تم حفظ الكشف بنجاح');
   }catch(err){ console.error(err); showToast('تعذر حفظ الكشف'); }
   finally{ restore(); }
@@ -3403,19 +3494,112 @@ function renderIncome(){
   if(mode==='daily') filtered = completed.filter(a=>a.date===d);
   else if(mode==='monthly') filtered = completed.filter(a=> a.date && a.date.startsWith(y+'-'+m));
   else filtered = completed.filter(a=> a.date && a.date.startsWith(y));
-  const total = filtered.reduce((s,a)=> s+(Number(a.fee)||0), 0);
+  const total = filtered.reduce((s,a)=> s+apptPaidAmount(a), 0);
   document.getElementById('incomeStats').innerHTML =
     statCard('عدد الزيارات المدفوعة', filtered.length) +
     statCard('إجمالي الدخل', fmtMoney(total), true) +
     statCard('متوسط الزيارة', filtered.length ? fmtMoney(Math.round(total/filtered.length)) : fmtMoney(0));
 
   const byDay = {};
-  filtered.forEach(a=>{ byDay[a.date] = (byDay[a.date]||0) + (Number(a.fee)||0); });
+  filtered.forEach(a=>{ byDay[a.date] = (byDay[a.date]||0) + apptPaidAmount(a); });
   const days = Object.keys(byDay).sort();
   const max = Math.max(1, ...Object.values(byDay));
   document.getElementById('incomeBars').innerHTML = days.length===0
     ? emptyState('📭','لا توجد بيانات دخل بهذه الفترة')
     : days.map(dt=>`<div class="bar-row"><span class="bar-label">${dt}</span><div class="bar-track"><div class="bar-fill" style="width:${(byDay[dt]/max*100).toFixed(1)}%"></div></div><span class="bar-value">${fmtMoney(byDay[dt])}</span></div>`).join('');
+}
+
+/* ===================== قائمة الديون ===================== */
+function getDebtAppointments(){
+  // د. مصطفى (صلاحية كاملة) يرى كل الديون، أما د. مقداد فيرى ديون مرضاه فقط
+  return appointments.filter(a=> a.status==='مكتمل' && apptRemaining(a)>0
+    && (isFullAccess || a.doctorId===myDoctorId));
+}
+function renderDebts(pfx){
+  const wrap = document.getElementById(pfx+'DebtWrap');
+  const statsEl = document.getElementById(pfx+'DebtStats');
+  if(!wrap || !statsEl) return;
+  const q = (document.getElementById(pfx+'DebtSearch').value||'').trim().toLowerCase();
+  // فلتر الطبيب: يظهر فقط لصاحب الصلاحية الكاملة (د. مصطفى)
+  const dSel = document.getElementById(pfx+'DebtDoctor');
+  let doctorFilter = '';
+  if(dSel){
+    if(!isFullAccess || doctorsList.length<2){ dSel.style.display='none'; }
+    else{
+      const keep = dSel.value;
+      dSel.innerHTML = '<option value="">🌐 كل الأطباء</option>' + doctorsList.map(d=>`<option value="${escapeHtml(d.doctor_id)}">🩺 ${escapeHtml(d.full_name)}</option>`).join('');
+      dSel.value = keep || '';
+      dSel.style.display = 'inline-block';
+      doctorFilter = dSel.value;
+    }
+  }
+  let list = getDebtAppointments();
+  if(doctorFilter) list = list.filter(a=>a.doctorId===doctorFilter);
+  if(q) list = list.filter(a=> (a.patientName||'').toLowerCase().includes(q) || (a.phone||'').includes(q));
+
+  const groups = {};
+  list.forEach(a=>{
+    const key = (a.phone||'') + '|' + (a.patientName||'');
+    (groups[key] = groups[key] || {name:a.patientName, phone:a.phone, visits:[]}).visits.push(a);
+  });
+  const arr = Object.values(groups).map(g=>{
+    g.visits.sort((x,y)=> (x.date||'').localeCompare(y.date||''));
+    g.total = g.visits.reduce((s,v)=>s+apptRemaining(v),0);
+    return g;
+  }).sort((x,y)=> y.total - x.total);
+
+  const grand = arr.reduce((s,g)=>s+g.total,0);
+  statsEl.innerHTML = statCard('عدد المدينين', arr.length) + statCard('إجمالي الديون', fmtMoney(grand), true);
+
+  if(arr.length===0){ wrap.innerHTML = emptyState('✅', q ? 'لا توجد نتائج مطابقة' : 'لا توجد ديون حاليًا'); return; }
+  wrap.innerHTML = arr.map(g=>`
+    <div class="debt-group">
+      <div class="debt-group-head">
+        <div>
+          <div class="ic-name">${escapeHtml(g.name||'—')}</div>
+          <div class="hint" style="margin:2px 0 0;">📞 ${escapeHtml(g.phone||'—')}</div>
+        </div>
+        <span class="badge debt">إجمالي الدين: ${fmtMoney(g.total)}</span>
+      </div>
+      ${g.visits.map(v=>`
+        <div class="debt-visit">
+          <div>
+            <div>📅 ${v.date}${v.visitType?(' — '+escapeHtml(v.visitType)):''}${doctorsList.length>1?(' — 🩺 '+escapeHtml(doctorLabel(v.doctorId))):''}</div>
+            <div class="hint" style="margin:2px 0 0;">الكشفية ${fmtMoney(v.fee)} • المدفوع ${fmtMoney(apptPaidAmount(v))} • <b style="color:var(--danger);">المتبقي ${fmtMoney(apptRemaining(v))}</b></div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openDebtPayment('${v.id}')">💵 تسديد</button>
+        </div>`).join('')}
+    </div>`).join('');
+}
+function openDebtPayment(apptId){
+  const a = appointments.find(x=>x.id===apptId); if(!a) return;
+  const rem = apptRemaining(a);
+  document.getElementById('dp_apptId').value = a.id;
+  document.getElementById('dp_info').textContent = (a.patientName||'—') + ' — المتبقي';
+  document.getElementById('dp_remaining').textContent = fmtMoney(rem);
+  const amt = document.getElementById('dp_amount');
+  amt.max = rem; amt.value = rem;
+  openModal('debtPayModal');
+}
+async function submitDebtPayment(e){
+  e.preventDefault();
+  const restore = setFormSaving(e.target, '⏳ جارِ الحفظ...');
+  try{
+    const id = document.getElementById('dp_apptId').value;
+    const a = appointments.find(x=>x.id===id);
+    if(!a){ showToast('تعذر إيجاد الزيارة'); return; }
+    const rem = apptRemaining(a);
+    const amount = Math.min(Math.max(0, Number(document.getElementById('dp_amount').value)||0), rem);
+    if(amount<=0){ showToast('أدخل مبلغًا صحيحًا'); return; }
+    const newPaid = apptPaidAmount(a) + amount;
+    const {error} = await sb.from('appointments').update({paid: newPaid}).eq('id', id);
+    if(error) throw error;
+    closeModal('debtPayModal');
+    await loadData();
+    renderDebts('doc'); renderIncome();
+    showToast(newPaid >= (Number(a.fee)||0) ? '✅ تم تسديد الدين بالكامل' : 'تم تسجيل الدفعة');
+  }catch(err){ console.error(err); showToast('تعذر تسجيل التسديد'); }
+  finally{ restore(); }
 }
 
 /* ===================== الأدوية ===================== */
