@@ -426,6 +426,12 @@
   .avail-dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
   .avail-dot.open{background:#DFF6E4;border:1px solid #1E8A46;}
   .avail-dot.closed{background:#FBE7E5;border:1px solid #C0392B;}
+  .avail-dot.leave{background:#FFF1D6;border:1px solid #D99A1E;}
+  .avail-day.avail-leave{background:#FFF1D6;color:#B7791F;}
+  .leave-note{margin-top:8px;background:#FFF4E1;border:1.5px solid #F3C877;border-radius:12px;padding:9px 12px;font-size:12.5px;font-weight:700;color:#8A5A00;text-align:center;}
+  .timeoff-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--surface);}
+  .timeoff-item .to-dates{font-weight:700;color:var(--primary-dark);font-size:14.5px;}
+  .timeoff-item .to-reason{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
 
   .slot-grid-wrap{background:var(--surface-2);border-radius:14px;padding:12px;margin-top:10px;}
   .slot-grid-title{font-weight:700;color:var(--primary-dark);font-size:13.5px;margin-bottom:8px;}
@@ -495,6 +501,7 @@
   <div class="nav-links" id="navLinks">
     <button class="nav-btn" onclick="showView('home')">الرئيسية</button>
     <button class="nav-btn" onclick="showView('booking')">حجز موعد</button>
+    <button class="nav-btn" onclick="showView('track')">متابعة الحجز</button>
     <button class="nav-btn primary" onclick="showView('login')" id="loginNavBtn">دخول الطاقم الطبي</button>
   </div>
 </nav>
@@ -555,40 +562,20 @@
   </footer>
 </section>
 
-<!-- ================= BOOKING ================= -->
+<!-- ================= BOOKING (حجز موعد جديد) ================= -->
 <section class="view" id="view-booking">
-  <div class="booking-wrap" id="bookingEntryWrap">
-    <div class="section-head" style="margin-bottom:20px;">
-      <div class="eyebrow">📅 حجز موعد</div>
-      <h2>احجز موعدك</h2>
-      <p>اختر أحد الخيارين التاليين</p>
-    </div>
-    <div class="choice-grid">
-      <div class="choice-card" onclick="showBookingMode('new')">
-        <div class="cc-icon">➕</div>
-        <h3>حجز جديد</h3>
-        <p>لم يسبق أن حجزت؟ عبّئ بياناتك واحجز موعدك الآن.</p>
-      </div>
-      <div class="choice-card" onclick="showBookingMode('existing')">
-        <div class="cc-icon">🔎</div>
-        <h3>لدي حجز مسبق</h3>
-        <p>تابع حالة حجزك الحالي وترتيبك.</p>
-      </div>
-    </div>
-  </div>
-
   <!-- ---- نموذج حجز جديد ---- -->
-  <div class="booking-wrap" id="bookingNewWrap" style="display:none;">
+  <div class="booking-wrap" id="bookingNewWrap">
     <div class="section-head" style="margin-bottom:20px;">
-      <div class="eyebrow">➕ حجز جديد</div>
-      <h2>بيانات الحجز</h2>
-      <button class="btn btn-outline btn-sm" onclick="showBookingMode('entry')">← رجوع</button>
+      <div class="eyebrow">📅 حجز موعد جديد</div>
+      <h2>احجز موعدك</h2>
+      <p>عبّئ بياناتك واختر الطبيب والموعد المناسب.</p>
     </div>
     <div class="panel">
       <form id="bookingForm" onsubmit="submitPublicBooking(event)">
         <div class="form-grid">
           <div class="field"><label>الاسم الكامل *</label><input required id="b_name" placeholder="مثال: أحمد كريم"></div>
-          <div class="field"><label>رقم الهاتف *</label><input required id="b_phone" placeholder="07xxxxxxxxx" oninput="onBookingContextChanged('b')"></div>
+          <div class="field"><label>رقم الهاتف *</label><input required id="b_phone" class="phone-input" inputmode="tel" maxlength="13" pattern="(07[5789][0-9]{8}|\+9647[5789][0-9]{8})" title="اكتب الرقم بإحدى الصيغتين: 07XXXXXXXXX أو +9647XXXXXXXXX (تبدأ بـ 075 أو 077 أو 078 أو 079)" placeholder="07701234567 أو +9647701234567" style="direction:ltr;text-align:right;" oninput="onBookingContextChanged('b')"></div>
           <div class="field"><label>العمر — اختياري</label><input id="b_age" placeholder="مثال: 28 سنة"></div>
           <div class="field full"><label>الطبيب المطلوب *</label><select required id="b_doctor" class="doctor-select" onchange="onBookingContextChanged('b')"><option value="">اختر الطبيب</option></select></div>
           <div class="field full">
@@ -625,13 +612,16 @@
       </form>
     </div>
   </div>
+</section>
 
+<!-- ================= TRACK (متابعة الحجز) ================= -->
+<section class="view" id="view-track">
   <!-- ---- بحث عن حجز مسبق ---- -->
-  <div class="booking-wrap" id="bookingSearchWrap" style="display:none;">
+  <div class="booking-wrap" id="bookingSearchWrap">
     <div class="section-head" style="margin-bottom:20px;">
-      <div class="eyebrow">🔎 لدي حجز مسبق</div>
+      <div class="eyebrow">📍 متابعة الحجز</div>
       <h2>ابحث عن حجزك</h2>
-      <button class="btn btn-outline btn-sm" onclick="showBookingMode('entry')">← رجوع</button>
+      <p>اكتب اسمك لتتابع حالة حجزك وترتيبك.</p>
     </div>
     <div class="panel">
       <form onsubmit="submitBookingSearch(event)">
@@ -668,7 +658,7 @@
         ⏱️ الوقت المقترح لزيارتك: <span id="trk_suggested">—</span>
       </div>
       <div class="track-back">
-        <button class="btn btn-outline btn-sm" onclick="stopTrackingAndGoHome()">حجز آخر / رجوع</button>
+        <button class="btn btn-outline btn-sm" onclick="stopTrackingAndGoHome()">بحث عن حجز آخر</button>
         <button class="btn btn-outline btn-sm" id="trk_cancelBtn" style="color:var(--danger);border-color:var(--danger);display:none;" onclick="cancelMyBooking()">✕ إلغاء الحجز</button>
         <span class="hint" style="display:block;margin-top:8px;">يتحدّث تلقائيًا كل ١٥ ثانية</span>
       </div>
@@ -819,9 +809,11 @@
       <div class="side-title">لوحة الطبيب</div>
       <button class="side-btn active" data-tab="doc-today" onclick="switchDashTab(this,'doc')">📋 الحجوزات</button>
       <button class="side-btn" data-tab="doc-hours" onclick="switchDashTab(this,'doc')">🕒 أوقات اليوم</button>
+      <button class="side-btn" data-tab="doc-timeoff" onclick="switchDashTab(this,'doc')">🏖️ الإجازات</button>
       <button class="side-btn" data-tab="doc-records" onclick="switchDashTab(this,'doc')">🗂️ سجل المرضى</button>
       <button class="side-btn" data-tab="doc-income" onclick="switchDashTab(this,'doc')">💰 الدخل</button>
       <button class="side-btn" data-tab="doc-medications" onclick="switchDashTab(this,'doc')">💊 قائمة الأدوية</button>
+      <button class="side-btn" data-tab="doc-accounts" id="doc-accounts-btn" style="display:none;" onclick="switchDashTab(this,'doc')">👥 إدارة الحسابات</button>
       <button class="side-btn" data-tab="doc-backup" id="doc-backup-btn" style="display:none;" onclick="switchDashTab(this,'doc')">💾 نسخ احتياطي</button>
     </aside>
     <main class="dash-main">
@@ -857,6 +849,26 @@
         </div>
       </div>
 
+      <div class="dash-tab" id="doc-timeoff">
+        <div class="panel">
+          <h3 style="color:var(--primary-dark);margin-bottom:6px;font-size:16px;">🏖️ أيام الإجازة / السفر</h3>
+          <p class="hint" style="margin:0 0 14px;">حدّد الفترة التي ستكون فيها خارج العيادة، وستُغلق تلقائيًا في تقويم الحجز فلا يستطيع المرضى الحجز فيها.</p>
+          <form id="timeOffForm" onsubmit="submitTimeOff(event)">
+            <div class="form-grid">
+              <div class="field full"><label>الطبيب</label><select id="to_doctor" class="doctor-select" onchange="renderTimeOffList()"><option value="">اختر الطبيب</option></select></div>
+              <div class="field"><label>من تاريخ *</label><input type="date" required id="to_start" lang="en-GB"></div>
+              <div class="field"><label>إلى تاريخ * (نفس اليوم إن كانت إجازة يوم واحد)</label><input type="date" required id="to_end" lang="en-GB"></div>
+              <div class="field full"><label>السبب — اختياري (يظهر لك فقط)</label><input id="to_reason" placeholder="مثال: سفر، مؤتمر..."></div>
+            </div>
+            <button class="btn btn-primary" type="submit">حفظ الإجازة</button>
+          </form>
+        </div>
+        <div class="panel" style="margin-top:16px;">
+          <h3 style="color:var(--primary-dark);margin-bottom:10px;font-size:16px;">الإجازات الحالية والقادمة</h3>
+          <div id="timeOffList"></div>
+        </div>
+      </div>
+
       <div class="dash-tab" id="doc-records">
         <div class="panel">
           <div class="toolbar"><input class="search-input" placeholder="ابحث عن مريض بالاسم أو الهاتف..." id="docPatientSearch" oninput="renderDocPatientsDebounced()"></div>
@@ -888,6 +900,14 @@
             <button class="btn btn-primary btn-sm" onclick="openNewMed()">➕ إضافة دواء</button>
           </div>
           <div id="medsTableWrap"></div>
+        </div>
+      </div>
+
+      <div class="dash-tab" id="doc-accounts">
+        <div class="panel">
+          <h3 style="color:var(--primary-dark);margin-bottom:6px;font-size:17px;">👥 إدارة الحسابات</h3>
+          <p class="hint" style="margin:0 0 14px;">تغيير كلمات مرور حسابات العيادة. لا يمكن إضافة حسابات جديدة من هنا. عند تغيير كلمة مرور حساب آخر يُسجَّل خروجه من أجهزته ويدخل بالكلمة الجديدة.</p>
+          <div id="accountsList"></div>
         </div>
       </div>
 
@@ -962,6 +982,22 @@
       <button type="button" class="btn btn-outline btn-block" onclick="resolveConfirmModal(false)">إلغاء</button>
       <button type="button" class="btn btn-primary btn-block" id="confirmModalOkBtn" style="background:var(--danger);" onclick="resolveConfirmModal(true)">تأكيد</button>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="passwordModal" style="z-index:250;">
+  <div class="modal-box" style="max-width:400px;padding:24px;">
+    <div class="modal-head"><h3>🔑 تغيير كلمة المرور</h3></div>
+    <p id="pw_target" style="font-size:14px;color:var(--text);margin:0 0 12px;"></p>
+    <form onsubmit="submitPasswordChange(event)">
+      <input type="hidden" id="pw_userId">
+      <div class="field"><label>كلمة المرور الجديدة (8 أحرف على الأقل)</label><input type="password" id="pw_new" minlength="8" required autocomplete="new-password"></div>
+      <div class="field"><label>تأكيد كلمة المرور</label><input type="password" id="pw_confirm" minlength="8" required autocomplete="new-password"></div>
+      <div style="display:flex;gap:10px;margin-top:6px;">
+        <button type="button" class="btn btn-outline btn-block" onclick="closeModal('passwordModal')">إلغاء</button>
+        <button type="submit" class="btn btn-primary btn-block">حفظ</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -1105,6 +1141,8 @@ let patients = [];
 let appointments = [];
 let medications = [];
 let doctorsList = [];      // كل أطباء العيادة {doctor_id, full_name}
+let canDelete = true;      // صلاحية الحذف (تُغلق لحساب د. مقداد)
+let isAdmin = false;       // مدير النظام (د. مصطفى): إدارة الحسابات وحذف أي بيانات
 let isFullAccess = false;  // صلاحية كاملة (مصطفى + السكرتير) أم مقيّدة بمريض الطبيب نفسه فقط
 let myDoctorId = null;     // doctor_id الخاص بالحساب المسجّل دخوله
 let patientsOffset = 10;   // آخر نقطة تحميل في السجل (نجلب أول 10 دائمًا، ثم 100 كل مرة عند الطلب)
@@ -1248,12 +1286,22 @@ async function searchPatientsDb(query){
 }
 
 /* ===================== أدوات عامة ===================== */
+document.addEventListener('input', function(e){
+  const el = e.target;
+  if(!el || !el.classList || !el.classList.contains('phone-input')) return;
+  let v = el.value.replace(/[\u0660-\u0669]/g, d=>String(d.charCodeAt(0)-0x0660))
+                  .replace(/[\u06F0-\u06F9]/g, d=>String(d.charCodeAt(0)-0x06F0))
+                  .replace(/[\s\-()]/g, '');
+  if(v !== el.value) el.value = v;
+}, true);
+function isValidPatientPhone(v){ return /^(07[5789]\d{8}|\+9647[5789]\d{8})$/.test(v); }
 function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function showToast(msg){
   const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2600);
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>t.classList.remove('show'), Math.max(2600, String(msg).length*70));
 }
 function fmtMoney(n){ return (Number(n)||0).toLocaleString('en-US')+' د.ع'; }
 function todayStr(){
@@ -1363,9 +1411,9 @@ function showView(name){
   document.body.classList.toggle('wr-mode', name==='waitingroom');
   if(name==='secretary') renderSecretaryDash();
   if(name==='doctor') renderDoctorDash();
-  if(name==='booking'){
+  if(name==='track'){
     const savedId = localStorage.getItem(TRACK_ID_KEY);
-    if(savedId) openTrackingDashboard(savedId); else showBookingMode('entry');
+    if(savedId) openTrackingDashboard(savedId); else showTrackMode('search');
   }
   stopDashAutoRefresh(); stopTrackRefresh(); stopWaitingRoomRefresh();
   if(['secretary','doctor'].includes(name)) startDashAutoRefresh(name);
@@ -1410,6 +1458,8 @@ function switchDashTab(btn, prefix){
   if(btn.dataset.tab==='sec-appointments'){ renderSecAppointments(); }
   if(btn.dataset.tab==='sec-hours'){ renderSecHoursDashboard(); }
   if(btn.dataset.tab==='doc-hours'){ renderDocHoursDashboard(); }
+  if(btn.dataset.tab==='doc-timeoff'){ initTimeOffTab(); }
+  if(btn.dataset.tab==='doc-accounts'){ renderAccounts(); }
   if(btn.dataset.tab==='doc-medications') renderMedications();
 }
 
@@ -1417,6 +1467,8 @@ function switchDashTab(btn, prefix){
 function updateBackupTabVisibility(){
   const btn = document.getElementById('doc-backup-btn');
   if(btn) btn.style.display = isFullAccess ? 'flex' : 'none';
+  const accBtn = document.getElementById('doc-accounts-btn');
+  if(accBtn) accBtn.style.display = isAdmin ? 'flex' : 'none';
 }
 function downloadBlob(filename, blob){
   const url = URL.createObjectURL(blob);
@@ -1535,7 +1587,7 @@ async function submitLogin(e){
     document.getElementById('loginError').classList.add('show');
     restore(); return;
   }
-  const {data:profile, error:profErr} = await sb.from('profiles').select('role, full_name, doctor_id, full_access').eq('id', data.user.id).single();
+  const {data:profile, error:profErr} = await sb.from('profiles').select('role, full_name, doctor_id, full_access, is_admin, can_delete').eq('id', data.user.id).single();
   if(profErr || !profile || !['secretary','doctor','screen'].includes(profile.role)){
     document.getElementById('loginError').textContent = 'هذا الحساب غير مُعرَّف بهذه العيادة';
     document.getElementById('loginError').classList.add('show');
@@ -1545,6 +1597,8 @@ async function submitLogin(e){
   currentRole = profile.role;
   doctorFullName = profile.full_name || doctorFullName;
   isFullAccess = !!profile.full_access;
+  isAdmin = !!profile.is_admin;
+  canDelete = !!profile.is_admin || profile.can_delete !== false;
   myDoctorId = profile.doctor_id;
   updateBackupTabVisibility();
   document.getElementById('loginUser').value=''; document.getElementById('loginPass').value='';
@@ -1561,6 +1615,8 @@ async function logout(){
   await sb.auth.signOut();
   currentRole = null;
   isFullAccess = false;
+  isAdmin = false;
+  canDelete = true;
   myDoctorId = null;
   updateBackupTabVisibility();
   document.getElementById('loginNavBtn').textContent = 'دخول الطاقم الطبي';
@@ -1573,12 +1629,14 @@ async function restoreSession(){
   try{ ({data:{session}} = await sb.auth.getSession()); }catch(e){ session=null; }
   if(!session) return;
   try{
-    const {data:profile, error} = await sb.from('profiles').select('role, full_name, doctor_id, full_access').eq('id', session.user.id).single();
+    const {data:profile, error} = await sb.from('profiles').select('role, full_name, doctor_id, full_access, is_admin, can_delete').eq('id', session.user.id).single();
     if(error) throw error;
     if(profile && ['secretary','doctor','screen'].includes(profile.role)){
       currentRole = profile.role;
       doctorFullName = profile.full_name || doctorFullName;
       isFullAccess = !!profile.full_access;
+      isAdmin = !!profile.is_admin;
+      canDelete = !!profile.is_admin || profile.can_delete !== false;
       myDoctorId = profile.doctor_id;
       updateBackupTabVisibility();
       document.getElementById('loginNavBtn').textContent = 'الرجوع إلى اللوحة';
@@ -1591,17 +1649,13 @@ async function restoreSession(){
 const TRACK_ID_KEY = 'dentalTrackBookingId_v1';
 let trackRefreshTimer = null;
 
-function showBookingMode(mode){
-  document.getElementById('bookingEntryWrap').style.display = mode==='entry' ? 'block' : 'none';
-  document.getElementById('bookingNewWrap').style.display = mode==='new' ? 'block' : 'none';
-  document.getElementById('bookingSearchWrap').style.display = mode==='existing' ? 'block' : 'none';
+/* صفحة "متابعة الحجز" منفصلة عن صفحة "حجز موعد جديد": الوضعان هنا هما البحث أو لوحة التتبع */
+function showTrackMode(mode){
+  document.getElementById('bookingSearchWrap').style.display = mode==='search' ? 'block' : 'none';
   document.getElementById('bookingTrackWrap').style.display = mode==='track' ? 'block' : 'none';
   stopTrackRefresh();
-  if(mode!=='track'){
-    // عند دخول شاشة الحجز من جديد (وليس أثناء المتابعة) نتحقق إن كان هناك حجز محفوظ سابقًا بهذا المتصفح
-  }
 }
-function stopBookingAutoDetectAndShowEntry(){ showBookingMode('entry'); }
+function stopBookingAutoDetectAndShowEntry(){ showTrackMode('search'); }
 
 /* ===================== تقويم اختيار الموعد + رقم الجلسة ===================== */
 const AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -1714,9 +1768,13 @@ async function loadAvailabilityWindow(prefix){
     (data||[]).forEach(r=>{ st.availability[r.appt_date] = r.is_available; });
     st.session = (data && data[0]) ? data[0].session_number : 1; // الحد الأدنى المفعّل لهذا المريض
     st.isReturning = (data && data[0]) ? !!data[0].is_returning : false;
+    // أيام إجازة الطبيب: تُغلق تلقائيًا في التقويم
+    st.timeOff = await fetchTimeOffRanges(st.doctorId, from, to);
+    Object.keys(st.availability).forEach(k=>{ if(isDateInRanges(k, st.timeOff)) st.availability[k] = false; });
   }catch(e){
     console.error('loadAvailabilityWindow', e);
     st.availability = {};
+    st.timeOff = [];
   }
 }
 function applySessionMin(prefix){
@@ -1752,6 +1810,7 @@ function calChangeMonth(prefix, delta){
 }
 function selectCalendarDay(prefix, dateStr){
   const st = bookingCalState[prefix];
+  if(isDateInRanges(dateStr, st.timeOff||[])){ showToast('🏖️ الطبيب في إجازة بهذا اليوم'); return; }
   // السكرتير (s) يمكنها اختيار الأيام المغلقة/الحمراء يدويًا عند الحاجة، أما حجز المريض العام (b) فمقيّد بالأيام المتاحة فقط
   if(prefix!=='s' && st.availability[dateStr] !== true) return;
   st.selectedDate = dateStr;
@@ -1832,14 +1891,19 @@ function renderBookingCalendar(prefix){
     const dateStr = fmtDateStr(st.year, st.month, d);
     const avail = st.availability[dateStr];
     const isPast = dateStr < todayStr_;
+    const onLeave = !isPast && isDateInRanges(dateStr, st.timeOff||[]);
     let cls = 'avail-day';
-    if(isPast || avail===false || avail===undefined) cls += ' avail-closed';
+    if(onLeave) cls += ' avail-leave';
+    else if(isPast || avail===false || avail===undefined) cls += ' avail-closed';
     else cls += ' avail-open';
     if(dateStr === todayStr_) cls += ' avail-today';
     if(dateStr === st.selectedDate) cls += ' avail-selected';
-    const clickable = prefix==='s' ? !isPast : (!isPast && avail===true);
-    cells += `<div class="${cls}" ${clickable?`onclick="selectCalendarDay('${prefix}','${dateStr}')"`:''}>${d}</div>`;
+    const clickable = onLeave ? false : (prefix==='s' ? !isPast : (!isPast && avail===true));
+    cells += `<div class="${cls}" ${onLeave?'title="الطبيب في إجازة"':''} ${clickable?`onclick="selectCalendarDay('${prefix}','${dateStr}')"`:''}>${d}</div>`;
   }
+  const monthStart = fmtDateStr(st.year, st.month, 1), monthEnd = fmtDateStr(st.year, st.month, daysInMonth);
+  const leaveRanges = (st.timeOff||[]).filter(r=> r.end_date>=monthStart && r.start_date<=monthEnd && r.end_date>=todayStr_);
+  const leaveNotes = leaveRanges.map(r=>`<div class="leave-note">🏖️ الطبيب في إجازة ${r.start_date===r.end_date ? ('بتاريخ '+r.start_date) : ('من '+r.start_date+' إلى '+r.end_date)}</div>`).join('');
 
   wrap.innerHTML = `
     <div class="avail-cal">
@@ -1855,7 +1919,9 @@ function renderBookingCalendar(prefix){
       <div class="avail-cal-legend">
         <span><i class="avail-dot open"></i> متاح</span>
         <span><i class="avail-dot closed"></i> غير متاح</span>
+        ${leaveRanges.length?'<span><i class="avail-dot leave"></i> إجازة الطبيب</span>':''}
       </div>
+      ${leaveNotes}
     </div>`;
 }
 
@@ -1873,6 +1939,7 @@ async function submitPublicBooking(e){
     const visitType = document.getElementById('b_visitType').value;
     const pmh = document.getElementById('b_pmh').value.trim();
     const notes = document.getElementById('b_notes').value.trim();
+    if(!isValidPatientPhone(phone)){ showToast('رقم الهاتف يجب أن يكون 07XXXXXXXXX أو +9647XXXXXXXXX (يبدأ بـ 075 أو 077 أو 078 أو 079)'); restore(); return; }
     if(!doctorId){ showToast('يرجى اختيار الطبيب'); restore(); return; }
     if(!date){ showToast('يرجى اختيار تاريخ الزيارة من التقويم'); restore(); return; }
     if(!time){ showToast('يرجى اختيار وقت الموعد'); restore(); return; }
@@ -1894,7 +1961,7 @@ async function submitPublicBooking(e){
     bookingCalState.b = {year:null, month:null, selectedDate:null, availability:{}, session:1, isReturning:false, doctorId:'', phone:'', slots:{}, selectedTime:null};
     localStorage.setItem(TRACK_ID_KEY, row.booking_id);
     showToast('✅ تم تأكيد حجزك بنجاح');
-    await openTrackingDashboard(row.booking_id);
+    showView('track');
   }catch(err){
     console.error(err);
     if(err && err.message && (err.message.includes('تم حجز هذا الوقت') || err.code==='23505')){
@@ -1944,7 +2011,7 @@ function selectSearchedBooking(id){
 }
 function stopTrackingAndGoHome(){
   localStorage.removeItem(TRACK_ID_KEY);
-  showBookingMode('entry');
+  showTrackMode('search');
 }
 function stopTrackRefresh(){ if(trackRefreshTimer){ clearInterval(trackRefreshTimer); trackRefreshTimer=null; } }
 
@@ -2043,7 +2110,7 @@ async function renderWaitingRoom(){
 let currentTrackBookingId = null;
 async function openTrackingDashboard(bookingId){
   currentTrackBookingId = bookingId;
-  showBookingMode('track');
+  showTrackMode('track');
   await refreshTrackingDashboard(bookingId);
   stopTrackRefresh();
   trackRefreshTimer = setInterval(()=>{ if(!document.hidden) refreshTrackingDashboard(bookingId); }, 15000);
@@ -2115,6 +2182,163 @@ async function cancelMyBooking(){
   }
 }
 
+/* ===================== إدارة الحسابات (للمدير فقط) ===================== */
+const ROLE_LABELS = {doctor:'طبيب', secretary:'سكرتير', screen:'شاشة'};
+async function renderAccounts(){
+  const wrap = document.getElementById('accountsList'); if(!wrap) return;
+  if(!isAdmin){ wrap.innerHTML = '<div class="hint">هذه الصفحة للمدير فقط</div>'; return; }
+  wrap.innerHTML = '<div class="hint">⏳ جارِ التحميل...</div>';
+  try{
+    const {data, error} = await sb.rpc('admin_list_accounts');
+    if(error) throw error;
+    wrap.innerHTML = (data||[]).map(a=>`
+      <div class="timeoff-item">
+        <div>
+          <div class="to-dates">${escapeHtml(a.full_name||'—')} ${a.is_admin?'<span class="badge scheduled">المدير</span>':''}</div>
+          <div class="to-reason">${escapeHtml(ROLE_LABELS[a.role]||a.role||'')} — <span dir="ltr">${escapeHtml(a.email||'')}</span></div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="flex-shrink:0;" onclick="openPasswordModal('${a.user_id}','${escapeHtml(a.full_name||a.email||'')}')">🔑 تغيير كلمة المرور</button>
+      </div>`).join('') || emptyState('👥','لا توجد حسابات');
+  }catch(e){
+    console.error('renderAccounts', e);
+    wrap.innerHTML = '<div class="hint">تعذر تحميل الحسابات</div>';
+  }
+}
+function openPasswordModal(userId, label){
+  document.getElementById('pw_userId').value = userId;
+  document.getElementById('pw_target').textContent = 'الحساب: ' + label;
+  document.getElementById('pw_new').value = '';
+  document.getElementById('pw_confirm').value = '';
+  openModal('passwordModal');
+}
+async function submitPasswordChange(e){
+  e.preventDefault();
+  const userId = document.getElementById('pw_userId').value;
+  const pw = document.getElementById('pw_new').value;
+  const pw2 = document.getElementById('pw_confirm').value;
+  if(pw.length < 8){ showToast('كلمة المرور يجب ألا تقل عن 8 أحرف'); return; }
+  if(pw !== pw2){ showToast('كلمتا المرور غير متطابقتين'); return; }
+  const restore = setFormSaving(e.target, '⏳ جارِ الحفظ...');
+  try{
+    const {error} = await sb.rpc('admin_set_user_password', {p_user_id: userId, p_new_password: pw});
+    if(error) throw error;
+    closeModal('passwordModal');
+    showToast('✅ تم تغيير كلمة المرور');
+  }catch(err){
+    console.error(err);
+    showToast(isNetworkError(err) ? 'تعذر الاتصال — تحقق من الإنترنت' : (err && err.message ? err.message : 'تعذر تغيير كلمة المرور'));
+  }
+  finally{ restore(); }
+}
+
+/* ===================== إجازات الطبيب (أيام السفر) ===================== */
+// يعتمد على جدول doctor_time_off ودالة public_get_doctor_time_off (انظر ملف doctor_time_off.sql)
+async function fetchTimeOffRanges(doctorId, from, to){
+  if(!doctorId) return [];
+  try{
+    const {data, error} = await sbPublic.rpc('public_get_doctor_time_off', {p_doctor_id: doctorId, p_from: from, p_to: to});
+    if(error) throw error;
+    return (data||[]).map(r=>({start_date: r.start_date, end_date: r.end_date}));
+  }catch(e){
+    console.warn('fetchTimeOffRanges', e);
+    return [];
+  }
+}
+function isDateInRanges(dateStr, ranges){
+  return (ranges||[]).some(r=> dateStr >= r.start_date && dateStr <= r.end_date);
+}
+function initTimeOffTab(){
+  const sel = document.getElementById('to_doctor');
+  if(sel){
+    if(!sel.value) sel.value = myDoctorId || (doctorsList.length ? doctorsList[0].doctor_id : '');
+    sel.disabled = !isFullAccess;
+  }
+  renderTimeOffList();
+}
+async function renderTimeOffList(){
+  const wrap = document.getElementById('timeOffList'); if(!wrap) return;
+  const doctorId = document.getElementById('to_doctor').value;
+  if(!doctorId){ wrap.innerHTML = '<div class="hint">اختر الطبيب لعرض إجازاته</div>'; return; }
+  wrap.innerHTML = '<div class="hint">⏳ جارِ التحميل...</div>';
+  try{
+    const {data, error} = await sb.from('doctor_time_off').select('*')
+      .eq('doctor_id', doctorId).gte('end_date', todayStr()).order('start_date',{ascending:true});
+    if(error) throw error;
+    if(!data || !data.length){ wrap.innerHTML = emptyState('🏖️','لا توجد إجازات مسجّلة'); return; }
+    wrap.innerHTML = data.map(r=>`
+      <div class="timeoff-item">
+        <div>
+          <div class="to-dates">${r.start_date===r.end_date ? ('📅 '+r.start_date) : ('📅 من '+r.start_date+' إلى '+r.end_date)}</div>
+          ${r.reason ? `<div class="to-reason">${escapeHtml(r.reason)}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          ${(r.start_date < todayStr() && r.end_date >= todayStr()) ? `<button class="btn btn-outline btn-sm" onclick="endTimeOffToday('${r.id}')">إنهاء من اليوم</button>` : ''}
+          <button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);" onclick="deleteTimeOff('${r.id}')">إلغاء الإجازة</button>
+        </div>
+      </div>`).join('');
+  }catch(e){
+    console.error('renderTimeOffList', e);
+    wrap.innerHTML = '<div class="hint">تعذر تحميل الإجازات — تأكد من إنشاء جدول doctor_time_off بقاعدة البيانات.</div>';
+  }
+}
+async function submitTimeOff(e){
+  e.preventDefault();
+  const doctorId = document.getElementById('to_doctor').value;
+  const start = document.getElementById('to_start').value;
+  const end = document.getElementById('to_end').value;
+  const reason = document.getElementById('to_reason').value.trim();
+  if(!doctorId){ showToast('اختر الطبيب أولًا'); return; }
+  if(!start || !end){ showToast('حدّد تاريخ البداية والنهاية'); return; }
+  if(end < start){ showToast('تاريخ النهاية يجب أن يكون بعد تاريخ البداية'); return; }
+  if(end < todayStr()){ showToast('لا يمكن تسجيل إجازة في تاريخ سابق'); return; }
+
+  // تنبيه إن كانت هناك حجوزات مجدولة داخل فترة الإجازة (لا تُلغى تلقائيًا)
+  const clash = appointments.filter(a=> a.doctorId===doctorId && a.status==='مجدول' && a.date>=start && a.date<=end);
+  if(clash.length){
+    const ok = await customConfirm(`يوجد ${clash.length} حجز مجدول ضمن هذه الفترة. لن تُلغى الحجوزات تلقائيًا، وعليك التواصل مع المرضى لتغيير مواعيدهم. هل تريد المتابعة بحفظ الإجازة؟`, 'حفظ الإجازة');
+    if(!ok) return;
+  }
+  const restore = setFormSaving(e.target, '⏳ جارِ الحفظ...');
+  try{
+    const {error} = await sb.from('doctor_time_off').insert({doctor_id: doctorId, start_date: start, end_date: end, reason: reason||null});
+    if(error) throw error;
+    e.target.reset();
+    document.getElementById('to_doctor').value = doctorId;
+    showToast('✅ تم حفظ الإجازة وإغلاق هذه الأيام في الحجز');
+    renderTimeOffList();
+  }catch(err){
+    console.error(err);
+    showToast(isNetworkError(err) ? 'تعذر الاتصال — تحقق من الإنترنت' : 'تعذر حفظ الإجازة، حاول مجددًا');
+  }
+  finally{ restore(); }
+}
+async function endTimeOffToday(id){
+  if(!(await customConfirm('إنهاء الإجازة من اليوم؟ سيُفتح اليوم والأيام القادمة للحجز، وتبقى الأيام الماضية كما هي.', 'إنهاء'))) return;
+  try{
+    const d = new Date(); d.setDate(d.getDate()-1);
+    const yesterday = fmtDateStr(d.getFullYear(), d.getMonth(), d.getDate());
+    const {error} = await sb.from('doctor_time_off').update({end_date: yesterday}).eq('id', id);
+    if(error) throw error;
+    showToast('✅ تم إنهاء الإجازة وفتح الحجز من اليوم');
+    renderTimeOffList();
+  }catch(err){
+    console.error(err);
+    showToast('تعذر إنهاء الإجازة');
+  }
+}
+async function deleteTimeOff(id){
+  if(!(await customConfirm('إلغاء هذه الإجازة بالكامل؟ ستُفتح كل أيامها للحجز من جديد.', 'إلغاء الإجازة'))) return;
+  try{
+    const {error} = await sb.from('doctor_time_off').delete().eq('id', id);
+    if(error) throw error;
+    showToast('تم إلغاء الإجازة');
+    renderTimeOffList();
+  }catch(err){
+    console.error(err);
+    showToast('تعذر حذف الإجازة');
+  }
+}
+
 /* ===================== لوحة السكرتير ===================== */
 async function renderSecretaryDash(){
   await loadData();
@@ -2147,6 +2371,9 @@ async function renderHoursDashboard(prefix){
   try{
     const {data, error} = await sb.rpc('sec_get_time_slots', {p_doctor_id: doctorId, p_appt_date: date});
     if(error) throw error;
+    const offRanges = await fetchTimeOffRanges(doctorId, date, date);
+    const offBanner = isDateInRanges(date, offRanges)
+      ? '<div class="track-warning"><span class="tw-icon">🏖️</span><span>الطبيب في إجازة بهذا اليوم — الحجز مغلق للمرضى.</span></div>' : '';
     const cells = (data||[]).map(r=>{
       const hhmm = r.slot_time.slice(0,5);
       const taken = r.is_available === false;
@@ -2158,7 +2385,7 @@ async function renderHoursDashboard(prefix){
         <div style="font-size:11px;font-weight:500;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${label}</div>
       </div>`;
     }).join('');
-    wrap.innerHTML = `
+    wrap.innerHTML = offBanner + `
       <div class="slot-grid-wrap">
         <div class="slot-grid">${cells}</div>
         <div class="slot-cal-legend">
@@ -2372,7 +2599,8 @@ function apptRowHtml(a, context){
       </div>
       ${reasonLine}${suggestedLine}
       <div class="ic-actions">
-        <button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);" onclick="deleteVisit('${a.id}')">🗑️</button>
+        ${canDelete ? `<button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);" onclick="deleteVisit('${a.id}')">🗑️</button>` : ''}
+        ${a.status==='مجدول' ? `<button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);" title="إلغاء الحجز" onclick="cancelAppointmentByStaff('${a.id}')">✕ إلغاء</button>` : ''}
         <button class="btn btn-outline btn-sm" onclick="openEditVisit('${a.id}')">✏️</button>
         ${a.status==='مكتمل' ? `<button class="btn btn-outline btn-sm" onclick="printPrescription('${a.id}')">🖨️</button>` : ''}
         <button class="btn btn-primary btn-sm" onclick="openExam('${a.id}')">${a.status==='مكتمل' ? 'تعديل الكشف' : 'كشف'}</button>
@@ -2396,9 +2624,25 @@ function apptRowHtml(a, context){
       <button class="btn btn-outline btn-sm" onclick="saveSuggestedTime('${a.id}')">حفظ</button>
     </div>
     <div class="ic-actions">
+      ${a.status==='مجدول' ? `<button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);" onclick="cancelAppointmentByStaff('${a.id}')">✕ إلغاء الحجز</button>` : ''}
       <button class="btn btn-outline btn-sm" onclick="openEditVisit('${a.id}')">✏️ تعديل</button>
     </div>
   </div>`;
+}
+async function cancelAppointmentByStaff(id){
+  const a = appointments.find(x=>x.id===id); if(!a) return;
+  if(!(await customConfirm(`إلغاء حجز "${a.patientName}" بتاريخ ${a.date}${a.time?(' الساعة '+fmtSlot12(a.time)):''}؟ سيتحول إلى ملغى ويصبح وقته متاحًا لمريض آخر.`, 'إلغاء الحجز'))) return;
+  try{
+    const {data, error} = await sb.from('appointments').update({status:'ملغى'}).eq('id', id).select('id');
+    if(error) throw error;
+    if(!data || !data.length){ showToast('🚫 تعذر إلغاء هذا الحجز'); return; }
+    await loadData();
+    renderSecAppointments(); renderTodayAppointments(); refreshSecHoursIfActive(); refreshDocHoursIfActive();
+    showToast('✅ تم إلغاء الحجز وأصبح وقته متاحًا');
+  }catch(err){
+    console.error(err);
+    showToast(isNetworkError(err) ? 'تعذر الاتصال — تحقق من الإنترنت' : 'تعذر إلغاء الحجز');
+  }
 }
 async function saveSuggestedTime(id){
   const val = document.getElementById('sug_'+id).value.trim();
@@ -2466,7 +2710,7 @@ function renderPatientsTable(wrap, list, context){
         <button class="btn btn-outline btn-sm" title="تعديل" onclick="openEditPatientModal('${p.id}')">✏️</button>
         ${context==='sec' ? `<button class="btn btn-primary btn-sm" title="حجز جديد" onclick="quickBookForPatient('${p.id}')">📅</button>` : ''}
         ${context==='doc' && p.enabledSession<4 ? `<button class="btn btn-primary btn-sm" title="تفعيل الجلسة القادمة" onclick="enableNextSession('${p.id}')">➕ جلسة قادمة</button>` : ''}
-        <button class="btn btn-outline btn-sm" title="حذف السجل" style="color:var(--danger);border-color:var(--danger);" onclick="deletePatientRecord('${p.id}')">🗑️</button>
+        ${canDelete ? `<button class="btn btn-outline btn-sm" title="حذف السجل" style="color:var(--danger);border-color:var(--danger);" onclick="deletePatientRecord('${p.id}')">🗑️</button>` : ''}
       </div>
     </div>`;
   }).join('')}</div>`;
@@ -2500,8 +2744,9 @@ async function deletePatientRecord(patientId){
   const p = patients.find(x=>x.id===patientId); if(!p) return;
   if(!(await customConfirm(`هل أنت متأكد من حذف سجل المريض "${p.name}"؟ سيتم حذف بياناته نهائيًا ولا يمكن التراجع.`))) return;
   try{
-    const {error} = await sb.from('patients').delete().eq('id', patientId);
+    const {data:delRows, error} = await sb.from('patients').delete().eq('id', patientId).select('id');
     if(error) throw error;
+    if(!delRows || !delRows.length){ showToast('🚫 لا يمكنك حذف بيانات طبيب آخر'); return; }
     patients = patients.filter(x=>x.id!==patientId);
     renderDocPatients();
     showToast('تم حذف سجل المريض');
@@ -2610,7 +2855,7 @@ function openHistoryByPhone(phone, doctorId){
       ${v.treatment?`<p style="margin:4px 0;"><strong style="color:var(--primary-dark);">العلاج:</strong> ${escapeHtml(v.treatment)}</p>`:''}
       ${v.notes?`<p style="margin:4px 0;"><strong style="color:var(--primary-dark);">ملاحظات:</strong> ${escapeHtml(v.notes)}</p>`:''}
       <div class="ic-actions">
-        <button class="btn btn-outline btn-sm" title="حذف" style="color:var(--danger);border-color:var(--danger);" onclick="deleteVisitFromHistory('${v.id}','${phone}','${effectiveDoctorId||''}')">🗑️</button>
+        ${canDelete ? `<button class="btn btn-outline btn-sm" title="حذف" style="color:var(--danger);border-color:var(--danger);" onclick="deleteVisitFromHistory('${v.id}','${phone}','${effectiveDoctorId||''}')">🗑️</button>` : ''}
         <button class="btn btn-outline btn-sm" title="تعديل السجل" onclick="closeModal('historyModal'); openExam('${v.id}')">✏️</button>
         ${v.status==='مكتمل' ? `<button class="btn btn-outline btn-sm" title="طباعة الوصفة" onclick="printPrescription('${v.id}')">🖨️</button>` : ''}
       </div>
@@ -2622,8 +2867,9 @@ function openHistoryByPhone(phone, doctorId){
 async function deleteVisitFromHistory(id, phone, doctorId){
   if(!(await customConfirm('هل أنت متأكد من حذف هذه الزيارة من السجل الطبي؟'))) return;
   try{
-    const {error} = await sb.from('appointments').delete().eq('id', id);
+    const {data:delRows, error} = await sb.from('appointments').delete().eq('id', id).select('id');
     if(error) throw error;
+    if(!delRows || !delRows.length){ showToast('🚫 لا يمكنك حذف بيانات طبيب آخر'); return; }
     await loadData();
     renderTodayAppointments(); renderSecAppointments(); refreshSecHoursIfActive();
     showToast('تم حذف الزيارة');
@@ -2755,6 +3001,8 @@ async function saveVisitForm(e){
     console.error(err);
     if(err && (err.code==='23505' || (err.message||'').toLowerCase().includes('duplicate'))){
       showToast('هذا الوقت محجوز بالفعل لهذا الطبيب، اختر وقتًا آخر');
+    }else if(err && (err.message||'').includes('إجازة')){
+      showToast('🏖️ الطبيب في إجازة بهذا التاريخ، اختر يومًا آخر');
     }else{
       showToast('تعذر الحفظ');
     }
@@ -2764,8 +3012,9 @@ async function saveVisitForm(e){
 async function deleteVisit(id){
   if(!(await customConfirm('هل أنت متأكد من حذف هذا الحجز؟'))) return;
   try{
-    const {error} = await sb.from('appointments').delete().eq('id', id);
+    const {data:delRows, error} = await sb.from('appointments').delete().eq('id', id).select('id');
     if(error) throw error;
+    if(!delRows || !delRows.length){ showToast('🚫 لا يمكنك حذف بيانات طبيب آخر'); return; }
     await loadData(); renderSecAppointments(); renderTodayAppointments(); refreshSecHoursIfActive();
     showToast('تم حذف الحجز');
   }catch(err){ console.error(err); showToast('تعذر الحذف'); }
@@ -3084,8 +3333,9 @@ async function saveMedForm(e){
 async function deleteMed(id){
   if(!(await customConfirm('حذف هذا الدواء من القائمة؟'))) return;
   try{
-    const {error} = await sb.from('medications').delete().eq('id', id);
+    const {data:delRows, error} = await sb.from('medications').delete().eq('id', id).select('id');
     if(error) throw error;
+    if(!delRows || !delRows.length){ showToast('🚫 لا يمكنك حذف بيانات طبيب آخر'); return; }
     await loadMedications(); renderMedications();
     showToast('تم الحذف');
   }catch(err){ console.error(err); showToast('تعذر الحذف'); }
@@ -3295,7 +3545,7 @@ function printPrescription(apptId){
   renderSyncBanner();
   await restoreSession();
   if(currentRole){ showView(roleToView(currentRole)); }
-  showBookingMode('entry');
+  showTrackMode('search');
 })();
 </script>
 </body>
