@@ -170,6 +170,13 @@
   .dose-warning{background:var(--danger-bg);color:var(--danger);padding:10px 14px;border-radius:10px;font-size:13.5px;font-weight:700;margin-bottom:8px;}
   .dose-hint{background:var(--surface);border:1px dashed var(--line);color:var(--text-muted);padding:8px 12px;border-radius:10px;font-size:12.5px;margin-top:8px;}
   .hint{font-size:12.5px;color:var(--text-muted);}
+  .friday-box{margin:0 0 14px;}
+  .friday-box .switch-row{border:1.5px solid var(--line);justify-content:space-between;}
+  .friday-box .fr-scope{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .friday-box .fr-scope button{flex:1;min-width:130px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--line);background:#fff;color:var(--primary-dark);font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer;}
+  .friday-box .fr-scope button.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .friday-box .fr-title{font-weight:800;color:var(--primary-dark);font-size:14.5px;}
+  .friday-box .fr-sub{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
   .switch-row{display:flex;align-items:center;gap:10px;background:var(--surface-2);padding:12px 14px;border-radius:12px;}
   .switch{position:relative;width:44px;height:24px;flex-shrink:0;}
   .switch input{opacity:0;width:0;height:0;}
@@ -763,6 +770,7 @@
             <select id="secHoursDoctor" class="doctor-select" onchange="renderSecHoursDashboard()"><option value="">اختر الطبيب</option></select>
             <input type="date" id="secHoursDate" lang="en-GB" onchange="renderSecHoursDashboard()">
           </div>
+          <div id="secFridayBox"></div>
           <div id="secHoursWrap"></div>
         </div>
       </div>
@@ -868,6 +876,7 @@
             <select id="docHoursDoctor" class="doctor-select" onchange="renderDocHoursDashboard()"><option value="">اختر الطبيب</option></select>
             <input type="date" id="docHoursDate" lang="en-GB" onchange="renderDocHoursDashboard()">
           </div>
+          <div id="docFridayBox"></div>
           <div id="docHoursWrap"></div>
         </div>
       </div>
@@ -2645,6 +2654,64 @@ async function renderSecretaryDash(){
 }
 
 /* ---- فقرة "أوقات اليوم الملوّنة" — تُظهر الأوقات المحجوزة (أحمر) والمتاحة (أخضر) لطبيب ويوم معيّن؛ مشتركة بين حساب السكرتير والطبيب ---- */
+/* ---- فتح/إغلاق الحجز يوم الجمعة (للطبيب والسكرتير) ---- */
+let fridayScope = 'one'; // 'one' = الطبيب المحدد، 'all' = جميع الأطباء
+function setFridayScope(prefix, scope){ fridayScope = scope; renderFridayBox(prefix); }
+async function renderFridayBox(prefix){
+  const box = document.getElementById(prefix+'FridayBox'); if(!box) return;
+  const doctorId = document.getElementById(prefix+'HoursDoctor').value;
+  if(!doctorId){ box.innerHTML = ''; return; }
+  const canAll = isFullAccess && doctorsList.length > 1;
+  if(!canAll) fridayScope = 'one';
+  const docName = (doctorsList.find(d=>d.doctor_id===doctorId)||{}).full_name || 'الطبيب المحدد';
+  let map = {};
+  try{
+    const {data, error} = await sb.from('doctor_booking_settings').select('doctor_id,friday_open');
+    if(error) throw error;
+    (data||[]).forEach(r=>{ map[r.doctor_id] = !!r.friday_open; });
+  }catch(e){ console.error('renderFridayBox', e); }
+  let open, sub;
+  if(fridayScope === 'all'){
+    const openCount = doctorsList.filter(d=>map[d.doctor_id]).length;
+    open = openCount === doctorsList.length;
+    sub = open ? 'متاحة للحجز عند جميع الأطباء'
+         : (openCount === 0 ? 'مغلقة (off) عند جميع الأطباء' : `مفتوحة عند ${openCount} من ${doctorsList.length} أطباء — التفعيل يفتحها للجميع`);
+  }else{
+    open = !!map[doctorId];
+    sub = open ? 'متاحة للحجز — تظهر للمرضى في التقويم' : 'مغلقة (off) — لا تظهر للمرضى';
+  }
+  const scopeHtml = canAll ? `
+      <div class="fr-scope">
+        <button type="button" class="${fridayScope==='one'?'active':''}" onclick="setFridayScope('${prefix}','one')">لطبيب معين: ${escapeHtml(docName)}</button>
+        <button type="button" class="${fridayScope==='all'?'active':''}" onclick="setFridayScope('${prefix}','all')">لجميع الأطباء</button>
+      </div>` : '';
+  box.innerHTML = `
+    <div class="friday-box">
+      ${scopeHtml}
+      <div class="switch-row">
+        <div>
+          <div class="fr-title">📅 الحجز يوم الجمعة</div>
+          <div class="fr-sub">${sub}</div>
+        </div>
+        <label class="switch"><input type="checkbox" ${open?'checked':''} onchange="setFridayOpen('${prefix}', this.checked)"><span class="slider-toggle"></span></label>
+      </div>
+    </div>`;
+}
+async function setFridayOpen(prefix, on){
+  const doctorId = document.getElementById(prefix+'HoursDoctor').value; if(!doctorId) return;
+  const ids = (fridayScope === 'all' && isFullAccess) ? doctorsList.map(d=>d.doctor_id) : [doctorId];
+  const now = new Date().toISOString();
+  try{
+    const {error} = await sb.from('doctor_booking_settings').upsert(ids.map(id=>({doctor_id:id, friday_open:!!on, updated_at:now})), {onConflict:'doctor_id'});
+    if(error) throw error;
+    const who = ids.length > 1 ? 'لجميع الأطباء' : '';
+    showToast(on ? `تم فتح الحجز يوم الجمعة ${who} ✅` : `تم إغلاق الحجز يوم الجمعة ${who}`);
+  }catch(e){
+    console.error('setFridayOpen', e);
+    showToast('تعذر حفظ الإعداد');
+  }
+  renderFridayBox(prefix);
+}
 function refreshSecHoursIfActive(){
   if(document.getElementById('sec-hours')?.classList.contains('active')) renderHoursDashboard('sec');
 }
@@ -2658,6 +2725,7 @@ async function renderHoursDashboard(prefix){
   if(!wrap) return;
   const doctorId = document.getElementById(prefix+'HoursDoctor').value;
   const date = document.getElementById(prefix+'HoursDate').value || todayStr();
+  renderFridayBox(prefix);
   if(!doctorId){ wrap.innerHTML = '<div class="hint">اختر الطبيب لعرض أوقاته</div>'; return; }
   wrap.innerHTML = '<div class="hint">⏳ جارِ تحميل الأوقات...</div>';
   try{
