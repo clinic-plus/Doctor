@@ -1170,7 +1170,6 @@
           <option>تقويم</option><option>قلع</option><option>تبييض</option><option>زراعة</option><option>أخرى</option>
         </select>
       </div>
-      <div class="field"><label>الوقت المقترح للزيارة (يحدده السكرتير للمريض)</label><input id="vm_suggestedTime" placeholder="مثال: 12:30 أو «خلال 20 دقيقة»"></div>
       <div class="field"><label>ملاحظات</label><textarea id="vm_notes"></textarea></div>
       <div class="form-grid">
         <div class="field" id="vm_feeWrap"><label>الكشفية</label><input type="number" min="0" id="vm_fee" oninput="calcRemaining('vm')"></div>
@@ -2908,10 +2907,6 @@ function apptRowHtml(a, context){
       <span>📞 ${escapeHtml(a.phone||'—')}</span>
     </div>
     ${reasonLine}
-    <div class="suggested-inline">
-      <input type="text" placeholder="⏱️ الوقت المقترح للزيارة" id="sug_${a.id}" value="${escapeHtml(a.suggestedTime||'')}">
-      <button class="btn btn-outline btn-sm" onclick="saveSuggestedTime('${a.id}')">حفظ</button>
-    </div>
     <div class="ic-actions">
       ${a.status==='مجدول' ? `<button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);" onclick="cancelAppointmentByStaff('${a.id}')">✕ إلغاء الحجز</button>` : ''}
       <button class="btn btn-outline btn-sm" onclick="openEditVisit('${a.id}')">✏️ تعديل</button>
@@ -2932,15 +2927,6 @@ async function cancelAppointmentByStaff(id){
     console.error(err);
     showToast(isNetworkError(err) ? 'تعذر الاتصال — تحقق من الإنترنت' : 'تعذر إلغاء الحجز');
   }
-}
-async function saveSuggestedTime(id){
-  const val = document.getElementById('sug_'+id).value.trim();
-  try{
-    const {error} = await sb.from(apptTable()).update({suggested_time: val||null}).eq('id', id);
-    if(error) throw error;
-    showToast('تم حفظ الوقت المقترح');
-    await loadData(); renderSecAppointments();
-  }catch(e){ console.error(e); showToast('تعذر الحفظ'); }
 }
 function renderSecAppointments(){
   const q = (document.getElementById('secApptSearch').value||'').toLowerCase();
@@ -3249,7 +3235,6 @@ function openEditVisit(id){
   document.getElementById('vm_time').value = a.time||'';
   document.getElementById('vm_sessionNumber').value = String(a.sessionNumber||1);
   document.getElementById('vm_visitType').value = a.visitType||'';
-  document.getElementById('vm_suggestedTime').value = a.suggestedTime||'';
   document.getElementById('vm_notes').value = a.notes||'';
   document.getElementById('vm_fee').value = a.fee ?? DEFAULT_FEE;
   document.getElementById('vm_status').value = a.status||'مجدول';
@@ -3280,7 +3265,6 @@ async function saveVisitForm(e){
     appt_time: document.getElementById('vm_time').value,
     session_number: Number(document.getElementById('vm_sessionNumber').value) || 1,
     visit_type: document.getElementById('vm_visitType').value || null,
-    suggested_time: document.getElementById('vm_suggestedTime').value.trim() || null,
     notes: document.getElementById('vm_notes').value.trim() || null,
     status: document.getElementById('vm_status').value
   };
