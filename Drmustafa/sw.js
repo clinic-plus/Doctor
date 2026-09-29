@@ -12,7 +12,7 @@
    السجل الجديد يظهر بالواجهة فقط بعد اكتمال المزامنة وإعادة التحميل.
    ===================================================================== */
 
-const SW_VERSION   = 'clinic-v1';
+const SW_VERSION   = 'clinic-v2';
 const SHELL_CACHE   = SW_VERSION + '-shell';
 const RUNTIME_CACHE  = SW_VERSION + '-runtime';
 const DB_NAME     = 'clinic-offline-queue';
@@ -177,7 +177,9 @@ async function handleMutatingRequest(req){
 async function handleShellRequest(req){
   const cache = await caches.open(SHELL_CACHE);
   try{
-    const res = await fetch(req);
+    // ملفات الموقع نفسه (الصفحة الرئيسية وغيرها): تجاوز كاش المتصفح دائمًا كي يصل كل تحديث فورًا
+    const sameOrigin = new URL(req.url).origin === self.location.origin;
+    const res = sameOrigin ? await fetch(req.url, {cache:'no-cache'}) : await fetch(req);
     if(res && res.ok && req.method === 'GET') cache.put(req, res.clone());
     return res;
   }catch(err){
