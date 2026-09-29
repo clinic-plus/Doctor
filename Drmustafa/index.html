@@ -389,6 +389,14 @@
   .track-suggested{background:var(--primary-light);border-radius:14px;padding:14px 16px;margin-top:6px;font-size:14.5px;color:var(--primary-dark);font-weight:700;}
   .track-warning{background:#FFF4E1;border:1.5px solid #F3C877;border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:14px;color:#8A5A00;font-weight:700;line-height:1.9;display:flex;gap:10px;align-items:flex-start;}
   .track-warning .tw-icon{font-size:19px;flex-shrink:0;}
+  .track-notice{display:flex;gap:12px;align-items:center;background:var(--primary-light);border-radius:14px;border-inline-start:5px solid var(--primary);padding:13px 15px;margin-bottom:16px;color:var(--primary-dark);font-size:14px;font-weight:700;line-height:1.9;}
+  .track-notice .tk-ico{width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 1px 4px rgba(14,59,133,.15);}
+  .track-when{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .track-when .tk-box{background:linear-gradient(160deg,#fff,var(--surface-2));border:1.5px solid var(--primary-light);border-radius:16px;padding:16px 8px;text-align:center;}
+  .track-when .tk-lbl{font-size:12.5px;color:var(--text-muted);font-weight:700;margin-bottom:6px;}
+  .track-when .tk-val{font-family:'Tajawal',sans-serif;font-weight:900;font-size:24px;color:var(--primary-dark);line-height:1.3;}
+  .track-when .tk-sub{font-size:13px;color:var(--accent-dark);font-weight:700;margin-top:3px;min-height:18px;}
+  .track-status-row{text-align:center;margin-bottom:6px;font-size:13.5px;color:var(--text-muted);font-weight:700;}
   .track-back{margin-top:18px;text-align:center;}
   .search-result-item{
     display:flex;justify-content:space-between;align-items:center;gap:10px;
@@ -654,15 +662,15 @@
       <div class="hint" id="trk_doctor" style="margin-bottom:8px;">—</div>
     </div>
     <div class="track-panel">
-      <div class="track-warning">
-        <span class="tw-icon">⚠️</span>
-        <span>يرجى الالتزام بموعد حجزك بدقة، فالتأخر عنه يعني فواته والاضطرار إلى تحديد موعد جديد.</span>
+      <div class="track-notice">
+        <span class="tk-ico">🕒</span>
+        <span>نرجو الحضور في موعدك المحدد بدقة، فالتأخر عنه قد يؤدي إلى فواته وتحديد موعد جديد.</span>
       </div>
-      <div class="ic-meta" style="margin-bottom:6px;">
-        <span id="trk_date">📅 —</span>
-        <span id="trk_time">⏰ —</span>
-        <span id="trk_status">—</span>
+      <div class="track-when">
+        <div class="tk-box"><div class="tk-lbl">📅 تاريخ الزيارة</div><div class="tk-val" id="trk_date">—</div><div class="tk-sub" id="trk_dow"></div></div>
+        <div class="tk-box"><div class="tk-lbl">⏰ وقت الزيارة</div><div class="tk-val" id="trk_time">—</div><div class="tk-sub" id="trk_ampm"></div></div>
       </div>
+      <div class="track-status-row">حالة الحجز: <span id="trk_status">—</span></div>
       <div class="track-remaining-card" id="trk_remainingWrap">
         <div class="tn-label">الوقت المتبقي على موعدك</div>
         <div class="tn-value" id="trk_remaining">—</div>
@@ -2256,9 +2264,23 @@ async function refreshTrackingDashboard(bookingId){
     if(!row){ showToast('تعذر العثور على هذا الحجز'); return; }
     document.getElementById('trk_name').textContent = row.patient_name;
     document.getElementById('trk_doctor').textContent = row.doctor_name ? ('مع ' + row.doctor_name) : '';
-    document.getElementById('trk_date').textContent = '📅 ' + row.appt_date;
-    document.getElementById('trk_time').style.display = row.appt_time ? 'inline' : 'none';
-    document.getElementById('trk_time').textContent = row.appt_time ? ('⏰ ' + row.appt_time.slice(0,5)) : '';
+    if(row.appt_date){
+      const [ty,tm,td] = row.appt_date.split('-').map(Number);
+      const dowFull = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+      document.getElementById('trk_date').textContent = td + ' ' + AR_MONTHS[tm-1] + ' ' + ty;
+      document.getElementById('trk_dow').textContent = 'يوم ' + dowFull[new Date(ty, tm-1, td).getDay()];
+    }else{
+      document.getElementById('trk_date').textContent = '—';
+      document.getElementById('trk_dow').textContent = '';
+    }
+    if(row.appt_time){
+      const t12 = fmtSlot12(row.appt_time.slice(0,5)).split(' ');
+      document.getElementById('trk_time').textContent = t12[0];
+      document.getElementById('trk_ampm').textContent = t12[1]==='م' ? 'مساءً' : 'صباحًا';
+    }else{
+      document.getElementById('trk_time').textContent = '—';
+      document.getElementById('trk_ampm').textContent = 'يُحدد لاحقًا';
+    }
     document.getElementById('trk_status').innerHTML = statusBadge(row.status);
     updateRemainingTimeCard(row);
     const sw = document.getElementById('trk_suggestedWrap');
