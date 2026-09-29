@@ -801,14 +801,6 @@
               <div class="field full"><label>الأمراض المزمنة والعلاجات المزمنة — إن وجدت</label><textarea id="s_pmh" placeholder="مثال: ضغط دم، سكري، أدوية دائمة..."></textarea></div>
               <div class="field full"><label>ملاحظات</label><textarea id="s_notes"></textarea></div>
             </div>
-            <div class="field"><label>الكشفية</label><input type="number" min="0" id="s_fee" oninput="calcRemaining('s')"></div>
-            <div class="field"><label>المدفوع — اتركه فارغًا إن دفع المريض كامل الكشفية</label><input type="number" min="0" id="s_paid" placeholder="مثال: 5000" oninput="calcRemaining('s')"></div>
-            <div class="paid-remaining-box" id="s_remainingBox"><span>المتبقي (دين)</span><span class="pr-val" id="s_remaining">0 د.ع</span></div>
-
-            <div class="switch-row" style="margin-bottom:16px;">
-              <label class="switch"><input type="checkbox" id="s_free" onchange="calcRemaining('s')"><span class="slider-toggle"></span></label>
-              <div><strong>كشفية مجانية</strong></div>
-            </div>
             <button class="btn btn-primary" type="submit">حفظ الحجز</button>
           </form>
         </div>
@@ -1168,17 +1160,19 @@
       <div class="field"><label>الوقت المقترح للزيارة (يحدده السكرتير للمريض)</label><input id="vm_suggestedTime" placeholder="مثال: 12:30 أو «خلال 20 دقيقة»"></div>
       <div class="field"><label>ملاحظات</label><textarea id="vm_notes"></textarea></div>
       <div class="form-grid">
-        <div class="field"><label>الكشفية</label><input type="number" min="0" id="vm_fee" oninput="calcRemaining('vm')"></div>
+        <div class="field" id="vm_feeWrap"><label>الكشفية</label><input type="number" min="0" id="vm_fee" oninput="calcRemaining('vm')"></div>
         <div class="field">
           <label>الحالة</label>
           <select id="vm_status"><option value="مجدول">مجدول</option><option value="مكتمل">مكتمل</option><option value="ملغى">ملغى</option></select>
         </div>
       </div>
+      <div id="vm_moneyWrap">
       <div class="field"><label>المدفوع — اتركه فارغًا إن دفع المريض كامل الكشفية</label><input type="number" min="0" id="vm_paid" placeholder="مثال: 5000" oninput="calcRemaining('vm')"></div>
       <div class="paid-remaining-box" id="vm_remainingBox"><span>المتبقي (دين)</span><span class="pr-val" id="vm_remaining">0 د.ع</span></div>
       <div class="switch-row" style="margin-bottom:16px;">
         <label class="switch"><input type="checkbox" id="vm_free" onchange="calcRemaining('vm')"><span class="slider-toggle"></span></label>
         <div><strong>كشفية مجانية</strong></div>
+      </div>
       </div>
       <button class="btn btn-primary btn-block" type="submit">حفظ التعديلات</button>
     </form>
@@ -1256,6 +1250,9 @@ function apptFromRow(r){
     notes:r.notes||'', suggestedTime:r.suggested_time||'', sessionNumber:r.session_number||1, createdAt:r.created_at};
 }
 
+// السكرتير يقرأ ويكتب عبر view لا يحتوي أي عمود مالي (fee / paid / is_free) — الإخفاء يتم داخل قاعدة البيانات
+function apptTable(){ return currentRole === 'secretary' ? 'appointments_sec' : 'appointments'; }
+
 function isNetworkError(e){
   if(!navigator.onLine) return true;
   if(!e) return false;
@@ -1314,7 +1311,7 @@ async function loadData(){
     const currentLimit = Math.max(10, patientsOffset || 10);
     const [pRes, aRes] = await Promise.all([
       sb.from('patients').select('*').order('created_at',{ascending:false}).limit(currentLimit),
-      sb.from('appointments').select('*').order('appt_date',{ascending:false}).order('appt_time',{ascending:false})
+      sb.from(apptTable()).select('*').order('appt_date',{ascending:false}).order('appt_time',{ascending:false})
     ]);
     if(pRes.error) throw pRes.error;
     if(aRes.error) throw aRes.error;
@@ -2587,8 +2584,6 @@ async function deleteTimeOff(id){
 async function renderSecretaryDash(){
   await loadData();
   document.getElementById('secGreeting').textContent = 'مرحبًا بك 👋';
-  if(!document.getElementById('s_fee').value) document.getElementById('s_fee').value = DEFAULT_FEE;
-  calcRemaining('s');
   const hoursDate = document.getElementById('secHoursDate');
   if(hoursDate && !hoursDate.value) hoursDate.value = todayStr();
   const hoursDoctor = document.getElementById('secHoursDoctor');
@@ -2739,8 +2734,6 @@ async function submitSecretaryBooking(e){
   const visitType = document.getElementById('s_visitType').value;
   const notes = document.getElementById('s_notes').value.trim();
   const pmh = document.getElementById('s_pmh').value.trim();
-  const isFree = document.getElementById('s_free').checked;
-  const fee = Number(document.getElementById('s_fee').value) || DEFAULT_FEE;
   if(!doctorId){ showToast('يرجى اختيار الطبيب'); restore(); return; }
   if(!date){ showToast('يرجى اختيار تاريخ الزيارة'); restore(); return; }
   if(!time){ showToast('يرجى اختيار وقت الموعد'); restore(); return; }
@@ -2767,11 +2760,10 @@ async function submitSecretaryBooking(e){
       if(newPErr) console.error(newPErr);
     }
 
-    const {error} = await sb.from('appointments').insert({
+    const {error} = await sb.from(apptTable()).insert({
       doctor_id: doctorId, patient_name:name, phone, age, visit_type:visitType||null,
       appt_date:date, appt_time:time, notes: notes||null, session_number: sessionNumber,
-      status:'مجدول', fee: isFree?0:fee, is_free:isFree,
-      paid: readPaidForSave('s', fee, isFree)
+      status:'مجدول'
     });
     if(error) throw error;
 
@@ -2782,8 +2774,6 @@ async function submitSecretaryBooking(e){
     document.getElementById('s_patientSuggestions').style.display = 'none';
     document.getElementById('s_sessionNumber').value = '1';
     Array.from(document.getElementById('s_sessionNumber').options).forEach(o=>o.disabled=false);
-    document.getElementById('s_fee').value = DEFAULT_FEE;
-    document.getElementById('s_paid').value = ''; calcRemaining('s');
     document.getElementById('s_calendarWrap').innerHTML = '<div class="hint">اختر الطبيب أولًا لعرض التقويم</div>';
     document.getElementById('s_timeWrap').innerHTML = '';
     document.getElementById('s_sessionBadgeWrap').innerHTML = '';
@@ -2855,7 +2845,6 @@ function apptRowHtml(a, context){
     </div>`;
   }
 
-  const feeLabel = a.isFree ? '<span class="badge free">مجاني</span>' : (fmtMoney(a.fee) + (apptRemaining(a)>0 ? ` <span class="badge debt">متبقي ${fmtMoney(apptRemaining(a))}</span>` : ''));
   return `<div class="item-card">
     <div class="ic-top">
       <div class="ic-name">${escapeHtml(a.patientName)}</div>
@@ -2863,7 +2852,7 @@ function apptRowHtml(a, context){
     </div>
     <div class="ic-meta">
       <span>⏰ ${a.time||'—'}</span><span>📅 ${a.date}</span>
-      <span>📞 ${escapeHtml(a.phone||'—')}</span><span>💵 ${feeLabel}</span>
+      <span>📞 ${escapeHtml(a.phone||'—')}</span>
     </div>
     ${reasonLine}
     <div class="suggested-inline">
@@ -2880,7 +2869,7 @@ async function cancelAppointmentByStaff(id){
   const a = appointments.find(x=>x.id===id); if(!a) return;
   if(!(await customConfirm(`إلغاء حجز "${a.patientName}" بتاريخ ${a.date}${a.time?(' الساعة '+fmtSlot12(a.time)):''}؟ سيتحول إلى ملغى ويصبح وقته متاحًا لمريض آخر.`, 'إلغاء الحجز'))) return;
   try{
-    const {data, error} = await sb.from('appointments').update({status:'ملغى'}).eq('id', id).select('id');
+    const {data, error} = await sb.from(apptTable()).update({status:'ملغى'}).eq('id', id).select('id');
     if(error) throw error;
     if(!data || !data.length){ showToast('🚫 تعذر إلغاء هذا الحجز'); return; }
     await loadData();
@@ -2894,7 +2883,7 @@ async function cancelAppointmentByStaff(id){
 async function saveSuggestedTime(id){
   const val = document.getElementById('sug_'+id).value.trim();
   try{
-    const {error} = await sb.from('appointments').update({suggested_time: val||null}).eq('id', id);
+    const {error} = await sb.from(apptTable()).update({suggested_time: val||null}).eq('id', id);
     if(error) throw error;
     showToast('تم حفظ الوقت المقترح');
     await loadData(); renderSecAppointments();
@@ -3114,7 +3103,7 @@ function openHistoryByPhone(phone, doctorId){
 async function deleteVisitFromHistory(id, phone, doctorId){
   if(!(await customConfirm('هل أنت متأكد من حذف هذه الزيارة من السجل الطبي؟'))) return;
   try{
-    const {data:delRows, error} = await sb.from('appointments').delete().eq('id', id).select('id');
+    const {data:delRows, error} = await sb.from(apptTable()).delete().eq('id', id).select('id');
     if(error) throw error;
     if(!delRows || !delRows.length){ showToast('🚫 لا يمكنك حذف بيانات طبيب آخر'); return; }
     await loadData();
@@ -3213,6 +3202,9 @@ function openEditVisit(id){
   document.getElementById('vm_status').value = a.status||'مجدول';
   document.getElementById('vm_free').checked = !!a.isFree;
   setPaidInput('vm', a);
+  const hideMoney = (currentRole === 'secretary');
+  document.getElementById('vm_feeWrap').style.display = hideMoney ? 'none' : '';
+  document.getElementById('vm_moneyWrap').style.display = hideMoney ? 'none' : '';
   // سجلات قديمة بسبب زيارة "فحص وتنظيف" تبقى ظاهرة بدل أن تُمسح عند الحفظ
   const vmSel = document.getElementById('vm_visitType');
   if(a.visitType && vmSel.value !== a.visitType){
@@ -3226,6 +3218,7 @@ async function saveVisitForm(e){
   const id = document.getElementById('vm_apptId').value;
   const isFree = document.getElementById('vm_free').checked;
   const vmFee = isFree ? 0 : (Number(document.getElementById('vm_fee').value)||DEFAULT_FEE);
+  const isSec = (currentRole === 'secretary');
   const fields = {
     patient_name: document.getElementById('vm_name').value.trim() || null,
     phone: document.getElementById('vm_phone').value.trim() || null,
@@ -3236,17 +3229,19 @@ async function saveVisitForm(e){
     visit_type: document.getElementById('vm_visitType').value || null,
     suggested_time: document.getElementById('vm_suggestedTime').value.trim() || null,
     notes: document.getElementById('vm_notes').value.trim() || null,
-    fee: vmFee,
-    is_free: isFree,
-    paid: readPaidForSave('vm', vmFee, isFree),
     status: document.getElementById('vm_status').value
   };
+  if(!isSec){
+    fields.fee = vmFee;
+    fields.is_free = isFree;
+    fields.paid = readPaidForSave('vm', vmFee, isFree);
+  }
   if(isFullAccess){
     const chosenDoctor = document.getElementById('vm_doctorId').value;
     if(chosenDoctor) fields.doctor_id = chosenDoctor;
   }
   try{
-    const {error} = await sb.from('appointments').update(fields).eq('id', id);
+    const {error} = await sb.from(apptTable()).update(fields).eq('id', id);
     if(error) throw error;
     closeModal('visitModal');
     await loadData();
@@ -3267,7 +3262,7 @@ async function saveVisitForm(e){
 async function deleteVisit(id){
   if(!(await customConfirm('هل أنت متأكد من حذف هذا الحجز؟'))) return;
   try{
-    const {data:delRows, error} = await sb.from('appointments').delete().eq('id', id).select('id');
+    const {data:delRows, error} = await sb.from(apptTable()).delete().eq('id', id).select('id');
     if(error) throw error;
     if(!delRows || !delRows.length){ showToast('🚫 لا يمكنك حذف بيانات طبيب آخر'); return; }
     await loadData(); renderSecAppointments(); renderTodayAppointments(); refreshSecHoursIfActive();
