@@ -456,6 +456,11 @@
   .slot-grid-wrap{background:var(--surface-2);border-radius:14px;padding:12px;margin-top:10px;}
   .slot-grid-title{font-weight:700;color:var(--primary-dark);font-size:13.5px;margin-bottom:8px;}
   .slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .manual-time-box{margin-top:14px;padding:14px;border:1.5px dashed var(--primary);border-radius:14px;background:var(--primary-light);}
+  .manual-time-box .manual-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .manual-time-box input[type=time]{flex:1;min-width:130px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:16px;background:#fff;}
+  .manual-time-box .manual-note{font-size:12.5px;color:var(--text-muted);margin-top:8px;}
+  .manual-time-box .manual-selected{margin-top:10px;font-weight:800;color:var(--primary-dark);font-size:14px;}
   @media(max-width:520px){ .slot-grid{grid-template-columns:repeat(2,1fr);} }
   .slot-btn{
     padding:10px 6px;border-radius:10px;text-align:center;font-weight:700;font-size:13.5px;
@@ -1960,6 +1965,17 @@ function selectTimeSlot(prefix, hhmm){
   document.getElementById(prefix+'_time').value = hhmm;
   renderTimeSlots(prefix);
 }
+// تحديد وقت يدوي خارج أوقات الدوام — للسكرتير والطبيب فقط (لا يظهر للمريض في الحجز العام)
+function setManualTime(prefix){
+  if(prefix !== 's' || !['secretary','doctor'].includes(currentRole)) return;
+  const inp = document.getElementById(prefix+'_manualTime');
+  if(!inp || !inp.value){ showToast('اختر الوقت أولًا'); return; }
+  const st = bookingCalState[prefix];
+  st.manualTime = inp.value;
+  st.selectedTime = inp.value;
+  document.getElementById(prefix+'_time').value = inp.value;
+  renderTimeSlots(prefix);
+}
 function renderTimeSlots(prefix){
   const st = bookingCalState[prefix];
   const wrap = document.getElementById(prefix+'_timeWrap');
@@ -1978,6 +1994,20 @@ function renderTimeSlots(prefix){
     const clickable = prefix==='s' ? true : !taken;
     return `<div class="${cls}" ${clickable?`onclick="selectTimeSlot('${prefix}','${hhmm}')"`:''}>${fmtSlot12(hhmm)}</div>`;
   }).join('');
+  let manualBoxHtml = '';
+  if(prefix==='s' && ['secretary','doctor'].includes(currentRole)){
+    const isManual = !!st.selectedTime && !CLINIC_SLOTS.includes(st.selectedTime);
+    const manualVal = isManual ? st.selectedTime : (st.manualTime || '');
+    manualBoxHtml = `
+      <div class="manual-time-box">
+        <div class="slot-grid-title">✍️ تحديد وقت يدويا</div>
+        <div class="manual-row">
+          <input type="time" id="s_manualTime" value="${manualVal}">
+          <button type="button" class="btn btn-outline btn-sm" onclick="setManualTime('s')">اعتماد الوقت</button>
+        </div>
+        ${isManual ? `<div class="manual-selected">✅ الوقت المحدد: ${fmtSlot12(st.selectedTime)}</div>` : ''}
+      </div>`;
+  }
   wrap.innerHTML = `
     <div class="slot-grid-wrap">
       <div class="slot-grid-title">⏰ اختر وقت الموعد (الدوام من 3 إلى 9 مساءً)</div>
@@ -1986,6 +2016,7 @@ function renderTimeSlots(prefix){
         <span><i class="avail-dot open"></i> متاح</span>
         <span><i class="avail-dot closed"></i> محجوز</span>
       </div>
+      ${manualBoxHtml}
     </div>`;
 }
 function renderBookingCalendar(prefix){
