@@ -483,7 +483,7 @@
   .wr-header{text-align:center;margin-bottom:14px;}
   .wr-header h1{font-size:22px;margin-bottom:2px;color:#0E3B85;}
   .wr-clock{font-size:14px;color:#5A6C85;font-family:'Tajawal',sans-serif;}
-  .wr-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:1400px;margin:0 auto;}
+  .wr-cols{display:grid;grid-template-columns:minmax(0,760px);justify-content:center;gap:16px;max-width:1400px;margin:0 auto;}
   .wr-col{background:#FFFFFF;border-radius:16px;padding:14px;box-shadow:0 4px 18px rgba(14,59,133,.08);border:1px solid #E3E9F2;}
   .wr-doc-name{text-align:center;font-size:19px;font-weight:900;margin-bottom:10px;color:#0E3B85;padding-bottom:10px;border-bottom:2px solid #E3E9F2;}
   .wr-now-card{background:#1D5FC9;border-radius:12px;padding:10px;text-align:center;margin-bottom:10px;}
@@ -2214,14 +2214,8 @@ async function renderWaitingRoom(){
       byDoctor[r.doctor_id].rows.push(r);
     });
 
-    // ترتيب ثابت: د. مصطفى يمين، د. مقداد يسار (وأي طبيب إضافي لاحقًا يُضاف بالترتيب الطبيعي)
-    const priorityOrder = ['mustafawathiq','muqdadalhasani'];
-    const allIds = doctorsList.length ? doctorsList.map(d=>d.doctor_id) : Object.keys(byDoctor);
-    const doctorIds = [
-      ...priorityOrder.filter(id=>allIds.includes(id)),
-      ...allIds.filter(id=>!priorityOrder.includes(id))
-    ];
-
+    // شاشة العرض تعرض د. مصطفى فقط
+    const doctorIds = ['mustafawathiq'];
     wrap.innerHTML = doctorIds.map(docId=>{
       const info = byDoctor[docId];
       const name = info ? info.name : doctorLabel(docId);
