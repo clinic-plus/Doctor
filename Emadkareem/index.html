@@ -1655,7 +1655,7 @@ function renderPatientTable(){
 }
 async function deletePatient(id){
   if(currentRole!=='doctor') return;
-  if(!(await customConfirm('هل أنت متأكد من حذف هذا المريض؟ سيتم مسح بياناته وتشخيصاته وزياراته الطبية (يبقى فقط مبلغ الكشفية وتاريخها لحساب الدخل).'))) return;
+  if(!(await customConfirm('هل أنت متأكد من حذف هذا المريض؟ سيتم حذف كل بياناته وزياراته وكشفياتها نهائيًا، وسينقص دخله من الإحصائيات.'))) return;
   let queued = false;
   if(hasQueuedInsert('patient_insert', id)){
     // المريض أُنشئ أوفلاين ولم يُزامَن بعد — نحذف عملياته المعلّقة بدل إرسال طلب حذف لسجل غير موجود بالخادم
@@ -1671,9 +1671,12 @@ async function deletePatient(id){
       queued = true;
     }
   }
+  // حذف المريض يحذف زياراته ودخلها ومواعيده المكتملة (القاعدة تفعل نفس الشيء)
   const gone = DB.patients.find(p=>p.id===id);
   if(gone){
-    DB.orphanVisits = (DB.orphanVisits||[]).concat((gone.visits||[]).filter(v=>Number(v.fee)>0).map(v=>({ id:v.id, date:v.date, apptId:v.apptId, fee:v.fee, isFree:v.isFree })));
+    const gPh = (gone.phone||'').trim(), gNm = (gone.name||'').trim().toLowerCase();
+    APPTS = APPTS.filter(a=> !(a.status==='مكتمل' && ((gPh && (a.phone||'').trim()===gPh) || (a.name||'').trim().toLowerCase()===gNm)));
+    cacheAppts();
   }
   DB.patients = DB.patients.filter(p=>p.id!==id);
   cacheDB();
