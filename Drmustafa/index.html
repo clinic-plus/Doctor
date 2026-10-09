@@ -233,6 +233,8 @@
   .paid-remaining-box .pr-val{font-weight:900;color:var(--success);}
   .paid-remaining-box.has-debt .pr-val{color:var(--danger);}
   .debt-group{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow);}
+  .debt-alert{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;padding:8px 12px;border-radius:10px;background:var(--danger-bg);color:var(--danger);font-weight:700;font-size:13.5px;}
+  .debt-alert.ok{background:var(--surface-2);color:var(--primary-dark);font-weight:600;}
   .debt-group-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
   .debt-visit{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0;border-top:1px dashed var(--line);font-size:14px;}
   .badge.free{background:var(--surface-2);color:var(--accent-dark);}
@@ -1082,6 +1084,7 @@
     <form id="examForm" onsubmit="submitExam(event)">
       <input type="hidden" id="ex_apptId">
       <input type="hidden" id="ex_patientId">
+      <div id="ex_prevDebtBox"></div>
       <div class="field full" id="ex_sessionRow" style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface-2);border-radius:12px;padding:10px 14px;">
         <span id="ex_sessionCurrentLabel" style="font-weight:700;color:var(--primary-dark);">الجلسة الحالية: —</span>
         <button type="button" class="btn btn-outline btn-sm" id="ex_enableNextBtn" onclick="enableNextSessionFromExam()">➕ تفعيل الجلسة القادمة</button>
@@ -2856,7 +2859,12 @@ async function submitSecretaryBooking(e){
   try{
     let name, age, patientId;
     if(sel){
-      const patient = patients.find(p=>p.id===sel);
+      let patient = patients.find(p=>p.id===sel);
+      if(!patient){
+        // التحديث التلقائي قد يعيد تحميل أول 10 مرضى فقط ويُسقط المريض المختار من القائمة — نجلبه من القاعدة
+        const {data: pRow} = await sb.from('patients').select('*').eq('id', sel).maybeSingle();
+        if(pRow){ patient = patientFromRow(pRow); patients.push(patient); }
+      }
       if(!patient){ showToast('تعذر إيجاد بيانات المريض المختار'); restore(); return; }
       name = patient.name; age = patient.age; patientId = patient.id;
     }else{
@@ -2871,8 +2879,8 @@ async function submitSecretaryBooking(e){
         if(pErr) console.error(pErr);
       }
     }else{
-      const {error: newPErr} = await sb.from('patients').insert({name, phone, age, pmh: pmh||null});
-      if(newPErr) console.error(newPErr);
+      const {error: newPErr} = await sb.from('patients').insert({doctor_id: doctorId, name, phone, age, pmh: pmh||null});
+      if(newPErr){ console.error(newPErr); showToast('تعذر إنشاء سجل المريض، لم يتم الحجز'); restore(); return; }
     }
 
     const {error} = await sb.from(apptTable()).insert({
@@ -2950,6 +2958,7 @@ function apptRowHtml(a, context){
         <span>📞 ${escapeHtml(a.phone||'—')}</span><span>👤 ${escapeHtml(a.age||'—')}</span>
       </div>
       ${reasonLine}${suggestedLine}
+      ${(a.status!=='مكتمل' && a.status!=='ملغى') ? debtAlertHtml(previousDebtFor(a.phone, a.id)) : ''}
       <div class="ic-actions">
         ${canDelete ? `<button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);" onclick="deleteVisit('${a.id}')">🗑️</button>` : ''}
         ${a.status==='مجدول' ? `<button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);" title="إلغاء الحجز" onclick="cancelAppointmentByStaff('${a.id}')">✕ إلغاء</button>` : ''}
@@ -3042,6 +3051,7 @@ function renderPatientsTable(wrap, list, context){
       <div class="ic-meta">
         <span>📞 ${escapeHtml(p.phone||'—')}</span>
       </div>
+      ${context==='doc' ? debtAlertHtml(previousDebtFor(p.phone), true) : ''}
       <div class="session-badge">📋 الجلسة المفعّلة حاليًا: ${p.enabledSession>=4?'الرابعة (الأخيرة)':(['—','الأولى','الثانية','الثالثة','الرابعة'][p.enabledSession]||p.enabledSession)}</div>
       <div class="ic-actions">
         <button class="btn btn-outline btn-sm" title="السجل الطبي" onclick="openHistoryByPhone('${p.phone}','${p.doctorId||''}')">📋 (${visits})</button>
@@ -3144,7 +3154,7 @@ async function savePatientForm(e){
   };
   try{
     if(id){ const {error} = await sb.from('patients').update(row).eq('id', id); if(error) throw error; }
-    else{ const {error} = await sb.from('patients').insert(row); if(error) throw error; }
+    else{ const {error} = await sb.from('patients').insert({...row, doctor_id: myDoctorId}); if(error) throw error; }
     closeModal('patientModal');
     await loadData();
     renderDocPatients();
@@ -3170,6 +3180,7 @@ function openHistoryByPhone(phone, doctorId){
         <span>📞 ${escapeHtml(p.phone||'—')}</span>
         <span>👤 ${escapeHtml(p.age||'—')}</span>
       </div>
+      ${debtAlertHtml(previousDebtFor(p.phone), true)}
       ${p.address?`<p style="margin:6px 0 0;font-size:13.5px;"><strong style="color:var(--primary-dark);">العنوان:</strong> ${escapeHtml(p.address)}</p>`:''}
       ${p.pmh?`<p style="margin:6px 0 0;font-size:13.5px;"><strong style="color:var(--primary-dark);">التاريخ المرضي والأدوية الحالية:</strong> ${escapeHtml(p.pmh)}</p>`:''}
       <div class="ic-actions"><button class="btn btn-primary btn-sm" title="تعديل بيانات المريض" onclick="closeModal('historyModal'); openEditPatientModal('${p.id}')">✏️</button></div>
@@ -3459,6 +3470,7 @@ async function loadMorePatients(){
 async function openExam(apptId){
   const a = appointments.find(x=>x.id===apptId); if(!a) return;
   document.getElementById('ex_apptId').value = a.id;
+  document.getElementById('ex_prevDebtBox').innerHTML = debtAlertHtml(previousDebtFor(a.phone, a.id), false, true);
   document.getElementById('ex_patientId').value = '';
   document.getElementById('ex_diagnosis').value = a.diagnosis||'';
   document.getElementById('ex_teeth').value = a.teeth||'';
@@ -3609,6 +3621,29 @@ function getDebtAppointments(){
   // د. مصطفى (صلاحية كاملة) يرى كل الديون، أما د. مقداد فيرى ديون مرضاه فقط
   return appointments.filter(a=> a.status==='مكتمل' && apptRemaining(a)>0
     && (isFullAccess || a.doctorId===myDoctorId));
+}
+// الديون السابقة لمريض (حسب رقم هاتفه وأرقامه البديلة) — للطبيب فقط، ولا تشمل الزيارة المستثناة
+function previousDebtFor(phone, excludeApptId){
+  if(currentRole !== 'doctor' || !phone) return {total:0, visits:[]};
+  const lp = patients.find(x=>x.phone===phone);
+  const set = new Set([phone, ...((lp && lp.altPhones) || [])].filter(Boolean));
+  const visits = getDebtAppointments().filter(v=> set.has(v.phone) && v.id!==excludeApptId);
+  return {total: visits.reduce((t,v)=>t+apptRemaining(v),0), visits, phone: (visits[0] && visits[0].phone) || phone};
+}
+// ينقل الطبيب إلى ملف المريض داخل قائمة الديون لتسديد دفعة
+async function goToPatientDebts(phone, fromExam){
+  if(fromExam && !(await customConfirm('سيتم إغلاق نافذة الكشف والانتقال إلى قائمة الديون دون حفظ ما كتبته في هذا الكشف. متابعة؟', 'انتقال'))) return;
+  ['examModal','historyModal','patientModal'].forEach(id=>{ const m=document.getElementById(id); if(m && m.classList.contains('show')) closeModal(id); });
+  const btn = document.querySelector('.side-btn[data-tab="doc-debts"]'); if(!btn) return;
+  const inp = document.getElementById('docDebtSearch'); if(inp) inp.value = phone || '';
+  switchDashTab(btn, 'doc');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function debtAlertHtml(d, always, fromExam){
+  if(currentRole !== 'doctor') return '';
+  const n = `${d.visits.length} ${d.visits.length===1?'زيارة':'زيارات'}`;
+  if(d.total>0) return `<div class="debt-alert"><span>${always?'💳 مجموع الديون':'⚠️ ديون سابقة غير مسددة'} (${n})</span><span style="display:flex;align-items:center;gap:8px;">${fmtMoney(d.total)} <button type="button" class="btn btn-primary btn-sm" onclick="goToPatientDebts('${escapeHtml(d.phone||'')}', ${fromExam?'true':'false'})">💵 تسديد</button></span></div>`;
+  return always ? `<div class="debt-alert ok"><span>💳 مجموع الديون</span><span>لا توجد ديون</span></div>` : '';
 }
 function renderDebts(pfx){
   const wrap = document.getElementById(pfx+'DebtWrap');
