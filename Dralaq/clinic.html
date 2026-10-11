@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>عيادة الدكتورة الق غازي — حجز موعد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F2F6FC; --surface:#FFFFFF; --surface-2:#E9F1FB;
+    --primary:#1D5FC9; --primary-dark:#0E3B85; --primary-light:#DCE9FB;
+    --accent:#2FB7E6; --accent-dark:#1C93BE; --sun:#8FD3F4;
+    --text:#132338; --text-muted:#5A6C85;
+    --danger:#D2574F; --danger-bg:#FBEAEA; --success:#2E9E6B; --success-bg:#E6F6EE; --warn:#B45309; --warn-bg:#FEF3C7;
+    --line:#DCE6F4; --radius:18px; --shadow:0 8px 24px rgba(14,59,133,0.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Tajawal',Tahoma,'Segoe UI',sans-serif;min-height:100vh;}
+  h1,h2,h3,h4{font-family:'Tajawal',Tahoma,sans-serif;font-weight:900;margin:0;}
+  p{line-height:1.9;color:var(--text-muted);margin:0 0 6px;}
+  button{font-family:inherit;cursor:pointer;border:none;}
+  input,select,textarea{font-family:inherit;}
+  a{text-decoration:none;color:inherit;}
+  ::selection{background:var(--sun);}
+  .hidden{display:none!important;}
+
+  #navbar{position:sticky;top:0;z-index:100;background:rgba(243,247,245,0.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 24px;}
+  .brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:900;color:var(--primary-dark);}
+  .brand .logo-mark{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--sun));display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+  .nav-links{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .nav-btn{padding:9px 16px;border-radius:99px;font-weight:700;font-size:14.5px;color:var(--primary-dark);background:transparent;transition:.2s;}
+  .nav-btn:hover{background:var(--surface-2);}
+  .nav-btn.on{background:var(--primary-light);}
+  .nav-btn.primary{background:var(--primary);color:#fff;}
+  .nav-btn.primary:hover{background:var(--primary-dark);}
+  .view{display:none;animation:fadeIn .35s ease;}
+  .view.active{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px;}
+
+  .hero{padding:56px 0 34px;}
+  .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--primary-light);color:var(--primary-dark);padding:7px 14px;border-radius:99px;font-weight:700;font-size:13px;margin-bottom:18px;}
+  .hero h1{font-size:42px;line-height:1.3;color:var(--primary-dark);}
+  .hero h1 span{color:var(--accent-dark);}
+  .hero p.lead{font-size:17px;margin-top:16px;max-width:500px;}
+  .hero-actions{display:flex;gap:12px;margin-top:26px;flex-wrap:wrap;}
+  .btn{padding:13px 24px;border-radius:14px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.2s;}
+  .btn-primary{background:var(--accent);color:#fff;box-shadow:0 10px 22px rgba(47,183,230,.32);}
+  .btn-primary:hover{background:var(--accent-dark);transform:translateY(-1px);}
+  .btn-outline{background:var(--surface);color:var(--primary-dark);border:2px solid var(--primary-light);}
+  .btn-outline:hover{border-color:var(--primary);}
+  .btn-danger{background:#fff;color:var(--danger);border:2px solid #F3B4AE;}
+  .btn-sm{padding:7px 14px;font-size:13.5px;border-radius:10px;}
+  .btn-block{width:100%;margin-top:6px;}
+  .btn:disabled{opacity:.6;cursor:default;}
+  .growth-card{background:var(--surface);border-radius:24px;box-shadow:var(--shadow);padding:26px;}
+  .growth-card svg{width:100%;height:auto;display:block;}
+  .growth-caption{display:flex;justify-content:space-between;margin-top:14px;font-size:13px;color:var(--text-muted);font-weight:700;}
+
+  .section{padding:44px 0;}
+  .section-head{text-align:center;max-width:560px;margin:0 auto 30px;}
+  .section-head h2{font-size:30px;color:var(--primary-dark);}
+  .section-head .eyebrow{margin-bottom:10px;}
+  .cards-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .service-card{background:var(--surface);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow);border:1px solid var(--line);transition:.2s;}
+  .service-card:hover{transform:translateY(-4px);border-color:var(--accent);}
+  .service-icon{width:48px;height:48px;border-radius:14px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px;}
+  .service-card h3{font-size:18px;color:var(--primary-dark);margin-bottom:6px;}
+  .service-card p{font-size:14px;margin:0;}
+  .doctor-strip{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;background:var(--primary);color:#fff;border-radius:24px;padding:30px;}
+  .doctor-strip{margin-top:6px;}
+  .doctor-avatar{width:92px;height:92px;border-radius:50%;background:var(--sun);display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0;}
+  .doctor-strip h3{color:#fff;font-size:22px;}
+  .doctor-strip p{color:rgba(255,255,255,.88);margin-top:6px;}
+  .doctor-strip a{color:#fff;font-weight:800;direction:ltr;unicode-bidi:embed;}
+  footer{padding:30px 0;text-align:center;color:var(--text-muted);font-size:13.5px;border-top:1px solid var(--line);margin-top:20px;}
+  footer .wrap{line-height:2;}
+
+  .booking-wrap{max-width:560px;margin:0 auto;padding:30px 20px 50px;}
+  .panel,.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;border:1px solid var(--line);}
+  .card{margin-bottom:12px;padding:16px;}
+  .form-grid,.row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+  label{display:block;font-size:13.5px;font-weight:700;color:var(--primary-dark);margin:0 0 5px;}
+  input,textarea,select{width:100%;padding:11px 13px;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-size:14.5px;color:var(--text);outline:none;transition:.15s;}
+  input:focus,textarea:focus,select:focus{border-color:var(--primary);}
+  textarea{resize:vertical;min-height:84px;}
+  .err{background:var(--danger-bg);color:var(--danger);padding:9px 12px;border-radius:10px;margin:8px 0;font-weight:700;display:none;}
+  .err.show{display:block;}
+  .hint{color:var(--text-muted);font-size:13px;}
+  .badge{display:inline-block;padding:3px 12px;border-radius:999px;font-size:12.5px;font-weight:800;background:var(--primary-light);color:var(--primary-dark);}
+  .badge.c{background:var(--danger-bg);color:var(--danger);} .badge.d{background:var(--success-bg);color:var(--success);} .badge.w{background:var(--warn-bg);color:var(--warn);}
+  .appt{display:flex;flex-direction:column;gap:6px;}
+  .appt .meta{display:flex;gap:14px;flex-wrap:wrap;color:var(--text-muted);font-size:13.5px;}
+  .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .qn{display:inline-block;min-width:26px;text-align:center;background:var(--primary-light);color:var(--primary-dark);border-radius:999px;padding:2px 10px;font-weight:800;margin-inline-end:4px;}
+  .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block;background:#bbb;margin-left:6px;}
+  .dot.on{background:var(--success);} .dot.off{background:var(--danger);}
+  .modal{position:fixed;inset:0;background:rgba(10,25,50,.55);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:20px 12px;z-index:200;}
+  .modal.show{display:flex;}
+  .modal .box{background:#fff;border-radius:20px;max-width:540px;width:100%;padding:20px;}
+  .modal h3{color:var(--primary-dark);margin-bottom:8px;}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--primary-dark);color:#fff;padding:11px 20px;border-radius:12px;z-index:300;display:none;max-width:90%;}
+  .file{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:9px 0;border-top:1px dashed var(--line);font-size:14px;}
+  .done{text-align:center;padding:26px;} .done .big{font-size:48px;}
+  .sec-wrap{max-width:820px;margin:0 auto;padding:26px 20px 50px;}
+  @media (max-width:760px){
+    #navbar{padding:10px 14px;} .brand{font-size:17px;}
+    .hero{padding:30px 0 20px;} .hero-grid{grid-template-columns:1fr;gap:24px;} .hero h1{font-size:30px;}
+    .cards-3{grid-template-columns:1fr 1fr;gap:12px;} .service-card{padding:16px;} .service-card h3{font-size:15.5px;} .service-card p{font-size:12.5px;line-height:1.7;} .service-icon{width:40px;height:40px;font-size:19px;margin-bottom:10px;} .form-grid,.row{grid-template-columns:1fr;gap:0;}
+    .doctor-strip{grid-template-columns:1fr;text-align:center;justify-items:center;} .wrap{padding:0 16px;}
+  }
+</style>
+</head>
+<body>
+<nav id="navbar">
+  <div class="brand"><span class="logo-mark">🦷</span> عيادة الدكتورة الق غازي</div>
+  <div class="nav-links">
+    <button class="nav-btn on" id="tabHome" onclick="showView('home')">الرئيسية</button>
+    <button class="nav-btn" id="tabBook" onclick="showView('booking')">حجز موعد</button>
+    <button class="nav-btn primary" id="tabSec" onclick="showView('sec')">دخول الطاقم الطبي</button>
+  </div>
+</nav>
+
+<!-- ================= الرئيسية ================= -->
+<section class="view active" id="view-home">
+  <div class="wrap hero">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow">🦷 ابتسامة صحية تدوم</div>
+        <h1>عناية متكاملة <span>بأسنانك وجمالك</span></h1>
+        <p class="lead">عيادة الدكتورة الق غازي — طب الأسنان والجراحة والتجميل والحقن اللاجراحي. احجز موعدك من هنا وسنتصل بك لتحديد الوقت وتأكيده.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="showView('booking')">احجز موعدًا الآن ←</button>
+          <a class="btn btn-outline" href="tel:+9647732100058">📞 اتصل بنا</a>
+        </div>
+      </div>
+      <div class="growth-card">
+        <svg viewBox="0 0 320 170" fill="none">
+          <circle cx="160" cy="85" r="70" fill="#DCE9FB"/>
+          <path d="M110 70 q50 -30 100 0 q10 45 -10 70 q-15 20 -40 15 q-8 -25 -10 -25 q-2 0 -10 25 q-25 5 -40 -15 q-20 -25 -10 -70 Z" fill="#FFFFFF" stroke="#1D5FC9" stroke-width="3"/>
+        </svg>
+        <div class="growth-caption"><span>فحص</span><span>تنظيف</span><span>علاج</span><span>ابتسامة</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap section">
+    <div class="section-head">
+      <div class="eyebrow">خدماتنا</div>
+      <h2>خدمات العيادة</h2>
+      <p>نقدّم لك الخدمات التالية، وتحدد الطبيبة الخدمة المناسبة لحالتك عند الكشف.</p>
+    </div>
+    <div class="cards-3">
+      <div class="service-card"><div class="service-icon">🦷</div><h3>فحص</h3><p>فحص شامل للأسنان واللثة.</p></div>
+      <div class="service-card"><div class="service-icon">🧼</div><h3>تنضيف</h3><p>تنظيف الأسنان وإزالة الجير.</p></div>
+      <div class="service-card"><div class="service-icon">💎</div><h3>حشوة</h3><p>حشوات لعلاج التسوس.</p></div>
+      <div class="service-card"><div class="service-icon">🧬</div><h3>حشوة جذر</h3><p>علاج جذور الأسنان المصابة.</p></div>
+      <div class="service-card"><div class="service-icon">😁</div><h3>تقويم</h3><p>تقويم الأسنان لابتسامة متناسقة.</p></div>
+      <div class="service-card"><div class="service-icon">⏳</div><h3>قلع</h3><p>قلع الأسنان.</p></div>
+      <div class="service-card"><div class="service-icon">✨</div><h3>تبييض</h3><p>تبييض الأسنان.</p></div>
+      <div class="service-card"><div class="service-icon">🔩</div><h3>زراعة الأسنان</h3><p>زراعة الأسنان المفقودة.</p></div>
+      <div class="service-card"><div class="service-icon">🎯</div><h3>القلع الجراحي</h3><p>قلع الحالات المعقدة والأسنان المدفونة.</p></div>
+      <div class="service-card"><div class="service-icon">👁️</div><h3>قص الأجفان</h3><p>عمليات تجميل الأجفان.</p></div>
+      <div class="service-card"><div class="service-icon">💧</div><h3>شفط</h3><p>عمليات شفط الدهون.</p></div>
+      <div class="service-card"><div class="service-icon">🧑</div><h3>ذقن</h3><p>عمليات تجميل الذقن.</p></div>
+      <div class="service-card"><div class="service-icon">💉</div><h3>حقن الدهون</h3><p>حقن الدهون للتجميل.</p></div>
+      <div class="service-card"><div class="service-icon">🪄</div><h3>التجميل والحقن اللاجراحي</h3><p>إجراءات تجميلية وحقن بدون جراحة.</p></div>
+    </div>
+  </div>
+
+  <div class="wrap section" style="padding-top:18px;">
+    <div class="doctor-strip">
+      <div class="doctor-avatar">🦷</div>
+      <div>
+        <h3>الدكتورة الق غازي</h3>
+        <p>📍 الحرية - دور نواب الضباط - الشارع المشجر - مجاور شيف كمبالا</p>
+        <p>📞 <a href="tel:+9647732100058">+964 773 210 0058</a></p>
+      </div>
+    </div>
+  </div>
+  <footer><div class="wrap">عيادة الدكتورة الق غازي · الحرية - دور نواب الضباط - الشارع المشجر - مجاور شيف كمبالا</div></footer>
+</section>
+
+<!-- ================= حجز موعد ================= -->
+<section class="view" id="view-booking">
+  <div class="booking-wrap">
+    <div class="section-head" style="margin-bottom:20px;">
+      <div class="eyebrow">📅 حجز موعد</div>
+      <h2>احجز موعدك</h2>
+      <p>عبّئ بياناتك واختر تاريخ الزيارة، وسنتصل بك لتحديد الوقت وتأكيد الموعد.</p>
+    </div>
+    <div class="panel" id="pbForm">
+      <div class="field"><label>الاسم الكامل *</label><input id="pbName" maxlength="80" placeholder="مثال: أحمد كريم"></div>
+      <div class="form-grid">
+        <div class="field"><label>رقم الهاتف *</label><input id="pbPhone" type="tel" inputmode="tel" maxlength="14" placeholder="07701234567 أو +9647701234567" style="direction:ltr;text-align:right"></div>
+        <div class="field"><label>العمر — اختياري</label><input id="pbAge" maxlength="10" placeholder="مثال: 28 سنة"></div>
+      </div>
+      <div class="field"><label>سبب الزيارة *</label><textarea id="pbReason" rows="3" maxlength="500" placeholder="اكتب بكلماتك ما تشتكي منه أو سبب زيارتك..."></textarea></div>
+      <div class="field"><label>تاريخ الزيارة *</label><input id="pbDate" type="date"><span class="hint">اختر التاريخ فقط — الوقت نحدده معك عند الاتصال.</span></div>
+      <div class="err" id="pbErr"></div>
+      <button class="btn btn-primary btn-block" id="pbBtn" onclick="submitBooking()">تأكيد الحجز</button>
+    </div>
+    <div class="panel done hidden" id="pbDone"><div class="big">✅</div><h3 style="color:var(--primary-dark)">تم استلام طلب الحجز</h3><p id="pbDoneMsg"></p><button class="btn btn-outline" style="margin-top:10px" onclick="resetBooking()">حجز آخر</button></div>
+  </div>
+</section>
+
+<!-- ================= السكرتيرة ================= -->
+<section class="view" id="view-sec">
+  <div class="sec-wrap" id="sec">
+    <div id="loginBox" class="booking-wrap" style="padding-top:10px">
+      <div class="section-head" style="margin-bottom:18px;"><div class="eyebrow">🔒 دخول الطاقم الطبي</div><h2>تسجيل الدخول</h2></div>
+      <div class="panel">
+        <div class="field"><label>الإيميل</label><input id="lgEmail" type="email" style="direction:ltr;text-align:right" autocomplete="username"></div>
+        <div class="field"><label>كلمة المرور</label><input id="lgPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"></div>
+        <div class="err" id="lgErr"></div>
+        <button class="btn btn-primary btn-block" onclick="login()">دخول</button>
+      </div>
+    </div>
+    <div id="app" class="hidden">
+      <div class="bar"><span><span class="dot" id="docDot"></span><b id="docTxt">...</b></span><span style="flex:1"></span><span class="badge w hidden" id="pendBadge">⏳ بانتظار التنفيذ</span><button class="btn btn-outline btn-sm" onclick="logout()">خروج</button></div>
+      <div class="bar">
+        <button class="btn btn-outline btn-sm" onclick="shiftDay(-1)">◀ السابق</button><input type="date" id="dayPick" style="width:auto" onchange="loadList()"><button class="btn btn-outline btn-sm" onclick="shiftDay(1)">التالي ▶</button><button class="btn btn-outline btn-sm" onclick="goToday()">اليوم</button>
+        <span style="flex:1"></span><button class="btn btn-primary btn-sm" onclick="openNew()">+ حجز جديد</button>
+      </div>
+      <input id="q" placeholder="🔍 ابحث بالاسم أو الهاتف..." oninput="renderList()" style="margin-bottom:12px">
+      <div id="list"></div>
+      <p class="hint">تظهر المواعيد من 7 أيام ماضية إلى 90 يومًا قادمة. كل تعديل يُنفَّذ على برنامج الطبيب خلال ثوانٍ، ويلزم أن يكون مفتوحًا ومتصلًا.</p>
+    </div>
+  </div>
+</section>
+
+<!-- نافذة الحجز/التعديل -->
+<div class="modal" id="mAppt"><div class="box">
+  <h3 id="mTitle">حجز جديد</h3>
+  <div class="field"><label>الاسم *</label><input id="aName" maxlength="80"></div>
+  <div class="form-grid"><div class="field"><label>الهاتف *</label><input id="aPhone" type="tel" style="direction:ltr;text-align:right"></div><div class="field"><label>العمر</label><input id="aAge" maxlength="10"></div></div>
+  <div class="field"><label>سبب الزيارة *</label><textarea id="aReason" rows="2" maxlength="500"></textarea></div>
+  <div class="form-grid"><div class="field"><label>التاريخ *</label><input id="aDate" type="date"></div><div class="field"><label>الوقت *</label><input id="aTime" type="time"></div></div>
+  <div class="err" id="aErr"></div>
+  <div class="acts" style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="saveAppt()">حفظ</button><button class="btn btn-outline btn-sm" onclick="closeM('mAppt')">إلغاء</button></div>
+</div></div>
+
+<!-- نافذة الملفات -->
+<div class="modal" id="mFiles"><div class="box">
+  <h3 id="fTitle">📎 الملفات</h3>
+  <div id="fList"></div>
+  <div class="field" style="margin-top:12px"><label>اسم الملف</label><input id="fName" list="fSug" placeholder="مثال: أشعة بانوراما"><datalist id="fSug"><option value="أشعة بانوراما"><option value="أشعة سيفالو"><option value="تحليل دم"><option value="تقرير طبي"></datalist></div>
+  <input type="file" id="fInput" accept="image/*,application/pdf" multiple class="hidden" onchange="uploadFiles(this)">
+  <button class="btn btn-primary btn-block" onclick="document.getElementById('fInput').click()">📷 تصوير / اختيار صورة أو PDF</button>
+  <p class="hint" style="margin-top:8px">الصور تُصغَّر تلقائيًا. تبقى الملفات هنا 24 ساعة فقط (خلالها تقدر تغيّر الاسم أو تحذف) ثم يحفظها برنامج الطبيب وتُحذف من هنا. الحد 10 ميغا.</p>
+  <button class="btn btn-outline btn-sm" onclick="closeM('mFiles')">إغلاق</button>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+
+// ضع هنا رابط مشروع Supabase والمفتاح العام (anon) فقط — لا تضع service_role أبدًا
+const SUPABASE_URL = "https://aofpvzablxzcjmthnnpk.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvZnB2emFibHh6Y2ptdGhubnBrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2NjEwODUsImV4cCI6MjEwNzIzNzA4NX0.76CNL5Qs7qPXkasGX1Nl-MdR5bKawZMENWfJVdQ1XjY";
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(m){ const t=$('toast'); t.textContent=m; t.style.display='block'; clearTimeout(toast._t); toast._t=setTimeout(()=>t.style.display='none',3500); }
+function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function addDays(s,n){ const d=new Date(s+'T12:00:00'); d.setDate(d.getDate()+n); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function uid(){ return (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2)).replace(/-/g,'').slice(0,24); }
+
+// ---------- REST ----------
+let SESSION = null;           // {token, refresh, exp, uid}
+async function rest(method, path, body, opts){
+  opts = opts || {};
+  const h = { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + ((SESSION && !opts.anon) ? SESSION.token : SUPABASE_KEY) };
+  if(body !== undefined && !opts.raw){ h['Content-Type']='application/json'; body = JSON.stringify(body); }
+  Object.assign(h, opts.headers||{});
+  const r = await fetch(SUPABASE_URL + path, { method, headers:h, body });
+  const txt = await r.text(); let j = null; try{ j = txt ? JSON.parse(txt) : null; }catch(e){}
+  if(!r.ok){ const e = new Error((j && (j.message||j.msg||j.error_description||j.error)) || ('HTTP '+r.status)); e.status = r.status; throw e; }
+  return j;
+}
+async function ensureToken(){
+  if(!SESSION) throw new Error('انتهت الجلسة');
+  if(Date.now() < SESSION.exp) return;
+  const j = await rest('POST','/auth/v1/token?grant_type=refresh_token',{refresh_token:SESSION.refresh},{anon:true});
+  saveSession(j);
+}
+function saveSession(j){ SESSION = { token:j.access_token, refresh:j.refresh_token||SESSION&&SESSION.refresh, exp:Date.now()+(j.expires_in||3600)*1000-120000, uid:(j.user&&j.user.id)||(SESSION&&SESSION.uid) }; try{ sessionStorage.setItem('cl_sess', JSON.stringify(SESSION)); }catch(e){} }
+async function R(method, path, body, opts){ await ensureToken(); return rest(method, path, body, opts); }
+
+// ---------- تبويبات ----------
+function showView(w){ ['home','booking','sec'].forEach(v=>$('view-'+v).classList.toggle('active', v===w)); $('tabHome').classList.toggle('on',w==='home'); $('tabBook').classList.toggle('on',w==='booking'); $('tabSec').classList.toggle('on',w==='sec'); window.scrollTo(0,0); }
+function tab(w){ showView(w==='pub' ? 'booking' : w); }
+
+// ---------- الحجز العام ----------
+function resetBooking(){ ['pbName','pbPhone','pbAge','pbReason'].forEach(i=>$(i).value=''); $('pbDate').min=today(); $('pbDate').value=today(); $('pbErr').classList.remove('show'); $('pbForm').classList.remove('hidden'); $('pbDone').classList.add('hidden'); }
+function pbErr(m){ const e=$('pbErr'); e.textContent=m; e.classList.add('show'); }
+async function submitBooking(){
+  $('pbErr').classList.remove('show');
+  const name=$('pbName').value.trim(), phone=$('pbPhone').value.trim().replace(/\s+/g,''), reason=$('pbReason').value.trim(), date=$('pbDate').value;
+  if(name.length<2||!phone||!reason||!date) return pbErr('يرجى تعبئة الاسم والهاتف وسبب الزيارة وتاريخ الزيارة');
+  if(!/^(07[5789]\d{8}|\+9647[5789]\d{8})$/.test(phone)) return pbErr('اكتب رقم الهاتف بإحدى الصيغتين: 07XXXXXXXXX أو +9647XXXXXXXXX (يبدأ بـ 075 أو 077 أو 078 أو 079)');
+  if(date<today()) return pbErr('اختر تاريخًا من اليوم فصاعدًا');
+  $('pbBtn').disabled=true;
+  try{
+    await rest('POST','/rest/v1/public_bookings',{patient_name:name,phone,age:$('pbAge').value.trim(),reason,appt_date:date,appt_time:''},{anon:true,headers:{Prefer:'return=minimal'}});
+    $('pbDoneMsg').textContent = name+'، تم تسجيل طلبك ليوم '+date+'. سنتصل بك لتحديد الوقت وتأكيد الموعد.';
+    $('pbForm').classList.add('hidden'); $('pbDone').classList.remove('hidden');
+  }catch(e){ pbErr(/تجاوزت|مشغولة|تاريخ/.test(e.message) ? e.message : 'تعذر إرسال الطلب، حاول مجددًا أو تواصل مع العيادة هاتفيًا'); }
+  $('pbBtn').disabled=false;
+}
+
+// ---------- السكرتيرة ----------
+let LIST=[], METAS={}, MYFILES={}, PENDING=new Set(), poll=null;
+function lgErr(m){ const e=$('lgErr'); e.textContent=m; e.classList.toggle('show',!!m); }
+async function login(){
+  lgErr('');
+  try{
+    const j = await rest('POST','/auth/v1/token?grant_type=password',{email:$('lgEmail').value.trim(),password:$('lgPass').value},{anon:true});
+    SESSION=null; saveSession(j);
+    const st = await R('GET','/rest/v1/staff?select=role&user_id=eq.'+SESSION.uid);
+    if(!st || !st.length || st[0].role!=='secretary'){ SESSION=null; sessionStorage.removeItem('cl_sess'); return lgErr('هذا الحساب غير مُعرَّف كسكرتيرة'); }
+    $('lgPass').value=''; enter();
+  }catch(e){ lgErr(e.status===400||e.status===401 ? 'الإيميل أو كلمة المرور غير صحيحة' : 'تعذر الاتصال: '+e.message); }
+}
+function logout(){ $('tabSec').textContent='دخول الطاقم الطبي'; SESSION=null; try{sessionStorage.removeItem('cl_sess');}catch(e){} clearInterval(poll); $('app').classList.add('hidden'); $('loginBox').classList.remove('hidden'); }
+function enter(){ $('loginBox').classList.add('hidden'); $('app').classList.remove('hidden'); $('tabSec').textContent='🗓️ لوحة الطاقم الطبي'; tab('sec'); if(!$('dayPick').value) $('dayPick').value=today(); loadList(); clearInterval(poll); poll=setInterval(()=>{ if(!document.querySelector('.modal.show')) loadList(true); },5000); }
+function shiftDay(n){ $('dayPick').value=addDays($('dayPick').value||today(),n); loadList(); }
+function goToday(){ $('dayPick').value=today(); loadList(); }
+const QKINDS=['checkin','queue_up','queue_down','queue_set','queue_clear'];
+// يحاكي على الشاشة ما سينفّذه جهاز الطبيب (نفس منطق clinic_dental.py) حتى تظهر النتيجة فورًا
+function simQueue(all,d,q){
+  const ref=String(q.appt_id||'');
+  const r=all.find(x=>x.id===ref)||all.find(x=>x.src_ref&&/^(req|pub):/.test(ref)&&x.src_ref===ref.slice(4));
+  if(!r||r.status==='ملغى') return;
+  const qd=ex=>all.filter(x=>x.appt_date===d&&x.status!=='ملغى'&&x.queue_order!=null&&x!==ex).sort((a,b)=>a.queue_order-b.queue_order);
+  if(q.kind==='checkin'){
+    if(r.queue_order==null&&r.status==='مجدول'){ const nums=all.filter(x=>x.queue_order!=null).map(x=>x.queue_order); r.queue_order=nums.length?Math.max(...nums)+1:0; }
+  } else if(q.kind==='queue_clear'){ r.queue_order=null; }
+  else if(q.kind==='queue_up'||q.kind==='queue_down'){
+    const w=qd().filter(x=>x===r||x.status==='مجدول'), i=w.indexOf(r), j=i+(q.kind==='queue_up'?-1:1);
+    if(i>=0&&j>=0&&j<w.length){ const t=w[i].queue_order; w[i].queue_order=w[j].queue_order; w[j].queue_order=t; }
+  } else if(q.kind==='queue_set'){
+    const n=parseInt((q.payload||{}).n,10), others=qd(r);
+    if(n>=1&&n<=others.length+1){ const arr=others.slice(); arr.splice(n-1,0,r); arr.forEach((x,idx)=>{ x.queue_order=idx; }); }
+  }
+}
+function mergeList(rows, reqs, pubs, d){
+  const byId={}; (rows||[]).forEach(r=>byId[r.id]=Object.assign({},r));
+  const extra=[];
+  (reqs||[]).forEach(q=>{
+    const p=q.payload||{};
+    if(q.kind==='create'){
+      if(p.appt_date===d) extra.push({id:'req:'+q.id,patient_name:p.patient_name,phone:p.phone,age:p.age||'',reason:p.reason,appt_date:p.appt_date,appt_time:p.appt_time||'',status:'مجدول',dept:'',fee:0,is_free:false,file_count:0,queue_order:null,_pending:true,_src:'secretary'});
+    } else if(QKINDS.includes(q.kind)){
+      /* تُحاكى بعد بناء القائمة كاملة */
+    } else if(byId[q.appt_id]){
+      const r=byId[q.appt_id]; r._pending=true; r._reqId=q.id;
+      if(q.kind==='cancel') r.status='ملغى';
+      else if(q.kind==='restore') r.status='مجدول';
+      else if(q.kind==='update'){
+        ['patient_name','phone','age','appt_time'].forEach(k=>{ if(p[k]) r[k]=p[k]; }); if(p.reason) r.reason=p.reason;
+        if(p.appt_date && p.appt_date!==d) delete byId[q.appt_id];
+      }
+    }
+  });
+  (pubs||[]).forEach(b=>extra.push({id:'pub:'+b.id,patient_name:b.patient_name,phone:b.phone,age:b.age||'',reason:b.reason,appt_date:b.appt_date,appt_time:b.appt_time||'',status:'مجدول',dept:'',fee:0,is_free:false,file_count:0,queue_order:null,_pending:true,_src:'online'}));
+  const all=[...Object.values(byId),...extra];
+  (reqs||[]).filter(q=>QKINDS.includes(q.kind)).forEach(q=>simQueue(all,d,q));
+  all.sort((a,b)=>{
+    const qa=a.queue_order, qb=b.queue_order;
+    if(qa!=null&&qb!=null) return qa-qb;
+    if(qa!=null) return -1;
+    if(qb!=null) return 1;
+    return ((a.appt_time||'99:99').localeCompare(b.appt_time||'99:99'))||(a.patient_name||'').localeCompare(b.patient_name||'');
+  });
+  return all;
+}
+async function loadList(silent){
+  try{
+    const d=$('dayPick').value||today();
+    const [rows, metas, st, mine, reqs, pubs] = await Promise.all([
+      R('GET','/rest/v1/appt_mirror?select=*&appt_date=eq.'+d+'&order=appt_time.asc'),
+      R('GET','/rest/v1/appt_files_meta?select=appt_id,title&limit=500'),
+      R('GET','/rest/v1/clinic_status?select=last_seen&limit=1'),
+      R('GET','/rest/v1/incoming_files?select=id,appt_id,title,received_at,deleted_at,created_at&order=created_at.desc&limit=200'),
+      R('GET','/rest/v1/sec_requests?select=id,kind,appt_id,payload&status=eq.pending&order=created_at.asc'),
+      R('GET','/rest/v1/public_bookings?select=*&received_at=is.null&appt_date=eq.'+d+'&order=created_at.asc')
+    ]);
+    LIST=mergeList(rows,reqs,pubs,d); METAS={}; (metas||[]).forEach(m=>{ (METAS[m.appt_id]=METAS[m.appt_id]||[]).push(m.title); });
+    MYFILES={}; (mine||[]).forEach(f=>{ (MYFILES[f.appt_id]=MYFILES[f.appt_id]||[]).push(f); });
+    const nPend=(reqs||[]).filter(q=>!QKINDS.includes(q.kind)).length+(pubs||[]).length; $('pendBadge').textContent='⏳ '+nPend+' بانتظار الطبيب'; $('pendBadge').classList.toggle('hidden',!nPend);
+    const age = st && st[0] ? (Date.now()-new Date(st[0].last_seen).getTime())/1000 : 1e9;
+    $('docDot').className='dot '+(age<60?'on':'off'); $('docTxt').textContent = age<60 ? 'جهاز الطبيب نشط' : 'جهاز الطبيب غير نشط — الحجوزات تظهر بالقائمة وتُنفَّذ عند عودته';
+    renderList();
+  }catch(e){ if(!silent) toast('تعذر التحميل: '+e.message); if(e.message==='انتهت الجلسة'||e.status===401) logout(); }
+}
+function queueBtns(a){
+  const id=a.id;
+  const b=(act,cls,txt)=>`<button class="btn ${cls} btn-sm" onclick="qAct('${act}','${id}')">${txt}</button>`;
+  return a.queue_order==null
+    ? b('checkin','btn-primary','✅ تسجيل حضور')+b('queue_set','btn-outline','🔢 رقم الدور')
+    : b('queue_up','btn-outline','⬆ تقديم')+b('queue_down','btn-outline','⬇ تأخير')+b('queue_set','btn-outline','🔢 رقم الدور')+b('queue_clear','btn-outline','↩ إلغاء الدور');
+}
+let QBUSY=false;
+async function qAct(kind,id){
+  if(QBUSY) return;
+  const a=LIST.find(x=>x.id===id); if(!a) return;
+  let payload={};
+  if(kind==='queue_set'){
+    const others=LIST.filter(x=>x.id!==id&&x.queue_order!=null&&x.status!=='ملغى').length;
+    const n=prompt('رقم الدور الجديد لـ '+a.patient_name+'\n(بين 1 و'+(others+1)+' — عند اختيار رقم مشغول يُزاح باقي المرضى تلقائيًا)', a.queue_order!=null?a.queue_order+1:'');
+    if(n===null||String(n).trim()==='') return;
+    const v=parseInt(n,10);
+    if(!(v>=1&&v<=others+1)){ toast('❌ رقم غير صالح — أدخل رقمًا بين 1 و'+(others+1)); return; }
+    payload={n:v};
+  }
+  QBUSY=true;
+  try{ await sendReqRow(kind,id,payload); }catch(e){ toast('❌ '+e.message); QBUSY=false; return; }
+  QBUSY=false;
+  await loadList(true);
+  if(kind==='checkin'){ const b=LIST.find(x=>x.id===id); if(b&&b.queue_order!=null) toast('✅ تم تسجيل الحضور — رقم الدور: '+(b.queue_order+1)); }
+}
+function renderList(){
+  const q=$('q').value.trim().toLowerCase();
+  const rows=LIST.filter(a=>!q||(a.patient_name||'').toLowerCase().includes(q)||(a.phone||'').includes(q));
+  $('list').innerHTML = rows.length ? rows.map(a=>{
+    const cls = a.status==='ملغى'?'c':(a.status==='مكتمل'?'d':'');
+    const names = (METAS[a.id]||[]);
+    return `<div class="card appt"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>${a.queue_order!=null?'<span class="qn">'+(a.queue_order+1)+'</span>':''}${esc(a.patient_name)}</b><span><span class="badge ${cls}">${esc(a.status)}</span>${a._src==='online'?' <span class="badge">🌐 حجز إلكتروني</span>':''}${a._pending?' <span class="badge w">⏳ بانتظار الطبيب</span>':''}</span></div>
+      <div class="meta"><span>📞 ${esc(a.phone)}</span><span>🕐 ${a.appt_time ? esc(a.appt_time.slice(0,5)) : 'الوقت غير محدد'}</span>${a.dept?`<span>🏷️ ${esc(a.dept)}</span>`:'<span>⏳ بانتظار التصنيف</span>'}${a.is_free?'<span>🆓 مجانية</span>':(a.fee?`<span>💵 ${Number(a.fee).toLocaleString('en-US')} د.ع</span>`:'')}</div>
+      ${a.reason?`<div class="hint">📝 ${esc(a.reason)}</div>`:''}
+      ${names.length?`<div class="hint">📎 ${names.map(esc).join('، ')}</div>`:''}
+      <div class="acts">
+        ${/^req:/.test(a.id)?`<button class="btn btn-outline btn-sm" onclick="openEdit('${a.id}')">✎ تعديل</button><button class="btn btn-danger btn-sm" onclick="deleteReq('${a.id}')">🗑️ حذف الحجز</button>`:''}
+        ${(a._pending && a._reqId)?`<button class="btn btn-outline btn-sm" onclick="deleteReq('req:${a._reqId}',true)">↩ تراجع عن الطلب</button>`:''}
+        ${/^pub:/.test(a.id)?`<button class="btn btn-outline btn-sm" onclick="openEdit('${a.id}')">✎ تعديل</button><button class="btn btn-danger btn-sm" onclick="deletePub('${a.id}')">🗑️ حذف الطلب</button>`:''}
+        ${(a.status==='مجدول'&&(/^(req|pub):/.test(a.id)||!a._pending))?queueBtns(a):''}
+        ${(a.status==='مجدول'&&!a._pending)?`<button class="btn btn-outline btn-sm" onclick="openEdit('${a.id}')">✎ تعديل</button><button class="btn btn-danger btn-sm" onclick="sendReq('cancel','${a.id}')">🚫 إلغاء الحجز</button>`:''}
+        ${(a.status==='ملغى'&&!a._pending)?`<button class="btn btn-outline btn-sm" onclick="sendReq('restore','${a.id}')">↩ استرجاع الحجز</button>`:''}
+        ${!/^(req|pub):/.test(a.id)?`<button class="btn btn-outline btn-sm" onclick="openFiles('${a.id}')">📎 الملفات${a.file_count?' ('+a.file_count+')':''}</button>`:''}
+      </div></div>`;
+  }).join('') : '<div class="card hint" style="text-align:center">لا توجد مواعيد في هذا اليوم.</div>';
+}
+
+// ---- إرسال الطلبات: يظهر الموعد فورًا كبطاقة، ويُنفَّذ عند نشاط جهاز الطبيب ----
+async function sendReqRow(kind, appt_id, payload){
+  const ins = await R('POST','/rest/v1/sec_requests',{kind,appt_id:appt_id||null,payload:payload||{}},{headers:{Prefer:'return=representation'}});
+  const rid = ins[0].id; watchReq(rid, kind); return rid;
+}
+async function watchReq(rid, kind){
+  const t0=Date.now();
+  while(Date.now()-t0 < 6*3600*1000){
+    await new Promise(r=>setTimeout(r,2000));
+    if(!SESSION) return;
+    try{
+      const j = await R('GET','/rest/v1/sec_requests?select=status,error&id=eq.'+rid);
+      if(j && !j.length) return;
+      if(j && j[0] && j[0].status!=='pending'){ if(j[0].status!=='done') toast('❌ '+j[0].error); else if(!QKINDS.includes(kind)) toast(kind==='create'?'✅ تم تنفيذ الحجز':'✅ تم تنفيذ الطلب'); loadList(true); return; }
+    }catch(e){ if(e.status===401) return; }
+  }
+}
+async function sendReq(kind, id){
+  if(kind==='cancel' && !confirm('إلغاء هذا الحجز؟')) return;
+  try{ await sendReqRow(kind,id,{}); toast('⏳ أُرسل الطلب — يظهر بالقائمة وينفَّذ عند نشاط جهاز الطبيب'); }catch(e){ toast('❌ '+e.message); }
+  loadList(true);
+}
+async function findReceived(ref){
+  for(let i=0;i<8;i++){
+    try{ const rows = await R('GET','/rest/v1/appt_mirror?select=id,status&src_ref=eq.'+ref); if(rows && rows.length) return rows[0]; }catch(e){}
+    await new Promise(r=>setTimeout(r,2000));
+  }
+  return null;
+}
+async function dropQueueReqs(ref){ try{ await R('DELETE','/rest/v1/sec_requests?appt_id=eq.'+encodeURIComponent(ref)+'&status=eq.pending',undefined,{headers:{Prefer:'return=minimal'}}); }catch(e){} }
+async function deleteReq(id, undoOnly){
+  if(!confirm(undoOnly ? 'التراجع عن هذا الطلب؟ لن يُنفَّذ على جهاز الطبيب.' : 'حذف هذا الحجز؟ لن يصل إلى جهاز الطبيب.')) return;
+  const rid=id.slice(4);
+  try{
+    const j = await R('DELETE','/rest/v1/sec_requests?id=eq.'+rid+'&status=eq.pending',undefined,{headers:{Prefer:'return=representation'}});
+    if(j && j.length){ if(!undoOnly) await dropQueueReqs(id); toast(undoOnly ? '✅ تم التراجع عن الطلب' : '✅ تم حذف الحجز'); }
+    else if(undoOnly) toast('⚠️ نفّذه جهاز الطبيب بالفعل');
+    else {
+      toast('⏳ نفّذه جهاز الطبيب — جارِ تحويله إلى إلغاء للموعد...');
+      const row = await findReceived(rid);
+      if(row){ await sendReqRow('cancel', row.id, {}); toast('⏳ أُرسل طلب الإلغاء — ينفَّذ عند نشاط جهاز الطبيب'); }
+      else toast('⚠️ تعذر إيجاد الموعد بعد، حدّث الصفحة وألغِه من القائمة');
+    }
+  }catch(e){ toast('❌ '+e.message); }
+  loadList(true);
+}
+async function deletePub(id){
+  if(!confirm('حذف طلب الحجز هذا نهائيًا؟ لن يصل إلى برنامج الطبيب.')) return;
+  try{
+    const j = await R('DELETE','/rest/v1/public_bookings?id=eq.'+id.slice(4)+'&received_at=is.null',undefined,{headers:{Prefer:'return=representation'}});
+    if(j && j.length){ await dropQueueReqs(id); toast('✅ تم حذف الطلب'); }
+    else {
+      toast('⏳ استلمه جهاز الطبيب — جارِ تحويله إلى إلغاء للموعد...');
+      const row = await findReceived(id.slice(4));
+      if(row){ await sendReqRow('cancel', row.id, {}); toast('⏳ أُرسل طلب الإلغاء — ينفَّذ عند نشاط جهاز الطبيب'); }
+      else toast('⚠️ تعذر إيجاد الموعد بعد، حدّث الصفحة وألغِه من القائمة');
+    }
+  }catch(e){ toast('❌ '+e.message); }
+  loadList(true);
+}
+let EDIT=null;
+function closeM(id){ $(id).classList.remove('show'); }
+function openNew(){ EDIT=null; $('mTitle').textContent='حجز جديد'; ['aName','aPhone','aAge','aReason'].forEach(i=>$(i).value=''); $('aDate').min=today(); $('aDate').value=$('dayPick').value||today(); $('aTime').value='10:00'; $('aErr').classList.remove('show'); $('mAppt').classList.add('show'); }
+function openEdit(id){ const a=LIST.find(x=>x.id===id); if(!a) return; EDIT=a; $('mTitle').textContent='تعديل الحجز'; $('aName').value=a.patient_name; $('aPhone').value=a.phone; $('aAge').value=a.age||''; $('aReason').value=a.reason||''; $('aDate').min=''; $('aDate').value=a.appt_date; $('aTime').value=(a.appt_time||'').slice(0,5); $('aErr').classList.remove('show'); $('mAppt').classList.add('show'); }
+async function saveAppt(){
+  const p={patient_name:$('aName').value.trim(),phone:$('aPhone').value.trim().replace(/\s+/g,''),age:$('aAge').value.trim(),reason:$('aReason').value.trim(),appt_date:$('aDate').value,appt_time:$('aTime').value};
+  const err=m=>{ const e=$('aErr'); e.textContent=m; e.classList.add('show'); };
+  if(p.patient_name.length<2||p.phone.replace(/\D/g,'').length<10||p.reason.length<2||!p.appt_date||(!p.appt_time&&!(EDIT&&/^pub:/.test(EDIT.id)))) return err('أكمل الاسم والهاتف (10 أرقام) وسبب الزيارة والتاريخ'+(EDIT&&/^pub:/.test(EDIT.id)?'':' والوقت'));
+  closeM('mAppt');
+  if(EDIT && /^req:/.test(EDIT.id)){
+    try{
+      const rid=EDIT.id.slice(4);
+      const j = await R('PATCH','/rest/v1/sec_requests?id=eq.'+rid+'&status=eq.pending',{payload:p},{headers:{Prefer:'return=representation'}});
+      if(j && j.length){ toast('✅ تم تعديل الحجز'); $('dayPick').value=p.appt_date; }
+      else {   // نفّذه جهاز الطبيب للتو: نحوّل التعديل إلى طلب تعديل على الموعد المنفَّذ
+        toast('⏳ نفّذه جهاز الطبيب — جارِ تحويل التعديل على الموعد...');
+        const row = await findReceived(rid);
+        if(row){ await sendReqRow('update', row.id, p); $('dayPick').value=p.appt_date; toast('⏳ أُرسل التعديل — ينفَّذ عند نشاط جهاز الطبيب'); }
+        else toast('⚠️ تعذر إيجاد الموعد بعد، حدّث الصفحة وعدّله من القائمة');
+      }
+    }catch(e){ toast('❌ '+e.message); }
+    return loadList(true);
+  }
+  if(EDIT && /^pub:/.test(EDIT.id)){
+    try{
+      const j = await R('PATCH','/rest/v1/public_bookings?id=eq.'+EDIT.id.slice(4)+'&received_at=is.null',p,{headers:{Prefer:'return=representation'}});
+      if(j && j.length){ toast('✅ تم تعديل الحجز'); $('dayPick').value=p.appt_date; }
+      else {   // استلمه جهاز الطبيب: نحوّل التعديل تلقائيًا إلى طلب تعديل على الموعد نفسه
+        toast('⏳ استلمه جهاز الطبيب — جارِ تحويل التعديل على الموعد...');
+        const row = await findReceived(EDIT.id.slice(4));
+        if(row){ const q=Object.assign({},p); if(!q.appt_time) delete q.appt_time; await sendReqRow('update', row.id, q); $('dayPick').value=p.appt_date; toast('⏳ أُرسل التعديل — ينفَّذ عند نشاط جهاز الطبيب'); }
+        else toast('⚠️ تعذر إيجاد الموعد بعد، حدّث الصفحة وعدّله من القائمة');
+      }
+    }catch(e){ toast('❌ '+e.message); }
+    return loadList(true);
+  }
+  try{
+    await sendReqRow(EDIT?'update':'create', EDIT&&EDIT.id, p);
+    toast('⏳ أُرسل الطلب — يظهر بالقائمة وينفَّذ عند نشاط جهاز الطبيب');
+    $('dayPick').value=p.appt_date;
+  }catch(e){ toast('❌ '+e.message); }
+  loadList(true);
+}
+
+// ---- الملفات ----
+let FILE_APPT=null;
+function openFiles(id){ FILE_APPT=id; const a=LIST.find(x=>x.id===id); $('fTitle').textContent='📎 ملفات: '+(a?a.patient_name:''); $('fName').value=''; renderFiles(); $('mFiles').classList.add('show'); }
+function renderFiles(){
+  const mine=(MYFILES[FILE_APPT]||[]).filter(f=>!f.deleted_at);
+  const others=(METAS[FILE_APPT]||[]);
+  $('fList').innerHTML = mine.length ? mine.map(f=>{
+    const left = 24*3600*1000-(Date.now()-new Date(f.created_at).getTime()); const can = left>0;
+    return `<div class="file"><div><b>${esc(f.title)}</b><div class="hint">${f.received_at?'✓ وصل للطبيب':'⏳ بانتظار وصوله للطبيب'}${can?` • يمكن التعديل ${Math.floor(left/3600000)} س`:''}</div></div>${can?`<div class="acts"><button class="btn btn-outline btn-sm" onclick="renameFile('${f.id}')">✎</button><button class="btn btn-danger btn-sm" onclick="deleteFile('${f.id}')">🗑️</button></div>`:''}</div>`;
+  }).join('') : '<p class="hint">لم ترفع ملفات لهذا الموعد خلال آخر 24 ساعة.</p>';
+  if(others.length) $('fList').innerHTML += `<p class="hint">📎 ملفات موجودة عند الطبيب: ${others.map(esc).join('، ')}</p>`;
+}
+async function compress(file){
+  if(!file.type.startsWith('image/')) return file;
+  try{
+    const bmp=await createImageBitmap(file); const sc=Math.min(1,1800/Math.max(bmp.width,bmp.height));
+    const cv=document.createElement('canvas'); cv.width=Math.round(bmp.width*sc); cv.height=Math.round(bmp.height*sc); cv.getContext('2d').drawImage(bmp,0,0,cv.width,cv.height);
+    const b=await new Promise(r=>cv.toBlob(r,'image/jpeg',0.8)); return (b&&b.size<file.size)?b:file;
+  }catch(e){ return file; }
+}
+async function uploadFiles(inp){
+  const files=[...inp.files]; inp.value=''; const base=$('fName').value.trim();
+  for(let i=0;i<files.length;i++){
+    const f=files[i]; const title=(base?base+(files.length>1?' '+(i+1):''):f.name.replace(/\.[^.]+$/,''))||'ملف';
+    try{
+      const blob=await compress(f); if(blob.size>10*1024*1024){ toast('❌ '+f.name+' أكبر من 10 ميغا'); continue; }
+      const ext = blob.type==='application/pdf'?'pdf':(blob.type==='image/png'?'png':(blob.type==='image/webp'?'webp':'jpg'));
+      const id=uid(); const path=SESSION.uid+'/'+id+'.'+ext;
+      await R('POST','/storage/v1/object/clinic-files/'+path, blob, {raw:true,headers:{'Content-Type':blob.type||'application/octet-stream','x-upsert':'false'}});
+      await R('POST','/rest/v1/incoming_files',{id,appt_id:FILE_APPT,title,storage_path:path,size_bytes:blob.size},{headers:{Prefer:'return=minimal'}});
+      toast('✅ رُفع: '+title);
+    }catch(e){ toast('❌ '+f.name+': '+e.message); }
+  }
+  await loadList(true); renderFiles();
+}
+async function renameFile(id){ const t=prompt('اسم الملف الجديد:'); if(!t||!t.trim()) return; try{ await R('PATCH','/rest/v1/incoming_files?id=eq.'+id,{title:t.trim().slice(0,120)},{headers:{Prefer:'return=minimal'}}); }catch(e){ toast('❌ '+e.message); } await loadList(true); renderFiles(); }
+async function deleteFile(id){ if(!confirm('حذف هذا الملف؟')) return; try{ await R('PATCH','/rest/v1/incoming_files?id=eq.'+id,{deleted_at:new Date().toISOString()},{headers:{Prefer:'return=minimal'}}); }catch(e){ toast('❌ '+e.message); } await loadList(true); renderFiles(); }
+
+resetBooking();
+try{ const s=JSON.parse(sessionStorage.getItem('cl_sess')||'null'); if(s){ SESSION=s; tab('sec'); enter(); } }catch(e){}
+</script>
+</body>
+</html>
