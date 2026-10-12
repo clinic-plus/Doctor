@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>عيادة د. ناجي كاظم الدراجي</title>
+<style>
+:root{--bg:#F2F6FC;--pri:#1D5FC9;--pri-d:#0E3B85;--pri-l:#DCE9FB;--txt:#132338;--mut:#5A6C85;--line:#DCE6F4;--bad:#D2574F;--bad-bg:#FBEAEA;--ok:#2E9E6B;--ok-bg:#E6F6EE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:Tahoma,"Segoe UI",system-ui,sans-serif;font-size:15px}
+#login{max-width:380px;margin:calc(12vh + env(safe-area-inset-top,0px)) auto 0;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+#login h2{margin-top:0;color:var(--pri-d)}
+#login label{display:block;font-size:12px;color:var(--mut);margin:10px 0 4px;font-weight:700}
+#login input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit}
+#login button{width:100%;margin-top:14px;border:0;border-radius:10px;padding:14px;font:inherit;font-size:16px;font-weight:700;background:var(--pri);color:#fff;cursor:pointer}
+#login button:disabled{opacity:.6}
+.msg{padding:9px 12px;border-radius:10px;margin:10px 0 0;font-size:13px;font-weight:700;background:var(--bad-bg);color:var(--bad)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<!-- ⚙️ مشروع Supabase الخاص بالعيادة: الرابط والمفتاح العام (anon) فقط، آمنان بالنشر. لا تضع هنا service_role أبدًا -->
+<script>
+const SUPABASE_URL = "https://uumfhafsmndxlrnsylia.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1bWZoYWZzbW5keGxybnN5bGlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NzE1ODksImV4cCI6MjEwNzA0NzU4OX0.wvSdtswOk75iXZ_9CsIGGmyyjV9DsJ-lh41hEjADzIY";
+</script>
+
+<section id="login">
+  <h2>🩺 عيادة د. ناجي كاظم الدراجي</h2>
+  <div style="color:var(--mut);font-size:13px">سجّل الدخول بحسابك (الصيدلية، السكرتيرة، المختبر، وظائف الرئة)</div>
+  <label>الإيميل</label><input id="em" type="email" dir="ltr" autocomplete="username">
+  <label>كلمة المرور</label><input id="pw" type="password" dir="ltr" autocomplete="current-password">
+  <div id="loginMsg"></div>
+  <button id="loginBtn">دخول</button>
+</section>
+<div id="wrap"></div>
+
+<template id="tpl-pharmacy"><style>
+:host{--bg:#F2F6FC;--card:#fff;--pri:#1D5FC9;--pri-d:#0E3B85;--pri-l:#DCE9FB;--txt:#132338;--mut:#5A6C85;--line:#DCE6F4;
+--ok:#2E9E6B;--ok-bg:#E6F6EE;--bad:#D2574F;--bad-bg:#FBEAEA;--warn:#9A6A00;--warn-bg:#FFF3D6}
+*{box-sizing:border-box}
+:host{display:block;margin:0;background:var(--bg);color:var(--txt);font-family:Tahoma,"Segoe UI",system-ui,sans-serif;font-size:15px;
+padding-bottom:env(safe-area-inset-bottom,0)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+header h1{font-size:16px;margin:0;color:var(--pri-d);flex:1}
+header small{color:var(--mut);font-size:12px}
+main{max-width:860px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tab{flex:1;border:0;border-radius:12px;padding:11px;font:inherit;font-weight:700;background:#fff;color:var(--pri-d);border:1px solid var(--line);cursor:pointer}
+.tab.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.cnt{display:inline-block;background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:0 8px;margin-inline-start:6px;font-size:12px}
+.tab.on .cnt{background:#fff;color:var(--pri)}
+button,input,textarea{font:inherit}
+input,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--txt)}
+label{display:block;font-size:12px;color:var(--mut);margin:8px 0 3px;font-weight:700}
+.btn{border:0;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;background:var(--pri);color:#fff}
+.btn.soft{background:var(--pri-l);color:var(--pri-d)}
+.btn.bad{background:var(--bad-bg);color:var(--bad)}
+.btn.ok{background:var(--ok);color:#fff}
+.btn.big{padding:13px 18px;font-size:16px;width:100%}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sp{flex:1}
+.bd{display:inline-block;border-radius:12px;padding:3px 11px;font-size:12px;font-weight:700}
+.bd.p{background:var(--warn-bg);color:var(--warn)}.bd.r,.bd.a{background:var(--ok-bg);color:var(--ok)}.bd.o{background:var(--bad-bg);color:var(--bad)}
+.items{white-space:pre-wrap;line-height:1.9;background:var(--bg);border-radius:10px;padding:10px 12px;margin:10px 0}
+.nm{font-weight:700;font-size:16px}.mut{color:var(--mut);font-size:12px}
+.empty{text-align:center;color:var(--mut);padding:36px 10px}
+.msg{padding:9px 12px;border-radius:10px;margin:8px 0;font-size:13px;font-weight:700}
+.msg.e{background:var(--bad-bg);color:var(--bad)}
+
+.modal{position:fixed;inset:0;background:rgba(10,25,50,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.modal .box{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:16px;max-height:90vh;overflow:auto}
+@media(min-width:600px){.modal{align-items:center}.modal .box{border-radius:18px}}
+.hidden{display:none!important}
+.new{animation:flash 1.6s ease 2}@keyframes flash{50%{background:#fff7d6}}
+</style>
+<!-- ⚙️ بعد إنشاء مشروع Supabase: الصق الرابط والمفتاح العام هنا (المفتاح العام آمن بالنشر) -->
+
+
+<header>
+  <h1>💊 صيدلية — عيادة د. ناجي كاظم الدراجي</h1>
+  <small id="who"></small>
+  <button class="btn soft" id="logout">خروج</button>
+</header>
+
+<main>
+  
+
+  <section id="app">
+    <div class="tabs">
+      <button class="tab on" data-t="rx">وصفات اليوم <span class="cnt" id="pendCnt">0</span></button>
+      <button class="tab" data-t="meds">قائمة الأدوية</button>
+    </div>
+    <div id="err"></div>
+
+    <div id="tab-rx">
+      <div class="row" style="margin-bottom:10px">
+        <button class="btn soft" data-f="all">الكل</button>
+        <button class="btn soft" data-f="pending">بانتظار التجهيز</button>
+        <button class="btn soft" data-f="ready">تم تجهيزها</button>
+      </div>
+      <div id="rxList"></div>
+    </div>
+
+    <div id="tab-meds" class="hidden">
+      <div class="row" style="margin-bottom:10px">
+        <input id="q" placeholder="🔍 ابحث عن دواء..." style="flex:1;min-width:160px">
+        <button class="btn" id="addMed">+ إضافة دواء</button>
+      </div>
+      <div id="medList"></div>
+    </div>
+  </section>
+</main>
+
+<div class="modal hidden" id="modal"><div class="box" id="modalBox"></div></div></template>
+<template id="tpl-upload"><style>
+:host{--bg:#F2F6FC;--card:#fff;--pri:#1D5FC9;--pri-d:#0E3B85;--pri-l:#DCE9FB;--txt:#132338;--mut:#5A6C85;--line:#DCE6F4;
+--ok:#2E9E6B;--ok-bg:#E6F6EE;--bad:#D2574F;--bad-bg:#FBEAEA;--warn:#9A6A00;--warn-bg:#FFF3D6}
+*{box-sizing:border-box}
+:host{display:block;margin:0;background:var(--bg);color:var(--txt);font-family:Tahoma,"Segoe UI",system-ui,sans-serif;font-size:15px;padding-bottom:env(safe-area-inset-bottom,0)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+header h1{font-size:16px;margin:0;color:var(--pri-d);flex:1}
+header small{color:var(--mut);font-size:12px}
+main{max-width:620px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+button,input{font:inherit}
+input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--txt)}
+label{display:block;font-size:12px;color:var(--mut);margin:10px 0 4px;font-weight:700}
+.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;background:var(--pri);color:#fff}
+.btn.soft{background:var(--pri-l);color:var(--pri-d)}.btn.ok{background:var(--ok)}
+.btn.big{padding:14px 18px;font-size:16px;width:100%}
+.btn:disabled{opacity:.55}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sp{flex:1}
+.mut{color:var(--mut);font-size:12px}
+.pt{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:right;background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-top:6px;cursor:pointer}
+.pt.on{border-color:var(--pri);background:var(--pri-l)}
+.chip{border:1px solid var(--line);background:#fff;border-radius:16px;padding:6px 12px;cursor:pointer;font-size:13px}
+.chip:hover{background:var(--pri-l)}
+.msg{padding:9px 12px;border-radius:10px;margin:8px 0;font-size:13px;font-weight:700}
+.msg.e{background:var(--bad-bg);color:var(--bad)}.msg.s{background:var(--ok-bg);color:var(--ok)}
+.bd{display:inline-block;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:700}
+.bd.p{background:var(--warn-bg);color:var(--warn)}.bd.r{background:var(--ok-bg);color:var(--ok)}
+
+.hidden{display:none!important}
+.files div{padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.files .fr{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+.th{width:56px;height:56px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:22px;flex:none;border:0}
+.th img{width:100%;height:100%;object-fit:cover}
+.fi{flex:1;min-width:0}.fb{display:flex;gap:6px}
+</style>
+<!-- ⚙️ مفتاح المشروع العام (anon) — آمن بالنشر (المفتاح العام آمن بالنشر) -->
+
+
+<header>
+  <h1>📎 رفع ملفات — عيادة د. ناجي كاظم الدراجي</h1>
+  <small id="who"></small>
+  <button class="btn soft" id="logout">خروج</button>
+</header>
+<main>
+  
+
+  <section id="app">
+    <div class="card">
+      <b>1) اختر المريض</b>
+      <input id="q" placeholder="🔍 ابحث بالاسم..." style="margin-top:8px">
+      <div id="pts"></div>
+    </div>
+    <div class="card">
+      <b>2) اسم الملف</b>
+      <div class="row" id="chips" style="margin:8px 0"></div>
+      <input id="title" placeholder="مثال: تحليل دم (CBC)">
+    </div>
+    <div class="card">
+      <b>3) الملفات</b>
+      <div class="row" style="margin-top:8px">
+        <button class="btn soft" id="camBtn">📷 تصوير</button>
+        <button class="btn soft" id="pickBtn">🖼️ اختيار ملفات / PDF</button>
+      </div>
+      <input id="camIn" type="file" accept="image/*" capture="environment" class="hidden">
+      <input id="fileIn" type="file" accept="image/*,application/pdf" multiple class="hidden">
+      <div id="picked" class="mut" style="margin-top:8px"></div>
+      <div id="upMsg"></div>
+      <button class="btn ok big" id="upBtn" style="margin-top:10px" disabled>⬆️ رفع</button>
+    </div>
+    <div class="card">
+      <b>ملفاتي (آخر 24 ساعة)</b>
+      <div class="mut" style="margin-top:2px">تقدر تغيّر اسم الملف أو تحذفه خلال 24 ساعة من رفعه، وبعدها يُحذف من الخادم نهائيًا.</div>
+      <div class="files" id="mine"><div class="mut">لا شيء بعد</div></div>
+    </div>
+  </section>
+</main></template>
+<template id="tpl-secretary"><style>
+:host{--bg:#F2F6FC;--card:#fff;--pri:#1D5FC9;--pri-d:#0E3B85;--pri-l:#DCE9FB;--txt:#132338;--mut:#5A6C85;--line:#DCE6F4;
+--ok:#2E9E6B;--ok-bg:#E6F6EE;--bad:#D2574F;--bad-bg:#FBEAEA;--warn:#9A6A00;--warn-bg:#FFF3D6}
+*{box-sizing:border-box}
+:host{display:block;margin:0;background:var(--bg);color:var(--txt);font-family:Tahoma,"Segoe UI",system-ui,sans-serif;font-size:15px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 70px)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:6}
+header h1{font-size:15px;margin:0;color:var(--pri-d);flex:1}
+.dev{font-size:12px;font-weight:700;border-radius:12px;padding:3px 10px}
+.dev.on{background:var(--ok-bg);color:var(--ok)}.dev.off{background:var(--bad-bg);color:var(--bad)}
+main{max-width:640px;margin:0 auto;padding:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:9px}
+button,input,select{font:inherit}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--txt)}
+label{display:block;font-size:12px;color:var(--mut);margin:9px 0 3px;font-weight:700}
+.btn{border:0;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer;background:var(--pri);color:#fff;font-size:13px}
+.btn.soft{background:var(--pri-l);color:var(--pri-d)}.btn.bad{background:var(--bad-bg);color:var(--bad)}.btn.ok{background:var(--ok)}
+.btn.big{padding:13px;font-size:15px;width:100%}
+.btn:disabled{opacity:.55}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.sp{flex:1}
+.mut{color:var(--mut);font-size:12px}
+.bd{display:inline-block;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:700;background:var(--pri-l);color:var(--pri)}
+.bd.d{background:var(--ok-bg);color:var(--ok)}.bd.c{background:var(--bad-bg);color:var(--bad)}.bd.e{background:var(--warn-bg);color:var(--warn)}.bd.n{background:var(--pri-l);color:var(--pri)}
+.qn{background:var(--pri-l);color:var(--pri-d);border-radius:50%;min-width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;border:0;cursor:pointer}
+.nm{font-weight:700;font-size:16px}
+.cx{opacity:.6}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.empty{text-align:center;color:var(--mut);padding:34px 10px}
+.msg{padding:9px 12px;border-radius:10px;margin:8px 0;font-size:13px;font-weight:700}
+.msg.e{background:var(--bad-bg);color:var(--bad)}.msg.s{background:var(--ok-bg);color:var(--ok)}.msg.w{background:var(--warn-bg);color:var(--warn)}
+
+.hidden{display:none!important}
+.fab{position:fixed;inset-inline-start:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:7;border-radius:28px;padding:14px 20px;font-size:15px;box-shadow:0 4px 14px rgba(14,59,133,.3)}
+.modal{position:fixed;inset:0;background:rgba(10,25,50,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.modal .box{background:#fff;width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:16px;max-height:92vh;overflow:auto}
+@media(min-width:600px){.modal{align-items:center}.modal .box{border-radius:18px}}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.inp-red{border-color:var(--bad)!important;background:var(--bad-bg)!important}
+.warnline{color:var(--bad);font-size:12px;font-weight:700;margin-top:4px}
+.sug{display:flex;justify-content:space-between;align-items:center;gap:6px;border:1px solid var(--warn);background:var(--warn-bg);border-radius:10px;padding:8px 10px;margin-top:6px;font-size:13px}
+.frow{padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.files .fr{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.th{width:56px;height:56px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:22px;flex:none}
+.th img{width:100%;height:100%;object-fit:cover}
+.fi{flex:1;min-width:0}.fb{display:flex;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:16px;padding:5px 11px;cursor:pointer;font-size:12px}
+</style>
+<!-- ⚙️ مفتاح المشروع العام (anon) — آمن بالنشر (المفتاح العام آمن بالنشر) -->
+
+
+<header>
+  <h1>🗓️ عيادة د. ناجي كاظم الدراجي</h1>
+  <span class="dev off" id="dev"></span>
+  <button class="btn soft" id="logout">خروج</button>
+</header>
+<main>
+  
+
+  <section id="app">
+    <div class="card">
+      <div class="row">
+        <button class="btn soft" id="prev">‹</button>
+        <input id="day" type="date" style="flex:1;min-width:130px">
+        <button class="btn soft" id="next">›</button>
+        <button class="btn" id="today">اليوم</button>
+      </div>
+      <input id="q" placeholder="🔍 بحث بالاسم أو الهاتف..." style="margin-top:8px">
+      <div class="mut" id="dayInfo" style="margin-top:6px"></div>
+    </div>
+    <div id="pend"></div>
+    <div id="err"></div>
+    <div id="list"></div>
+  </section>
+</main>
+<button class="btn fab" id="addBtn">＋ حجز جديد</button>
+<div class="modal hidden" id="modal"><div class="box" id="box"></div></div></template>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const SESSION_KEY = "clinic_session";
+let session = null, stopView = null;
+
+// ---------- المصادقة والشبكة (مشتركة بين كل الشاشات) ----------
+async function authCall(grant, body) {
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=${grant}`, {method: "POST",
+    headers: {apikey: SUPABASE_KEY, "Content-Type": "application/json"}, body: JSON.stringify(body)});
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.error_description || d.msg || "فشل الدخول");
+  session = {token: d.access_token, refresh: d.refresh_token, exp: Date.now() + (d.expires_in - 120) * 1000};
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+}
+async function ensure() { if (Date.now() > session.exp) await authCall("refresh_token", {refresh_token: session.refresh}); }
+const hdr = (extra = {}) => ({apikey: SUPABASE_KEY, Authorization: "Bearer " + session.token, ...extra});
+async function api(method, path, body, prefer) {
+  if (!session) throw new Error("no session");
+  await ensure();
+  const r = await fetch(SUPABASE_URL + "/rest/v1/" + path, {method, headers: hdr({"Content-Type": "application/json", ...(prefer ? {Prefer: prefer} : {})}), body: body ? JSON.stringify(body) : undefined});
+  if (r.status === 401) { logout(); throw new Error("انتهت الجلسة"); }
+  const t = await r.text();
+  if (!r.ok) { let m = t; try { m = JSON.parse(t).message || t } catch (e) {} throw new Error(m); }
+  return t ? JSON.parse(t) : null;
+}
+function logout(msg) {
+  session = null; localStorage.removeItem(SESSION_KEY);
+  if (stopView) { try { stopView(); } catch (e) {} stopView = null; }
+  $("wrap").innerHTML = ""; $("login").classList.remove("hidden");
+  $("loginMsg").innerHTML = typeof msg === "string" ? `<div class="msg">${esc(msg)}</div>` : "";
+}
+
+$("loginBtn").onclick = async () => {
+  $("loginMsg").innerHTML = ""; $("loginBtn").disabled = true;
+  try { await authCall("password", {email: $("em").value.trim(), password: $("pw").value}); $("pw").value = ""; await start(); }
+  catch (e) { $("loginMsg").innerHTML = `<div class="msg">${esc(e.message)}</div>`; }
+  $("loginBtn").disabled = false;
+};
+$("pw").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
+
+// ---------- ملفاتي: تسمية وحذف خلال 24 ساعة من الرفع (مشترك بين السكرتيرة والمختبر ووظائف الرئة) ----------
+const FILE_TTL_H = 24;
+const hoursLeft = r => Math.max(0, FILE_TTL_H - (Date.now() - new Date(r.created_at).getTime()) / 3.6e6);
+async function listMine(apptId) {
+  const f = apptId ? `&appt_id=eq.${encodeURIComponent(apptId)}` : "";
+  return api("GET", `incoming_files?select=*&deleted_at=is.null${f}&order=created_at.desc&limit=30`);
+}
+async function renameFile(id, title) {
+  await api("PATCH", "incoming_files?id=eq." + encodeURIComponent(id), {title: title.trim()}, "return=minimal");
+}
+async function deleteFile(r) {
+  await api("PATCH", "incoming_files?id=eq." + encodeURIComponent(r.id), {deleted_at: new Date().toISOString()}, "return=minimal");
+  try { await ensure(); await fetch(`${SUPABASE_URL}/storage/v1/object/clinic-files/${r.storage_path}`, {method: "DELETE", headers: hdr()}); } catch (e) {}
+}
+async function thumbUrl(r) {
+  await ensure();
+  const x = await fetch(`${SUPABASE_URL}/storage/v1/object/authenticated/clinic-files/${r.storage_path}`, {headers: hdr()});
+  if (!x.ok) throw new Error("thumb");
+  return URL.createObjectURL(await x.blob());
+}
+const isPdfFile = r => /\.pdf$/i.test(r.storage_path || "");
+function fileRowsHtml(rows, withPatient) {
+  if (!rows.length) return '<div class="mut">لا شيء بعد</div>';
+  return rows.map(r => {
+    const h = hoursLeft(r), left = h >= 1 ? `${Math.floor(h)} س` : `${Math.max(1, Math.round(h * 60))} د`;
+    return `<div class="fr" data-fid="${esc(r.id)}"><div class="th" data-th="${esc(r.id)}">${isPdfFile(r) ? "📄" : (thumbCache.has(r.id) ? `<img src="${thumbCache.get(r.id)}" alt="">` : "⏳")}</div>
+      <div class="fi"><b>${withPatient ? esc(r.patient_name) + " — " : ""}${esc(r.title || "بدون اسم")}</b>
+        <div class="mut">${r.received_at ? "✓ وصل للطبيب" : "بانتظار الاستلام"} · يتبقى للتعديل ${left}</div></div>
+      <div class="fb"><button class="btn soft" data-ren="${esc(r.id)}" type="button">✎</button><button class="btn bad" data-delf="${esc(r.id)}" type="button">🗑️</button></div></div>`;
+  }).join("");
+}
+const thumbCache = new Map();
+async function fillThumbs(box, rows) {
+  const keep = new Set(rows.map(r => r.id));
+  for (const [id, u] of thumbCache) if (!keep.has(id)) { URL.revokeObjectURL(u); thumbCache.delete(id); }
+  for (const r of rows) {
+    if (isPdfFile(r) || thumbCache.has(r.id)) continue;
+    const el = box.querySelector(`[data-th="${r.id}"]`);
+    try { const u = await thumbUrl(r); thumbCache.set(r.id, u); if (el) el.innerHTML = `<img src="${u}" alt="">`; } catch (e) { if (el) el.textContent = "🖼️"; }
+  }
+}
+// يربط أزرار ✎ و 🗑️ داخل حاوية؛ after() تُستدعى بعد أي تغيير لإعادة التحميل
+function wireFileActions(box, getRows, after, onError) {
+  box.onclick = async e => {
+    const b = e.target.closest("[data-ren],[data-delf]"); if (!b) return;
+    const r = getRows().find(x => x.id === (b.dataset.ren || b.dataset.delf)); if (!r) return;
+    try {
+      if (b.dataset.ren) {
+        const t = prompt("الاسم الجديد للملف", r.title || ""); if (t === null) return;
+        await renameFile(r.id, t);
+      } else {
+        if (!confirm(`حذف الملف «${r.title || "بدون اسم"}»؟ سيُحذف نهائيًا من الإنترنت ومن ملف المريض عند الطبيب.`)) return;
+        await deleteFile(r);
+      }
+      await after();
+    } catch (er) { onError(er.message); }
+  };
+}
+
+// ---------- توجيه كل حساب لشاشته حسب دوره ----------
+const ROUTES = {pharmacy: ["tpl-pharmacy", mountPharmacy], lab: ["tpl-upload", mountUpload],
+                pft: ["tpl-upload", mountUpload], secretary: ["tpl-secretary", mountSecretary]};
+async function start() {
+  await ensure();
+  const u = await (await fetch(SUPABASE_URL + "/auth/v1/user", {headers: hdr()})).json();
+  const st = await api("GET", "staff?select=role,display_name&user_id=eq." + u.id);
+  if (!st.length) return logout("هذا الحساب غير مربوط بدور بعد — تواصل مع الطبيب");
+  const role = st[0].role, route = ROUTES[role];
+  if (!route) return logout("حساب الطبيب يُستخدم من برنامج العيادة على الحاسبة، وليس من هذه الصفحة");
+  $("login").classList.add("hidden");
+  $("wrap").innerHTML = '<div id="host"></div>';
+  const root = $("host").attachShadow({mode: "open"});
+  root.appendChild($(route[0]).content.cloneNode(true));
+  document.title = ({pharmacy: "الصيدلية", lab: "المختبر", pft: "وظائف الرئة", secretary: "السكرتيرة"})[role] + " — عيادة د. ناجي كاظم الدراجي";
+  stopView = route[1](root, {id: u.id, role, name: st[0].display_name || ""});
+}
+
+// ===================== شاشة الصيدلية =====================
+function mountPharmacy(root, me) {
+  const $ = id => root.getElementById(id);
+  let rx = [], meds = [], filter = "all", tab = "rx", seen = new Set(), firstLoad = true, timer = null;
+// ---------- تحميل ----------
+async function load() {
+  try {
+    [rx, meds] = await Promise.all([
+      api("GET", "rx_orders?select=*&order=created_at.asc"),
+      api("GET", "pharmacy_meds?select=*&deleted=eq.false&order=name.asc")
+    ]);
+    $("err").innerHTML = "";
+    renderRx(); renderMeds();
+  } catch (e) { $("err").innerHTML = `<div class="msg e">تعذّر التحميل: ${esc(e.message)}</div>`; }
+}
+
+// ---------- الوصفات ----------
+function renderRx() {
+  const pend = rx.filter(r => r.status === "pending").length;
+  $("pendCnt").textContent = pend;
+  const list = rx.filter(r => filter === "all" || r.status === filter);
+  root.querySelectorAll("[data-f]").forEach(b => b.style.outline = b.dataset.f === filter ? "2px solid var(--pri)" : "none");
+  if (!list.length) { $("rxList").innerHTML = '<div class="empty">📋<br>لا توجد وصفات لليوم بعد</div>'; return; }
+  $("rxList").innerHTML = list.map(r => {
+    const isNew = !firstLoad && !seen.has(r.id);
+    return `<div class="card ${isNew ? "new" : ""}"><div class="row">
+      <div class="nm">${esc(r.patient_name)}</div><span class="sp"></span>
+      <span class="bd ${r.status === "ready" ? "r" : "p"}">${r.status === "ready" ? "تم التجهيز" : "بانتظار التجهيز"}</span></div>
+      <div class="items">${esc(r.items)}</div>
+      ${r.status === "pending"
+        ? `<button class="btn ok big" data-ready="${esc(r.id)}">✅ تم تجهيز العلاج</button>`
+        : `<div class="row"><span class="mut">جُهّزت ${r.ready_at ? new Date(r.ready_at).toLocaleTimeString("ar-IQ", {hour: "2-digit", minute: "2-digit"}) : ""}</span><span class="sp"></span>
+           <button class="btn soft" data-undo="${esc(r.id)}">↩ تراجع</button></div>`}
+    </div>`;
+  }).join("");
+  rx.forEach(r => seen.add(r.id)); firstLoad = false;
+}
+root.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { filter = b.dataset.f; renderRx(); });
+$("rxList").onclick = async e => {
+  const id = e.target.dataset.ready || e.target.dataset.undo; if (!id) return;
+  const ready = !!e.target.dataset.ready;
+  e.target.disabled = true;
+  try {
+    await api("PATCH", "rx_orders?id=eq." + encodeURIComponent(id), {status: ready ? "ready" : "pending"}, "return=minimal");
+    await load();
+  } catch (er) { $("err").innerHTML = `<div class="msg e">${esc(er.message)}</div>`; e.target.disabled = false; }
+};
+
+// ---------- الأدوية ----------
+function renderMeds() {
+  const q = $("q").value.trim().toLowerCase();
+  const list = meds.filter(m => !q || (m.name || "").toLowerCase().includes(q) || (m.generic_name || "").toLowerCase().includes(q));
+  if (!list.length) { $("medList").innerHTML = '<div class="empty">💊<br>لا توجد أدوية</div>'; return; }
+  $("medList").innerHTML = list.map(m => {
+    const out = m.stock_status === "out";
+    return `<div class="card"><div class="row">
+      <div><div class="nm">${esc(m.name)}</div>
+      ${m.generic_name ? `<div class="mut" dir="ltr" style="text-align:right">${esc(m.generic_name)}</div>` : ""}</div>
+      <span class="sp"></span>
+      <button class="btn ${out ? "bad" : "soft"}" data-toggle="${esc(m.id)}" style="min-width:92px">${out ? "❌ نافذ" : "✅ متوفر"}</button></div>
+      ${m.dose ? `<div class="mut" style="margin-top:6px">الجرعة: ${esc(m.dose)}</div>` : ""}
+      ${m.notes ? `<div class="mut">${esc(m.notes)}</div>` : ""}
+      <div class="row" style="margin-top:8px"><button class="btn soft" data-edit="${esc(m.id)}">✎ تعديل</button>
+      <button class="btn bad" data-del="${esc(m.id)}">🗑️ حذف</button></div></div>`;
+  }).join("");
+}
+$("q").oninput = renderMeds;
+$("medList").onclick = async e => {
+  const d = e.target.dataset;
+  try {
+    if (d.toggle) {
+      const m = meds.find(x => x.id === d.toggle);
+      await api("PATCH", "pharmacy_meds?id=eq." + encodeURIComponent(m.id), {stock_status: m.stock_status === "out" ? "available" : "out"}, "return=minimal");
+      await load();
+    } else if (d.edit) openMed(meds.find(x => x.id === d.edit));
+    else if (d.del) {
+      const m = meds.find(x => x.id === d.del);
+      if (confirm(`حذف الدواء «${m.name}»؟`)) {
+        await api("PATCH", "pharmacy_meds?id=eq." + encodeURIComponent(m.id), {deleted: true}, "return=minimal"); await load();
+      }
+    }
+  } catch (er) { $("err").innerHTML = `<div class="msg e">${esc(er.message)}</div>`; }
+};
+$("addMed").onclick = () => openMed(null);
+
+function openMed(m) {
+  $("modalBox").innerHTML = `<h3 style="margin-top:0;color:var(--pri-d)">${m ? "تعديل دواء" : "إضافة دواء"}</h3>
+    <label>اسم الدواء *</label><input id="fN" value="${esc(m?.name)}">
+    <label>الاسم العلمي (اختياري)</label><input id="fG" dir="ltr" value="${esc(m?.generic_name)}">
+    <label>الجرعة</label><input id="fD" value="${esc(m?.dose)}">
+    <label>ملاحظات</label><textarea id="fT" rows="2">${esc(m?.notes)}</textarea>
+    <div id="fMsg"></div>
+    <div class="row" style="margin-top:12px"><button class="btn" id="fSave">حفظ</button><button class="btn soft" id="fCancel">إلغاء</button></div>`;
+  $("modal").classList.remove("hidden");
+  $("fCancel").onclick = () => $("modal").classList.add("hidden");
+  $("fSave").onclick = async () => {
+    const name = $("fN").value.trim();
+    if (!name) { $("fMsg").innerHTML = '<div class="msg e">اسم الدواء مطلوب</div>'; return; }
+    const row = {name, generic_name: $("fG").value.trim(), dose: $("fD").value.trim(), notes: $("fT").value.trim()};
+    try {
+      if (m) await api("PATCH", "pharmacy_meds?id=eq." + encodeURIComponent(m.id), row, "return=minimal");
+      else await api("POST", "pharmacy_meds", {id: crypto.randomUUID().replaceAll("-", ""), ...row}, "return=minimal");
+      $("modal").classList.add("hidden"); await load();
+    } catch (er) { $("fMsg").innerHTML = `<div class="msg e">${esc(er.message)}</div>`; }
+  };
+}
+
+// ---------- تبويبات ----------
+root.querySelectorAll(".tab").forEach(b => b.onclick = () => {
+  tab = b.dataset.t;
+  root.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === b));
+  $("tab-rx").classList.toggle("hidden", tab !== "rx"); $("tab-meds").classList.toggle("hidden", tab !== "meds");
+});
+
+
+  $("who").textContent = me.name;
+  $("logout").onclick = logout;
+  load();
+  timer = setInterval(() => { if ($("modal").classList.contains("hidden")) load(); }, 10000);
+  return () => clearInterval(timer);
+}
+
+// ===================== شاشة المختبر / وظائف الرئة =====================
+function mountUpload(root, me) {
+  const $ = id => root.getElementById(id);
+  const MAX_BYTES = 10 * 1024 * 1024;
+  const CHIPS = {
+  lab: ["تحليل دم (CBC)", "تحليل ادرار", "سكر / وظائف كلى", "تحليل آخر"],
+  pft: ["فحص وظائف الرئة", "سبايرومتري"],
+  secretary: ["تقرير", "صورة أشعة", "تحليل", "ملف آخر"]
+};
+  let appts = [], sel = null, files = [], timer = null;
+async function load() {
+  appts = await api("GET", "appt_index?select=*&order=appt_date.desc,patient_name.asc");
+  renderPts(); loadMine();
+}
+function renderPts() {
+  const q = $("q").value.trim().toLowerCase();
+  const list = appts.filter(a => !q || a.patient_name.toLowerCase().includes(q)).slice(0, 40);
+  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  $("pts").innerHTML = list.length ? list.map(a => `<button type="button" class="pt ${sel === a.id ? "on" : ""}" data-id="${esc(a.id)}">
+    <b>${esc(a.patient_name)}</b><span class="mut">${a.appt_date === today ? "اليوم" : esc(a.appt_date)}</span></button>`).join("")
+    : '<div class="mut" style="margin-top:8px">لا توجد مواعيد مطابقة</div>';
+}
+$("q").oninput = renderPts;
+$("pts").onclick = e => { const b = e.target.closest(".pt"); if (b) { sel = b.dataset.id; renderPts(); upd(); } };
+$("chips").onclick = e => { if (e.target.classList.contains("chip")) $("title").value = e.target.textContent; };
+
+// ---------- اختيار الملفات ----------
+$("camBtn").onclick = () => $("camIn").click();
+$("pickBtn").onclick = () => $("fileIn").click();
+for (const id of ["camIn", "fileIn"]) $(id).onchange = e => { files = files.concat([...e.target.files]); e.target.value = ""; upd(); };
+function upd() {
+  $("picked").innerHTML = files.length ? files.map((f, i) => `• ${esc(f.name)} <a href="#" data-rm="${i}" style="color:var(--bad)">حذف</a>`).join("<br>") : "";
+  $("upBtn").disabled = !(sel && files.length);
+}
+$("picked").onclick = e => { if (e.target.dataset.rm !== undefined) { e.preventDefault(); files.splice(+e.target.dataset.rm, 1); upd(); } };
+
+// تصغير الصور قبل الرفع (يسرّع الرفع ويوفر التخزين)
+async function shrink(f) {
+  if (f.type === "application/pdf") return {blob: f, ext: ".pdf", type: "application/pdf"};
+  const bmp = await createImageBitmap(f).catch(() => null);
+  if (!bmp) throw new Error(`تعذّر قراءة الصورة: ${f.name}`);
+  const k = Math.min(1, 1800 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  const blob = await new Promise(r => c.toBlob(r, "image/jpeg", 0.82));
+  return {blob, ext: ".jpg", type: "image/jpeg"};
+}
+
+$("upBtn").onclick = async () => {
+  $("upMsg").innerHTML = ""; $("upBtn").disabled = true;
+  const title = $("title").value.trim(); let ok = 0;
+  try {
+    for (const [i, f] of files.entries()) {
+      $("upMsg").innerHTML = `<div class="msg s">جاري رفع ${i + 1} من ${files.length}...</div>`;
+      const {blob, ext, type} = await shrink(f);
+      if (blob.size > MAX_BYTES) throw new Error(`الملف أكبر من 10 ميغا: ${f.name}`);
+      const fid = crypto.randomUUID().replaceAll("-", "");
+      const path = `${me.id}/${fid}${ext}`;
+      await ensure();
+      const r = await fetch(`${SUPABASE_URL}/storage/v1/object/clinic-files/${path}`, {method: "POST", headers: hdr({"Content-Type": type}), body: blob});
+      if (!r.ok) throw new Error("فشل رفع الملف: " + (await r.text()));
+      await api("POST", "incoming_files", {id: fid, appt_id: sel, title, storage_path: path, size_bytes: blob.size}, "return=minimal");
+      ok++;
+    }
+    $("upMsg").innerHTML = `<div class="msg s">✅ تم رفع ${ok} ملف — سيصل لجهاز الطبيب خلال ثوانٍ</div>`;
+    files = []; $("title").value = ""; upd(); loadMine();
+  } catch (e) { $("upMsg").innerHTML = `<div class="msg e">${esc(e.message)}${ok ? ` (تم رفع ${ok} قبل الخطأ)` : ""}</div>`; files = files.slice(ok); upd(); }
+};
+
+let mineRows = [];
+async function loadMine() {
+  try {
+    mineRows = await listMine();
+    $("mine").innerHTML = fileRowsHtml(mineRows, true);
+    fillThumbs($("mine"), mineRows);
+  } catch (e) {}
+}
+wireFileActions($("mine"), () => mineRows, loadMine, m => { $("upMsg").innerHTML = `<div class="msg e">${esc(m)}</div>`; });
+
+
+  $("who").textContent = me.name;
+  $("logout").onclick = logout;
+  $("chips").innerHTML = (CHIPS[me.role] || []).map(c => `<button class="chip" type="button">${esc(c)}</button>`).join("");
+  load();
+  timer = setInterval(loadMine, 15000);
+  return () => clearInterval(timer);
+}
+
+// ===================== شاشة السكرتيرة =====================
+function mountSecretary(root, me) {
+  const $ = id => root.getElementById(id);
+  const todayStr = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  const nowHM = () => new Date().toTimeString().slice(0, 5);
+  const MAX_BYTES = 10 * 1024 * 1024;
+  let day = todayStr(), items = [], defaultFee = 15000, devOnline = false;
+  let pending = {};
+  let timers = [], modalOpen = false;
+async function refreshAll() { await Promise.all([loadStatus(), loadDay()]); }
+
+async function loadStatus() {
+  try {
+    const s = await api("GET", "clinic_status?select=*&id=eq.1");
+    if (s.length) {
+      defaultFee = s[0].default_fee || defaultFee;
+      const age = (Date.now() - new Date(s[0].last_seen).getTime()) / 1000;
+      devOnline = age < 60;
+    } else devOnline = false;
+  } catch (e) { devOnline = false; }
+  if (devHook) devHook();
+  $("dev").className = "dev " + (devOnline ? "on" : "off");
+  $("dev").textContent = devOnline ? "🟢 جهاز الطبيب متصل" : "🔴 جهاز الطبيب غير متصل — الطلبات تنتظر";
+  renderPend();
+}
+
+async function loadDay() {
+  try {
+    items = await api("GET", `appt_mirror?select=*&appt_date=eq.${day}&order=queue_order.asc.nullslast,appt_time.asc`);
+    $("err").innerHTML = ""; render();
+  } catch (e) { $("err").innerHTML = `<div class="msg e">تعذّر التحميل: ${esc(e.message)}</div>`; }
+}
+
+// ---------- عرض ----------
+const stCls = s => s === "مكتمل" ? "d" : s === "ملغى" ? "c" : "n";
+function render() {
+  const q = $("q").value.trim().toLowerCase();
+  const list = items.filter(a => !q || a.patient_name.toLowerCase().includes(q) || (a.phone || "").includes(q));
+  const busyIds = new Set(Object.values(pending).map(p => p.appt).filter(Boolean));
+  $("dayInfo").textContent = (day === todayStr() ? "مواعيد اليوم — " : "مواعيد يوم ") + day + ` (${items.length})`;
+  if (!list.length) { $("list").innerHTML = '<div class="empty">📅<br>لا توجد حجوزات في هذا اليوم</div>'; return; }
+  $("list").innerHTML = list.map(a => {
+    const cancelled = a.status === "ملغى", queued = a.queue_order !== null, busy = busyIds.has(a.id);
+    let h = `<div class="card ${cancelled ? "cx" : ""}" data-id="${esc(a.id)}"><div class="row">`;
+    if (queued) h += `<button class="qn" data-act="qnum">${a.queue_order + 1}</button>`;
+    h += `<span class="nm">${esc(a.patient_name)}</span>${a.visit_type === "new" ? '<span class="bd n">جديد</span>' : ""}<span class="sp"></span>
+      ${busy ? '<span class="bd e">⏳</span>' : ""}<span class="bd ${stCls(a.status)}">${esc(a.status)}</span></div>`;
+    h += `<div class="row mut" style="margin-top:6px;gap:14px"><span>${a.phone ? `📞 <a href="tel:${esc(a.phone)}">${esc(a.phone)}</a>` : "📞 —"}</span><span>🕐 ${esc(a.appt_time)}</span>
+      <span>${a.is_free ? "🆓 كشفية مجانية" : "💵 " + Number(a.fee).toLocaleString("en-US") + " د.ع"}</span></div>`;
+    if (a.rx) h += `<div class="mut" style="margin-top:4px">${a.rx === "ready" ? "💊 تم تجهيز العلاج من الصيدلية" : "💊 الوصفة بانتظار الصيدلية"}</div>`;
+    h += '<div class="acts">';
+    if (!cancelled) {
+      if (queued) h += '<button class="btn soft" data-act="up">⬆ تقديم</button><button class="btn soft" data-act="down">⬇ تأخير</button><button class="btn soft" data-act="qnum">🔢 رقم الدور</button><button class="btn soft" data-act="qclear">↩ إلغاء الدور</button>';
+      else h += '<button class="btn ok" data-act="checkin">✅ تسجيل حضور</button><button class="btn soft" data-act="qnum">🔢 رقم الدور</button>';
+    }
+    h += `<button class="btn soft" data-act="edit">✎ تعديل</button><button class="btn soft" data-act="files">📎 الملفات (${a.file_count})</button>`;
+    if (a.status === "مجدول") h += '<button class="btn bad" data-act="cancel">🚫 إلغاء الحجز</button>';
+    if (cancelled) h += '<button class="btn soft" data-act="restore">↩ استرجاع الحجز</button>';
+    return h + "</div></div>";
+  }).join("");
+}
+$("q").oninput = render;
+$("day").onchange = () => { if ($("day").value) { day = $("day").value; loadDay(); } };
+$("prev").onclick = () => shift(-1); $("next").onclick = () => shift(1);
+$("today").onclick = () => { day = todayStr(); $("day").value = day; loadDay(); };
+function shift(n) { const d = new Date(day + "T12:00:00"); d.setDate(d.getDate() + n); day = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); $("day").value = day; loadDay(); }
+
+// ---------- الطلبات (تنفّذ على جهاز الطبيب) ----------
+async function send(kind, appt, payload, label) {
+  const id = crypto.randomUUID().replaceAll("-", "");
+  try {
+    await api("POST", "appt_commands", {id, kind, appt_id: appt || null, payload: payload || {}}, "return=minimal");
+    pending[id] = {label, appt}; renderPend(); render(); setTimeout(pollCmds, 600);
+  } catch (e) { $("err").innerHTML = `<div class="msg e">تعذّر الإرسال: ${esc(e.message)}</div>`; }
+}
+function renderPend() {
+  const n = Object.keys(pending).length;
+  $("pend").innerHTML = n ? `<div class="msg w">⏳ ${n} طلب بانتظار التنفيذ على جهاز الطبيب${devOnline ? "" : " — الجهاز غير متصل حاليًا، وسيُنفَّذ أول ما يفتح"}</div>` : "";
+}
+let polling = false;
+async function pollCmds() {
+  const ids = Object.keys(pending); if (!ids.length || polling) return;
+  polling = true;
+  try {
+    const rows = await api("GET", `appt_commands?select=id,done_at,ok,message&id=in.(${ids.map(i => '"' + i + '"').join(",")})`);
+    let any = false;
+    for (const r of rows) if (r.done_at) {
+      const p = pending[r.id]; if (!p) continue; delete pending[r.id]; any = true;
+      $("err").innerHTML = r.ok ? `<div class="msg s">✅ ${esc(p.label)}</div>` : `<div class="msg e">❌ ${esc(p.label)}: ${esc(r.message || "فشل")}</div>`;
+      setTimeout(() => { if (!Object.keys(pending).length) $("err").innerHTML = ""; }, 5000);
+    }
+    if (any) { renderPend(); await loadDay(); }
+  } catch (e) {} finally { polling = false; }
+}
+
+$("list").onclick = e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const card = b.closest(".card"); const a = items.find(x => x.id === card.dataset.id); if (!a) return;
+  const act = b.dataset.act;
+  if (act === "checkin") send("checkin", a.id, {}, `تسجيل حضور ${a.patient_name}`);
+  else if (act === "up" || act === "down") send("queue", a.id, {action: act}, `تغيير دور ${a.patient_name}`);
+  else if (act === "qclear") send("queue", a.id, {action: "clear"}, `إلغاء دور ${a.patient_name}`);
+  else if (act === "qnum") { const n = prompt("رقم الدور الجديد لـ " + a.patient_name, a.queue_order !== null ? a.queue_order + 1 : ""); if (n) send("queue", a.id, {action: "set", n: parseInt(n, 10)}, `رقم دور ${a.patient_name}`); }
+  else if (act === "cancel") { if (confirm(`إلغاء حجز ${a.patient_name}؟`)) send("save", a.id, {status: "ملغى"}, `إلغاء حجز ${a.patient_name}`); }
+  else if (act === "restore") send("save", a.id, {status: "مجدول"}, `استرجاع حجز ${a.patient_name}`);
+  else if (act === "edit") openForm(a);
+  else if (act === "files") openFiles(a);
+};
+
+// ---------- بحث عن مريض: يُنفَّذ على لابتوب الطبيب ثم تُحذف النتيجة من الإنترنت خلال دقائق ----------
+async function searchPatients(name, phone) {
+  const id = crypto.randomUUID().replaceAll("-", "");
+  await api("POST", "appt_commands", {id, kind: "search", payload: {name, phone}}, "return=minimal");
+  for (let i = 0; i < 20; i++) {
+    await new Promise(r => setTimeout(r, 1000));
+    const r = await api("GET", `appt_commands?select=done_at,ok,message,result&id=eq.${id}`);
+    if (r.length && r[0].done_at) {
+      if (!r[0].ok) throw new Error(r[0].message || "فشل البحث");
+      return r[0].result || [];
+    }
+  }
+  throw new Error("لم يرد جهاز الطبيب — حاول مرة ثانية");
+}
+
+// ---------- نافذة الحجز ----------
+function openModal(html) { $("box").innerHTML = html; $("modal").classList.remove("hidden"); modalOpen = true; }
+function closeModal() { $("modal").classList.add("hidden"); modalOpen = false; devHook = null; $("box").innerHTML = ""; }
+let dupCache = [], devHook = null;
+function openForm(a) {
+  openModal(`<h3 style="margin-top:0;color:var(--pri-d)">${a ? "تعديل حجز" : "حجز جديد"}</h3>
+    <label>الاسم * <span class="mut">(اكتب الاسم أو الهاتف واضغط 🔍 للبحث بسجل المرضى)</span></label>
+    <div class="row" style="flex-wrap:nowrap"><input id="fName" value="${esc(a?.patient_name)}" autocomplete="off"><button class="btn soft" id="fSearch" type="button" style="white-space:nowrap">🔍 بحث</button></div>
+    <div id="devWarn" class="warnline"></div>
+    <div id="dups"></div>
+    <div class="g2"><div><label>التاريخ *</label><input id="fDate" type="date" value="${esc(a?.appt_date || day)}"></div>
+      <div><label>الوقت *</label><input id="fTime" type="time" value="${esc(a?.appt_time || nowHM())}"></div></div>
+    <div class="g2"><div><label>رقم الهاتف</label><input id="fPhone" type="tel" value="${esc(a?.phone)}"></div>
+      <div><label>العمر</label><input id="fAge" inputmode="numeric" value="${esc(a?.age)}"></div></div>
+    <label>العنوان</label><input id="fAddr" value="${esc(a?.address)}">
+    <label>سعر الكشفية (د.ع)</label><input id="fFee" type="number" inputmode="numeric" step="500" value="${a ? a.fee : defaultFee}">
+    <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="fFree" style="width:auto" ${a?.is_free ? "checked" : ""}> كشفية مجانية</label>
+    <div id="fMsg"></div>
+    <div class="row" style="margin-top:12px"><button class="btn" id="fSave" style="flex:1">${a ? "حفظ التعديل" : "حفظ الحجز"}</button><button class="btn soft" id="fCancel">إلغاء</button></div>`);
+  $("fCancel").onclick = closeModal;
+  const free = () => { $("fFee").disabled = $("fFree").checked; if ($("fFree").checked) $("fFee").value = 0; };
+  $("fFree").onchange = free; free();
+  // مربع البحث يصير أحمر مع عبارة تنبيه عندما تكون حاسبة الطبيب غير نشطة (الحجز نفسه يبقى متاحًا ويُنفَّذ لاحقًا)
+  const paintDev = () => {
+    if (!$("fName")) return;
+    $("fName").classList.toggle("inp-red", !devOnline);
+    $("fSearch").disabled = !devOnline;
+    $("devWarn").textContent = devOnline ? "" : "حاسبة الطبيب غير نشطة";
+  };
+  devHook = paintDev; paintDev();
+  const runSearch = async () => {
+    if (!devOnline) { paintDev(); return; }
+    const name = $("fName").value.trim(), phone = $("fPhone").value.trim();
+    if (name.length < 2 && phone.replace(/\D/g, "").length < 4) { $("dups").innerHTML = '<div class="mut">اكتب حرفين من الاسم أو 4 أرقام من الهاتف</div>'; return; }
+    $("fSearch").disabled = true; $("dups").innerHTML = '<div class="mut">⏳ جاري البحث بحاسبة الطبيب...</div>';
+    try {
+      dupCache = await searchPatients(name, phone);
+      $("dups").innerHTML = dupCache.length
+        ? dupCache.map((p, i) => `<div class="sug"><span>${p.strong ? "⚠️" : "👤"} <b>${esc(p.name)}</b> ${p.phone ? "— " + esc(p.phone) : ""} ${p.age ? "· " + esc(p.age) : ""} <span class="mut">(${esc(p.reason)})</span></span><button class="btn soft" data-use="${i}" type="button">استخدام</button></div>`).join("")
+        : '<div class="msg s">لا يوجد مريض مطابق بالسجل ✓ (مريض جديد)</div>';
+    } catch (e) { $("dups").innerHTML = `<div class="msg e">${esc(e.message)}</div>`; }
+    if ($("fSearch")) paintDev();
+  };
+  $("fSearch").onclick = runSearch;
+  $("fName").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); runSearch(); } });
+  $("dups").onclick = e => { const i = e.target.dataset.use; if (i === undefined) return; const p = dupCache[+i];
+    $("fName").value = p.name; $("fPhone").value = p.phone || ""; $("fAge").value = p.age || ""; $("fAddr").value = p.address || ""; $("dups").innerHTML = ""; };
+  $("fSave").onclick = () => {
+    const v = {name: $("fName").value.trim(), date: $("fDate").value, time: $("fTime").value, phone: $("fPhone").value.trim(),
+      age: $("fAge").value.trim(), address: $("fAddr").value.trim(), is_free: $("fFree").checked, fee: $("fFree").checked ? 0 : Number($("fFee").value || 0)};
+    if (!v.name) { $("fMsg").innerHTML = '<div class="msg e">الاسم مطلوب</div>'; return; }
+    if (!v.date || !v.time) { $("fMsg").innerHTML = '<div class="msg e">التاريخ والوقت مطلوبان</div>'; return; }
+    let payload = v;
+    if (a) {   // تعديل: نرسل الحقول التي تغيّرت فقط
+      const cur = {name: a.patient_name, date: a.appt_date, time: a.appt_time, phone: a.phone, age: a.age, address: a.address, is_free: a.is_free, fee: a.fee};
+      payload = {}; for (const k in v) if (String(v[k]) !== String(cur[k])) payload[k] = v[k];
+      if (!Object.keys(payload).length) { closeModal(); return; }
+    }
+    closeModal();
+    send("save", a ? a.id : null, payload, (a ? "تعديل حجز " : "حجز جديد: ") + v.name);
+    if (!a && v.date !== day) { day = v.date; $("day").value = day; }
+  };
+  setTimeout(() => $("fName").focus(), 100);
+}
+$("addBtn").onclick = () => openForm(null);
+
+// ---------- ملفات الموعد (عرض الأسماء + رفع) ----------
+let upFiles = [];
+async function openFiles(a) {
+  upFiles = [];
+  openModal(`<h3 style="margin-top:0;color:var(--pri-d)">📎 ملفات ${esc(a.patient_name)}</h3>
+    <div class="mut">الملفات اللي وصلت للطبيب (أسماؤها فقط) — راجعها قبل الرفع حتى لا تتكرر.</div>
+    <div id="fl" style="margin:8px 0"><div class="mut">جارِ التحميل...</div></div>
+    <div class="card" style="margin-top:10px"><b>ملفاتي لهذا الموعد (آخر 24 ساعة)</b>
+      <div class="mut" style="margin-top:2px">تعدّل الاسم أو تحذف خلال 24 ساعة من الرفع، وبعدها يُحذف من الخادم.</div>
+      <div id="mineF" class="files"><div class="mut">لا شيء بعد</div></div></div>
+    <div class="card" style="margin-top:10px"><b>رفع ملفات</b>
+      <div class="row" id="chips" style="margin:8px 0"></div>
+      <input id="upTitle" placeholder="اسم الملف (مثال: تحليل دم)">
+      <div class="row" style="margin-top:8px"><button class="btn soft" id="camB">📷 تصوير</button><button class="btn soft" id="galB">🖼️ معرض / PDF</button></div>
+      <input id="camI" type="file" accept="image/*" capture="environment" class="hidden"><input id="galI" type="file" accept="image/*,application/pdf" multiple class="hidden">
+      <div id="picked" class="mut" style="margin-top:6px"></div><div id="upMsg"></div>
+      <button class="btn ok big" id="upGo" style="margin-top:8px" disabled>⬆️ رفع</button></div>
+    <div class="row" style="margin-top:10px"><button class="btn soft" id="fRef">🔄 تحديث</button><span class="sp"></span><button class="btn soft" id="fClose">إغلاق</button></div>`);
+  $("fClose").onclick = closeModal;
+  const load = async () => { try {
+    const rows = await api("GET", `appt_files_meta?select=*&appt_id=eq.${a.id}&order=uploaded_at.desc`);
+    $("fl").innerHTML = rows.length ? rows.map(r => `<div class="frow">📄 ${esc(r.title || "بدون اسم")} <span class="mut">${new Date(r.uploaded_at).toLocaleString("ar-IQ", {hour: "2-digit", minute: "2-digit", day: "numeric", month: "numeric"})}</span></div>`).join("") : '<div class="mut">لا توجد ملفات لهذا الموعد بعد</div>';
+  } catch (e) { $("fl").innerHTML = `<div class="msg e">${esc(e.message)}</div>`; } };
+  let mineF = [];
+  const loadMineF = async () => { try { mineF = await listMine(a.id); $("mineF").innerHTML = fileRowsHtml(mineF, false); fillThumbs($("mineF"), mineF); } catch (e) {} };
+  wireFileActions($("mineF"), () => mineF, async () => { await loadMineF(); await load(); }, m => { $("upMsg").innerHTML = `<div class="msg e">${esc(m)}</div>`; });
+  load(); loadMineF(); $("fRef").onclick = () => { load(); loadMineF(); };
+  $("chips").innerHTML = ["تحليل دم", "تحليل ادرار", "أشعة", "تقرير", "فحص وظائف الرئة"].map(c => `<button class="chip" type="button">${c}</button>`).join("");
+  $("chips").onclick = e => { if (e.target.classList.contains("chip")) $("upTitle").value = e.target.textContent; };
+  const upd = () => { $("picked").innerHTML = upFiles.map((f, i) => `• ${esc(f.name)} <a href="#" data-rm="${i}" style="color:var(--bad)">حذف</a>`).join("<br>"); $("upGo").disabled = !upFiles.length; };
+  $("picked").onclick = e => { if (e.target.dataset.rm !== undefined) { e.preventDefault(); upFiles.splice(+e.target.dataset.rm, 1); upd(); } };
+  $("camB").onclick = () => $("camI").click(); $("galB").onclick = () => $("galI").click();
+  for (const id of ["camI", "galI"]) $(id).onchange = e => { upFiles = upFiles.concat([...e.target.files]); e.target.value = ""; upd(); };
+  $("upGo").onclick = async () => {
+    $("upGo").disabled = true; const title = $("upTitle").value.trim(); let ok = 0;
+    try {
+      for (const [i, f] of upFiles.entries()) {
+        $("upMsg").innerHTML = `<div class="msg s">جاري رفع ${i + 1} من ${upFiles.length}...</div>`;
+        const {blob, ext, type} = await shrink(f);
+        if (blob.size > MAX_BYTES) throw new Error(`الملف أكبر من 10 ميغا: ${f.name}`);
+        const fid = crypto.randomUUID().replaceAll("-", ""), path = `${me.id}/${fid}${ext}`;
+        await ensure();
+        const r = await fetch(`${SUPABASE_URL}/storage/v1/object/clinic-files/${path}`, {method: "POST", headers: hdr({"Content-Type": type}), body: blob});
+        if (!r.ok) throw new Error("فشل رفع الملف: " + (await r.text()));
+        await api("POST", "incoming_files", {id: fid, appt_id: a.id, title, storage_path: path, size_bytes: blob.size}, "return=minimal");
+        ok++;
+      }
+      $("upMsg").innerHTML = `<div class="msg s">✅ تم رفع ${ok} ملف — يظهر بالقائمة بعد استلام الطبيب (اضغط تحديث)</div>`;
+      upFiles = []; $("upTitle").value = ""; upd(); loadMineF();
+    } catch (e) { $("upMsg").innerHTML = `<div class="msg e">${esc(e.message)}${ok ? ` (تم رفع ${ok} قبل الخطأ)` : ""}</div>`; upFiles = upFiles.slice(ok); upd(); loadMineF(); }
+  };
+}
+async function shrink(f) {
+  if (f.type === "application/pdf") return {blob: f, ext: ".pdf", type: "application/pdf"};
+  const bmp = await createImageBitmap(f).catch(() => null);
+  if (!bmp) throw new Error(`تعذّر قراءة الصورة: ${f.name}`);
+  const k = Math.min(1, 1800 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  return {blob: await new Promise(r => c.toBlob(r, "image/jpeg", 0.82)), ext: ".jpg", type: "image/jpeg"};
+}
+
+
+  $("logout").onclick = logout;
+  $("day").value = day;
+  refreshAll();
+  timers = [setInterval(() => { if (!modalOpen) refreshAll(); else loadStatus(); }, 4000), setInterval(pollCmds, 1000)];
+  return () => timers.forEach(clearInterval);
+}
+
+// ---------- استعادة الجلسة ----------
+(async () => {
+  if (SUPABASE_URL.startsWith("PASTE") || SUPABASE_KEY.startsWith("PASTE")) { logout("الصفحة غير مُعدّة بعد (المفتاح ناقص)"); return; }
+  try { session = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); } catch (e) {}
+  if (session) { try { await start(); } catch (e) { logout(); } }
+})();
+</script>
+</body>
+</html>
