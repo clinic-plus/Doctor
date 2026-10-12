@@ -8,6 +8,9 @@
 <style>
 :root{--bg:#F2F6FC;--pri:#1D5FC9;--pri-d:#0E3B85;--pri-l:#DCE9FB;--txt:#132338;--mut:#5A6C85;--line:#DCE6F4;--bad:#D2574F;--bad-bg:#FBEAEA;--ok:#2E9E6B;--ok-bg:#E6F6EE}
 *{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+input,select,textarea{min-width:0;max-width:100%}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-height:44px;display:block}
 body{margin:0;background:var(--bg);color:var(--txt);font-family:Tahoma,"Segoe UI",system-ui,sans-serif;font-size:15px}
 #login{max-width:380px;margin:calc(12vh + env(safe-area-inset-top,0px)) auto 0;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
 #login h2{margin-top:0;color:var(--pri-d)}
@@ -40,6 +43,9 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 :host{--bg:#F2F6FC;--card:#fff;--pri:#1D5FC9;--pri-d:#0E3B85;--pri-l:#DCE9FB;--txt:#132338;--mut:#5A6C85;--line:#DCE6F4;
 --ok:#2E9E6B;--ok-bg:#E6F6EE;--bad:#D2574F;--bad-bg:#FBEAEA;--warn:#9A6A00;--warn-bg:#FFF3D6}
 *{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+input,select,textarea{min-width:0;max-width:100%}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-height:44px;display:block}
 :host{display:block;margin:0;background:var(--bg);color:var(--txt);font-family:Tahoma,"Segoe UI",system-ui,sans-serif;font-size:15px;
 padding-bottom:env(safe-area-inset-bottom,0)}
 header{background:#fff;border-bottom:1px solid var(--line);padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
@@ -71,7 +77,8 @@ label{display:block;font-size:12px;color:var(--mut);margin:8px 0 3px;font-weight
 .msg.e{background:var(--bad-bg);color:var(--bad)}
 
 .modal{position:fixed;inset:0;background:rgba(10,25,50,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
-.modal .box{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:16px;max-height:90vh;overflow:auto}
+.modal .box{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:16px;max-height:90vh;overflow:auto;overflow-x:hidden;max-height:calc(100dvh - 24px)}
+@media(max-width:599px){.modal .box{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}}
 @media(min-width:600px){.modal{align-items:center}.modal .box{border-radius:18px}}
 .hidden{display:none!important}
 .new{animation:flash 1.6s ease 2}@keyframes flash{50%{background:#fff7d6}}
@@ -119,6 +126,9 @@ label{display:block;font-size:12px;color:var(--mut);margin:8px 0 3px;font-weight
 :host{--bg:#F2F6FC;--card:#fff;--pri:#1D5FC9;--pri-d:#0E3B85;--pri-l:#DCE9FB;--txt:#132338;--mut:#5A6C85;--line:#DCE6F4;
 --ok:#2E9E6B;--ok-bg:#E6F6EE;--bad:#D2574F;--bad-bg:#FBEAEA;--warn:#9A6A00;--warn-bg:#FFF3D6}
 *{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+input,select,textarea{min-width:0;max-width:100%}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-height:44px;display:block}
 :host{display:block;margin:0;background:var(--bg);color:var(--txt);font-family:Tahoma,"Segoe UI",system-ui,sans-serif;font-size:15px;padding-bottom:env(safe-area-inset-bottom,0)}
 header{background:#fff;border-bottom:1px solid var(--line);padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
 header h1{font-size:16px;margin:0;color:var(--pri-d);flex:1}
@@ -195,6 +205,9 @@ label{display:block;font-size:12px;color:var(--mut);margin:10px 0 4px;font-weigh
 :host{--bg:#F2F6FC;--card:#fff;--pri:#1D5FC9;--pri-d:#0E3B85;--pri-l:#DCE9FB;--txt:#132338;--mut:#5A6C85;--line:#DCE6F4;
 --ok:#2E9E6B;--ok-bg:#E6F6EE;--bad:#D2574F;--bad-bg:#FBEAEA;--warn:#9A6A00;--warn-bg:#FFF3D6}
 *{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+input,select,textarea{min-width:0;max-width:100%}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-height:44px;display:block}
 :host{display:block;margin:0;background:var(--bg);color:var(--txt);font-family:Tahoma,"Segoe UI",system-ui,sans-serif;font-size:15px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 70px)}
 header{background:#fff;border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:6}
 header h1{font-size:15px;margin:0;color:var(--pri-d);flex:1}
@@ -224,9 +237,11 @@ label{display:block;font-size:12px;color:var(--mut);margin:9px 0 3px;font-weight
 .hidden{display:none!important}
 .fab{position:fixed;inset-inline-start:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:7;border-radius:28px;padding:14px 20px;font-size:15px;box-shadow:0 4px 14px rgba(14,59,133,.3)}
 .modal{position:fixed;inset:0;background:rgba(10,25,50,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
-.modal .box{background:#fff;width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:16px;max-height:92vh;overflow:auto}
+.modal .box{background:#fff;width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:16px;max-height:92vh;overflow:auto;overflow-x:hidden;max-height:calc(100dvh - 24px)}
+@media(max-width:599px){.modal .box{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}}
 @media(min-width:600px){.modal{align-items:center}.modal .box{border-radius:18px}}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.g2>*{min-width:0}
 .inp-red{border-color:var(--bad)!important;background:var(--bad-bg)!important}
 .warnline{color:var(--bad);font-size:12px;font-weight:700;margin-top:4px}
 .okline{color:var(--ok);font-size:12px;font-weight:700;margin-top:4px}
@@ -253,7 +268,7 @@ label{display:block;font-size:12px;color:var(--mut);margin:9px 0 3px;font-weight
     <div class="card">
       <div class="row">
         <button class="btn soft" id="prev">‹</button>
-        <input id="day" type="date" style="flex:1;min-width:130px">
+        <input id="day" type="date" style="flex:1;min-width:0">
         <button class="btn soft" id="next">›</button>
         <button class="btn" id="today">اليوم</button>
       </div>
