@@ -229,6 +229,7 @@ label{display:block;font-size:12px;color:var(--mut);margin:9px 0 3px;font-weight
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .inp-red{border-color:var(--bad)!important;background:var(--bad-bg)!important}
 .warnline{color:var(--bad);font-size:12px;font-weight:700;margin-top:4px}
+.okline{color:var(--ok);font-size:12px;font-weight:700;margin-top:4px}
 .sug{display:flex;justify-content:space-between;align-items:center;gap:6px;border:1px solid var(--warn);background:var(--warn-bg);border-radius:10px;padding:8px 10px;margin-top:6px;font-size:13px}
 .frow{padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
 .files .fr{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px}
@@ -602,9 +603,22 @@ function mountSecretary(root, me) {
   const nowHM = () => new Date().toTimeString().slice(0, 5);
   const MAX_BYTES = 10 * 1024 * 1024;
   let day = todayStr(), items = [], defaultFee = 15000, devOnline = false;
-  let pending = {};
+  let pending = {}, pendCmds = [];
   let timers = [], modalOpen = false;
-async function refreshAll() { await Promise.all([loadStatus(), loadDay()]); }
+async function refreshAll() { await loadPending(); await Promise.all([loadStatus(), loadDay()]); }
+// حجوزاتي وتعديلاتي التي لم يستلمها جهاز الطبيب بعد (تظهر كبطاقات عادية، وأقدر أعدّلها أو ألغيها)
+async function loadPending() {
+  try { pendCmds = await api("GET", "appt_commands?select=id,appt_id,payload,created_at&kind=eq.save&done_at=is.null&order=created_at.asc"); } catch (e) {}
+  renderPend();
+}
+const OVERLAY = {name: "patient_name", date: "appt_date", time: "appt_time", phone: "phone", age: "age", address: "address", fee: "fee", is_free: "is_free", status: "status"};
+function withPending(a) {
+  const ps = pendCmds.filter(c => c.appt_id === a.id); if (!ps.length) return a;
+  const o = {...a}; for (const c of ps) for (const k in (c.payload || {})) if (OVERLAY[k]) o[OVERLAY[k]] = c.payload[k];
+  return o;
+}
+const getItem = id => { const a = items.find(x => x.id === id); return a ? withPending(a) : null; };
+const pendAsAppt = c => { const p = c.payload || {}; return {id: null, patient_name: p.name || "", appt_date: p.date || day, appt_time: p.time || "", phone: p.phone || "", age: p.age || "", address: p.address || "", fee: p.fee || 0, is_free: !!p.is_free}; };
 
 async function loadStatus() {
   try {
@@ -632,12 +646,28 @@ async function loadDay() {
 const stCls = s => s === "مكتمل" ? "d" : s === "ملغى" ? "c" : "n";
 function render() {
   const q = $("q").value.trim().toLowerCase();
-  const list = items.filter(a => !q || a.patient_name.toLowerCase().includes(q) || (a.phone || "").includes(q));
+  const match = (n, ph) => !q || String(n || "").toLowerCase().includes(q) || String(ph || "").includes(q);
   const busyIds = new Set(Object.values(pending).map(p => p.appt).filter(Boolean));
-  $("dayInfo").textContent = (day === todayStr() ? "مواعيد اليوم — " : "مواعيد يوم ") + day + ` (${items.length})`;
-  if (!list.length) { $("list").innerHTML = '<div class="empty">📅<br>لا توجد حجوزات في هذا اليوم</div>'; return; }
-  $("list").innerHTML = list.map(a => {
-    const cancelled = a.status === "ملغى", queued = a.queue_order !== null, busy = busyIds.has(a.id);
+  const mir = items.map(withPending).filter(a => match(a.patient_name, a.phone)).map(a => ({k: "m", a, t: a.appt_time || ""}));
+  const pn = pendCmds.filter(c => !c.appt_id && (c.payload || {}).date === day && match(c.payload.name, c.payload.phone)).map(c => ({k: "p", c, t: (c.payload || {}).time || ""}));
+  const all = mir.concat(pn).sort((x, y) => {
+    const qx = x.k === "m" && x.a.queue_order !== null, qy = y.k === "m" && y.a.queue_order !== null;
+    if (qx && qy) return x.a.queue_order - y.a.queue_order;
+    if (qx !== qy) return qx ? -1 : 1;
+    return x.t < y.t ? -1 : x.t > y.t ? 1 : 0;
+  });
+  const total = items.length + pendCmds.filter(c => !c.appt_id && (c.payload || {}).date === day).length;
+  $("dayInfo").textContent = (day === todayStr() ? "مواعيد اليوم — " : "مواعيد يوم ") + day + ` (${total})`;
+  if (!all.length) { $("list").innerHTML = '<div class="empty">📅<br>لا توجد حجوزات في هذا اليوم</div>'; return; }
+  $("list").innerHTML = all.map(x => {
+    if (x.k === "p") {
+      const p = x.c.payload || {};
+      return `<div class="card" data-pc="${esc(x.c.id)}"><div class="row"><span class="nm">${esc(p.name)}</span><span class="sp"></span><span class="bd e">⏳ بانتظار استلام الطبيب</span></div>
+        <div class="row mut" style="margin-top:6px;gap:14px"><span>${p.phone ? "📞 " + esc(p.phone) : "📞 —"}</span><span>🕐 ${esc(p.time)}</span>
+        <span>${p.is_free ? "🆓 كشفية مجانية" : "💵 " + Number(p.fee || 0).toLocaleString("en-US") + " د.ع"}</span></div>
+        <div class="acts"><button class="btn soft" data-act="pedit">✎ تعديل</button><button class="btn bad" data-act="pcancel">🚫 إلغاء الحجز</button></div></div>`;
+    }
+    const a = x.a, cancelled = a.status === "ملغى", queued = a.queue_order !== null, busy = busyIds.has(a.id) || pendCmds.some(c => c.appt_id === a.id);
     let h = `<div class="card ${cancelled ? "cx" : ""}" data-id="${esc(a.id)}"><div class="row">`;
     if (queued) h += `<button class="qn" data-act="qnum">${a.queue_order + 1}</button>`;
     h += `<span class="nm">${esc(a.patient_name)}</span>${a.visit_type === "new" ? '<span class="bd n">جديد</span>' : ""}<span class="sp"></span>
@@ -667,11 +697,11 @@ async function send(kind, appt, payload, label) {
   const id = crypto.randomUUID().replaceAll("-", "");
   try {
     await api("POST", "appt_commands", {id, kind, appt_id: appt || null, payload: payload || {}}, "return=minimal");
-    pending[id] = {label, appt}; renderPend(); render(); setTimeout(pollCmds, 600);
+    pending[id] = {label, appt}; await loadPending(); render(); setTimeout(pollCmds, 600);
   } catch (e) { $("err").innerHTML = `<div class="msg e">تعذّر الإرسال: ${esc(e.message)}</div>`; }
 }
 function renderPend() {
-  const n = Object.keys(pending).length;
+  const n = new Set([...pendCmds.map(c => c.id), ...Object.keys(pending)]).size;
   $("pend").innerHTML = n ? `<div class="msg w">⏳ ${n} طلب بانتظار التنفيذ على جهاز الطبيب${devOnline ? "" : " — الجهاز غير متصل حاليًا، وسيُنفَّذ أول ما يفتح"}</div>` : "";
 }
 let polling = false;
@@ -686,13 +716,16 @@ async function pollCmds() {
       $("err").innerHTML = r.ok ? `<div class="msg s">✅ ${esc(p.label)}</div>` : `<div class="msg e">❌ ${esc(p.label)}: ${esc(r.message || "فشل")}</div>`;
       setTimeout(() => { if (!Object.keys(pending).length) $("err").innerHTML = ""; }, 5000);
     }
-    if (any) { renderPend(); await loadDay(); }
+    if (any) { await loadPending(); await loadDay(); }
   } catch (e) {} finally { polling = false; }
 }
 
 $("list").onclick = e => {
   const b = e.target.closest("[data-act]"); if (!b) return;
-  const card = b.closest(".card"); const a = items.find(x => x.id === card.dataset.id); if (!a) return;
+  const pcEl = b.closest("[data-pc]");
+  if (pcEl) { const c = pendCmds.find(x => x.id === pcEl.dataset.pc); if (!c) return;
+    if (b.dataset.act === "pedit") openForm(pendAsAppt(c), c); else if (b.dataset.act === "pcancel") cancelPending(c); return; }
+  const card = b.closest(".card"); const a = getItem(card.dataset.id); if (!a) return;
   const act = b.dataset.act;
   if (act === "checkin") send("checkin", a.id, {}, `تسجيل حضور ${a.patient_name}`);
   else if (act === "up" || act === "down") send("queue", a.id, {action: act}, `تغيير دور ${a.patient_name}`);
@@ -704,31 +737,29 @@ $("list").onclick = e => {
   else if (act === "files") openFiles(a);
 };
 
-// ---------- بحث عن مريض: يُنفَّذ على لابتوب الطبيب ثم تُحذف النتيجة من الإنترنت خلال دقائق ----------
-async function searchPatients(name, phone) {
-  const id = crypto.randomUUID().replaceAll("-", "");
-  await api("POST", "appt_commands", {id, kind: "search", payload: {name, phone}}, "return=minimal");
-  for (let i = 0; i < 20; i++) {
-    await new Promise(r => setTimeout(r, 1000));
-    const r = await api("GET", `appt_commands?select=done_at,ok,message,result&id=eq.${id}`);
-    if (r.length && r[0].done_at) {
-      if (!r[0].ok) throw new Error(r[0].message || "فشل البحث");
-      return r[0].result || [];
-    }
-  }
-  throw new Error("لم يرد جهاز الطبيب — حاول مرة ثانية");
+// ---------- إلغاء حجز لم يستلمه الطبيب بعد ----------
+async function cancelPending(c) {
+  const nm = (c.payload || {}).name || "";
+  if (!confirm(`إلغاء حجز ${nm}؟ لم يستلمه الطبيب بعد فيُحذف بدون أثر.`)) return;
+  try {
+    const r = await api("DELETE", `appt_commands?id=eq.${encodeURIComponent(c.id)}&done_at=is.null`, null, "return=representation");
+    delete pending[c.id];
+    $("err").innerHTML = r && r.length ? '<div class="msg s">✅ أُلغي الحجز قبل استلام الطبيب</div>' : '<div class="msg w">استلمه الطبيب قبل لحظات — ألغِه من بطاقته بعد ظهورها</div>';
+    setTimeout(() => { if (!Object.keys(pending).length) $("err").innerHTML = ""; }, 5000);
+    await loadPending(); await loadDay();
+  } catch (e) { $("err").innerHTML = `<div class="msg e">تعذّر الإلغاء: ${esc(e.message)}</div>`; }
 }
 
 // ---------- نافذة الحجز ----------
 function openModal(html) { $("box").innerHTML = html; $("modal").classList.remove("hidden"); modalOpen = true; }
 function closeModal() { $("modal").classList.add("hidden"); modalOpen = false; devHook = null; $("box").innerHTML = ""; }
-let dupCache = [], devHook = null;
-function openForm(a) {
+let devHook = null;
+// a = موعد للتعديل (أو null لحجز جديد)، pc = طلب حجز معلّق لم يستلمه الطبيب (تعديله قبل الاستلام)
+function openForm(a, pc) {
   openModal(`<h3 style="margin-top:0;color:var(--pri-d)">${a ? "تعديل حجز" : "حجز جديد"}</h3>
-    <label>الاسم * <span class="mut">(اكتب الاسم أو الهاتف واضغط 🔍 للبحث بسجل المرضى)</span></label>
-    <div class="row" style="flex-wrap:nowrap"><input id="fName" value="${esc(a?.patient_name)}" autocomplete="off"><button class="btn soft" id="fSearch" type="button" style="white-space:nowrap">🔍 بحث</button></div>
+    <label>الاسم *</label>
+    <input id="fName" value="${esc(a?.patient_name)}" autocomplete="off">
     <div id="devWarn" class="warnline"></div>
-    <div id="dups"></div>
     <div class="g2"><div><label>التاريخ *</label><input id="fDate" type="date" value="${esc(a?.appt_date || day)}"></div>
       <div><label>الوقت *</label><input id="fTime" type="time" value="${esc(a?.appt_time || nowHM())}"></div></div>
     <div class="g2"><div><label>رقم الهاتف</label><input id="fPhone" type="tel" value="${esc(a?.phone)}"></div>
@@ -741,36 +772,26 @@ function openForm(a) {
   $("fCancel").onclick = closeModal;
   const free = () => { $("fFee").disabled = $("fFree").checked; if ($("fFree").checked) $("fFee").value = 0; };
   $("fFree").onchange = free; free();
-  // مربع البحث يصير أحمر مع عبارة تنبيه عندما تكون حاسبة الطبيب غير نشطة (الحجز نفسه يبقى متاحًا ويُنفَّذ لاحقًا)
+  // حالة حاسبة الطبيب: نشطة (أخضر) أو غير نشطة (أحمر) — الحجز يبقى متاحًا ويُنفَّذ لاحقًا
   const paintDev = () => {
-    if (!$("fName")) return;
-    $("fName").classList.toggle("inp-red", !devOnline);
-    $("fSearch").disabled = !devOnline;
-    $("devWarn").textContent = devOnline ? "" : "حاسبة الطبيب غير نشطة";
+    const w = $("devWarn"); if (!w) return;
+    w.className = devOnline ? "okline" : "warnline";
+    w.textContent = devOnline ? "🟢 حاسبة الطبيب نشطة" : "🔴 حاسبة الطبيب غير نشطة — يُنفَّذ الحجز أول ما تفتح";
   };
   devHook = paintDev; paintDev();
-  const runSearch = async () => {
-    if (!devOnline) { paintDev(); return; }
-    const name = $("fName").value.trim(), phone = $("fPhone").value.trim();
-    if (name.length < 2 && phone.replace(/\D/g, "").length < 4) { $("dups").innerHTML = '<div class="mut">اكتب حرفين من الاسم أو 4 أرقام من الهاتف</div>'; return; }
-    $("fSearch").disabled = true; $("dups").innerHTML = '<div class="mut">⏳ جاري البحث بحاسبة الطبيب...</div>';
-    try {
-      dupCache = await searchPatients(name, phone);
-      $("dups").innerHTML = dupCache.length
-        ? dupCache.map((p, i) => `<div class="sug"><span>${p.strong ? "⚠️" : "👤"} <b>${esc(p.name)}</b> ${p.phone ? "— " + esc(p.phone) : ""} ${p.age ? "· " + esc(p.age) : ""} <span class="mut">(${esc(p.reason)})</span></span><button class="btn soft" data-use="${i}" type="button">استخدام</button></div>`).join("")
-        : '<div class="msg s">لا يوجد مريض مطابق بالسجل ✓ (مريض جديد)</div>';
-    } catch (e) { $("dups").innerHTML = `<div class="msg e">${esc(e.message)}</div>`; }
-    if ($("fSearch")) paintDev();
-  };
-  $("fSearch").onclick = runSearch;
-  $("fName").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); runSearch(); } });
-  $("dups").onclick = e => { const i = e.target.dataset.use; if (i === undefined) return; const p = dupCache[+i];
-    $("fName").value = p.name; $("fPhone").value = p.phone || ""; $("fAge").value = p.age || ""; $("fAddr").value = p.address || ""; $("dups").innerHTML = ""; };
-  $("fSave").onclick = () => {
+  $("fSave").onclick = async () => {
     const v = {name: $("fName").value.trim(), date: $("fDate").value, time: $("fTime").value, phone: $("fPhone").value.trim(),
       age: $("fAge").value.trim(), address: $("fAddr").value.trim(), is_free: $("fFree").checked, fee: $("fFree").checked ? 0 : Number($("fFee").value || 0)};
     if (!v.name) { $("fMsg").innerHTML = '<div class="msg e">الاسم مطلوب</div>'; return; }
     if (!v.date || !v.time) { $("fMsg").innerHTML = '<div class="msg e">التاريخ والوقت مطلوبان</div>'; return; }
+    if (pc) {   // تعديل حجز لم يستلمه الطبيب: نبدّل محتوى الطلب نفسه
+      try {
+        const r = await api("PATCH", `appt_commands?id=eq.${encodeURIComponent(pc.id)}&done_at=is.null`, {payload: v}, "return=representation");
+        if (!r || !r.length) { $("fMsg").innerHTML = '<div class="msg w">استلمه الطبيب قبل لحظات — أغلق هذه النافذة وعدّله من بطاقته</div>'; return; }
+      } catch (e) { $("fMsg").innerHTML = `<div class="msg e">${esc(e.message)}</div>`; return; }
+      closeModal(); if (v.date !== day) { day = v.date; $("day").value = day; }
+      await loadPending(); await loadDay(); return;
+    }
     let payload = v;
     if (a) {   // تعديل: نرسل الحقول التي تغيّرت فقط
       const cur = {name: a.patient_name, date: a.appt_date, time: a.appt_time, phone: a.phone, age: a.age, address: a.address, is_free: a.is_free, fee: a.fee};
@@ -781,6 +802,8 @@ function openForm(a) {
     send("save", a ? a.id : null, payload, (a ? "تعديل حجز " : "حجز جديد: ") + v.name);
     if (!a && v.date !== day) { day = v.date; $("day").value = day; }
   };
+  // Enter يحفظ من أي حقل
+  $("box").onkeydown = e => { if (e.key === "Enter" && e.target.tagName === "INPUT" && e.target.type !== "checkbox") { e.preventDefault(); $("fSave").click(); } };
   setTimeout(() => $("fName").focus(), 100);
 }
 $("addBtn").onclick = () => openForm(null);
