@@ -101,6 +101,8 @@
   .appt{display:flex;flex-direction:column;gap:6px;}
   .appt .meta{display:flex;gap:14px;flex-wrap:wrap;color:var(--text-muted);font-size:13.5px;}
   .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .debt-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:8px 12px;font-size:13.5px;font-weight:700;margin-top:4px;}
+  .debt-bar.nm{background:var(--primary-light);color:var(--primary-dark);}
   .qn{display:inline-block;min-width:26px;text-align:center;background:var(--primary-light);color:var(--primary-dark);border-radius:999px;padding:2px 10px;font-weight:800;margin-inline-end:4px;}
   .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
   .dot{width:10px;height:10px;border-radius:50%;display:inline-block;background:#bbb;margin-left:6px;}
@@ -233,13 +235,23 @@
     </div>
     <div id="app" class="hidden">
       <div class="bar"><span><span class="dot" id="docDot"></span><b id="docTxt">...</b></span><span style="flex:1"></span><span class="badge w hidden" id="pendBadge">⏳ بانتظار التنفيذ</span><button class="btn btn-outline btn-sm" onclick="logout()">خروج</button></div>
+      <div class="bar"><button class="btn btn-primary btn-sm" id="stAppts" onclick="secTab('appts')">📅 المواعيد</button><button class="btn btn-outline btn-sm" id="stDebts" onclick="secTab('debts')">💳 الديون والأقساط <span id="debtBadge"></span></button></div>
+      <div id="viewAppts">
       <div class="bar">
         <button class="btn btn-outline btn-sm" onclick="shiftDay(-1)">◀ السابق</button><input type="date" id="dayPick" style="width:auto" onchange="loadList()"><button class="btn btn-outline btn-sm" onclick="shiftDay(1)">التالي ▶</button><button class="btn btn-outline btn-sm" onclick="goToday()">اليوم</button>
         <span style="flex:1"></span><button class="btn btn-primary btn-sm" onclick="openNew()">+ حجز جديد</button>
       </div>
+      <div id="daySum"></div>
       <input id="q" placeholder="🔍 ابحث بالاسم أو الهاتف..." oninput="renderList()" style="margin-bottom:12px">
       <div id="list"></div>
       <p class="hint">تظهر المواعيد من 7 أيام ماضية إلى 90 يومًا قادمة. كل تعديل يُنفَّذ على برنامج الطبيب خلال ثوانٍ، ويلزم أن يكون مفتوحًا ومتصلًا.</p>
+      </div>
+      <div id="viewDebts" class="hidden">
+        <div class="bar" id="debtStats"></div>
+        <input id="dq" placeholder="🔍 ابحث باسم المريض أو رقم هاتفه..." oninput="renderDebts()" style="margin-bottom:12px">
+        <div id="debtList"></div>
+        <p class="hint">قائمة الديون نسخة من برنامج الطبيب. التسديد يُسجَّل عند الطبيب خلال ثوانٍ (يلزم أن يكون مفتوحًا ومتصلًا) ويظهر هنا بعدها.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -247,13 +259,40 @@
 <!-- نافذة الحجز/التعديل -->
 <div class="modal" id="mAppt"><div class="box">
   <h3 id="mTitle">حجز جديد</h3>
-  <div class="field" id="aPrevWrap" style="position:relative"><label>🔍 مريض سابق؟ ابحث بالاسم أو الهاتف (الحجوزات الأخيرة والقادمة)</label><input id="aPrev" autocomplete="off" placeholder="اكتب جزءًا من الاسم أو الرقم..." oninput="prevSearch()"><div id="aPrevBox" style="display:none;position:absolute;right:0;left:0;top:100%;z-index:20;background:#fff;border:1px solid #d9e2ef;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.12);max-height:240px;overflow:auto"></div></div>
-  <div class="field"><label>الاسم *</label><input id="aName" maxlength="80"></div>
-  <div class="form-grid"><div class="field"><label>الهاتف *</label><input id="aPhone" type="tel" style="direction:ltr;text-align:right"></div><div class="field"><label>العمر</label><input id="aAge" maxlength="10"></div></div>
+  <div id="aMain">
+  <div class="field"><label>الاسم *</label><input id="aName" maxlength="80" oninput="debtAlert()"></div>
+  <div class="form-grid"><div class="field"><label>الهاتف *</label><input id="aPhone" type="tel" style="direction:ltr;text-align:right" oninput="debtAlert()"></div><div class="field"><label>العمر</label><input id="aAge" maxlength="10"></div></div>
+  <div id="aDebt"></div>
   <div class="field"><label>سبب الزيارة *</label><textarea id="aReason" rows="2" maxlength="500"></textarea></div>
   <div class="form-grid"><div class="field"><label>التاريخ *</label><input id="aDate" type="date"></div><div class="field"><label>الوقت *</label><input id="aTime" type="time"></div></div>
+  <div class="field"><label>القسم</label><select id="aDept" onchange="deptCalc()"><option value="">— يحدده الطبيب عند الكشف —</option><option value="dental">🦷 الأسنان</option><option value="surgical">🔪 الجراحي</option><option value="cosmetic">✨ التجميل والحقن</option></select></div>
+  <div class="hidden" id="aCosWrap">
+    <div class="field"><label>اسم العملية التجميلية *</label><input id="aProc" maxlength="120"></div>
+    <div class="form-grid"><div class="field"><label>نوع المادة المستخدمة</label><input id="aMat" maxlength="120"></div><div class="field"><label>سعر المادة (د.ع)</label><input id="aMatCost" type="number" min="0" step="500" inputmode="numeric" value="0"></div></div>
+  </div>
+  </div>
+  <div style="border-top:1px dashed var(--line);margin:4px 0 12px;padding-top:12px"><b style="color:var(--primary-dark)">💵 الكشفية والدفع</b></div>
+  <div class="form-grid">
+    <div class="field"><label id="aFeeLbl">سعر الكشفية (د.ع)</label><input id="aFee" type="number" min="0" step="500" inputmode="numeric" oninput="feeCalc()"></div>
+    <div class="field"><label style="visibility:hidden">.</label><label style="display:flex;align-items:center;gap:8px;font-weight:700;cursor:pointer;margin:0"><input id="aFree" type="checkbox" style="width:18px;height:18px;padding:0" onchange="toggleFree()"> كشفية مجانية</label></div>
+  </div>
+  <div class="field" id="aPayWrap"><label>طريقة الدفع</label><select id="aPayType" onchange="feeCalc()"><option value="full">دفع كامل</option><option value="installment">تقسيط</option></select></div>
+  <div class="form-grid hidden" id="aInstWrap">
+    <div class="field"><label>المدفوع الآن (د.ع)</label><input id="aPaid" type="number" min="0" step="500" inputmode="numeric" value="0" oninput="feeCalc()"></div>
+    <div class="field"><label>المتبقي (د.ع)</label><input id="aRemain" readonly style="background:#f3f6fa"></div>
+  </div>
   <div class="err" id="aErr"></div>
   <div class="acts" style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="saveAppt()">حفظ</button><button class="btn btn-outline btn-sm" onclick="closeM('mAppt')">إلغاء</button></div>
+</div></div>
+
+<!-- نافذة تسديد دفعة -->
+<div class="modal" id="mPay"><div class="box">
+  <h3>💵 تسديد دفعة</h3>
+  <p class="hint" id="payInfo"></p>
+  <div class="field"><label>المتبقي (د.ع)</label><input id="payRem" readonly style="background:#f3f6fa"></div>
+  <div class="field"><label>المبلغ المسدَّد الآن (د.ع)</label><input id="payAmt" type="number" min="1" step="500" inputmode="numeric"></div>
+  <div class="err" id="payErr"></div>
+  <div class="acts" style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="savePay()">تسجيل التسديد</button><button class="btn btn-outline btn-sm" onclick="closeM('mPay')">إلغاء</button></div>
 </div></div>
 
 <!-- نافذة الملفات -->
@@ -303,7 +342,7 @@ function saveSession(j){ SESSION = { token:j.access_token, refresh:j.refresh_tok
 async function R(method, path, body, opts){ await ensureToken(); return rest(method, path, body, opts); }
 
 // ---------- تبويبات ----------
-function showView(w){ ['home','booking','sec'].forEach(v=>$('view-'+v).classList.toggle('active', v===w)); $('tabHome').classList.toggle('on',w==='home'); $('tabBook').classList.toggle('on',w==='booking'); $('tabSec').classList.toggle('on',w==='sec'); window.scrollTo(0,0); }
+function showView(w){ if(w==='booking' && typeof SESSION!=='undefined' && SESSION) w='sec'; ['home','booking','sec'].forEach(v=>$('view-'+v).classList.toggle('active', v===w)); $('tabHome').classList.toggle('on',w==='home'); $('tabBook').classList.toggle('on',w==='booking'); $('tabSec').classList.toggle('on',w==='sec'); window.scrollTo(0,0); }
 function tab(w){ showView(w==='pub' ? 'booking' : w); }
 
 // ---------- الحجز العام ----------
@@ -326,7 +365,112 @@ async function submitBooking(){
 }
 
 // ---------- السكرتيرة ----------
-let LIST=[], METAS={}, MYFILES={}, PENDING=new Set(), poll=null;
+let LIST=[], METAS={}, MYFILES={}, PENDING=new Set(), poll=null, DEFAULT_FEE=0, DEBTS=[], PAYS=[], UNAPP=[], PENDPAY={}, FEEONLY=false, PAYID=null;
+// ---------- الديون والأقساط ----------
+const dig=s=>String(s||'').replace(/\D/g,'').slice(-10);
+const normName=s=>String(s||'').replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ').trim().toLowerCase();
+function debtsFor(phone,name,excl){
+  const pd=dig(phone), nn=normName(name), byPhone=[], byName=[];
+  DEBTS.forEach(d=>{
+    if(d.id===excl) return; const rem=(Number(d.remaining)||0)-(PENDPAY[d.id]||0); if(rem<=0) return;
+    const phs=String(d.phones||d.phone||'').split(/\s+/).map(dig);
+    if(pd.length>=10&&phs.includes(pd)) byPhone.push(Object.assign({},d,{rem}));
+    else if(nn.length>=3&&normName(d.patient_name)===nn) byName.push(Object.assign({},d,{rem}));
+  });
+  return {byPhone,byName};
+}
+function debtBar(phone,name,excl){
+  const r=debtsFor(phone,name,excl); let h='';
+  if(r.byPhone.length){ const t=r.byPhone.reduce((s,x)=>s+x.rem,0); h+=`<div class="debt-bar"><span>⚠️ ديون سابقة غير مسددة (${r.byPhone.length} ${r.byPhone.length===1?'زيارة':'زيارات'})</span><span><b>${money(t)} د.ع</b> <button type="button" class="btn btn-primary btn-sm" data-q="${esc(phone)}" onclick="goDebts(this.dataset.q)">💵 تسديد</button></span></div>`; }
+  if(r.byName.length){ const t=r.byName.reduce((s,x)=>s+x.rem,0); h+=`<div class="debt-bar nm"><span>🔎 مريض بنفس الاسم عليه أقساط برقم مختلف (${esc([...new Set(r.byName.map(x=>x.phone||'—'))].join('، '))}) — تأكد إن كان نفس المريض</span><span><b>${money(t)} د.ع</b> <button type="button" class="btn btn-outline btn-sm" data-q="${esc(name)}" onclick="goDebts(this.dataset.q)">عرض</button></span></div>`; }
+  return h;
+}
+function debtAlert(){ $('aDebt').innerHTML = FEEONLY ? '' : debtBar($('aPhone').value,$('aName').value,EDIT&&EDIT.id); }
+function secTab(v){ $('viewAppts').classList.toggle('hidden',v!=='appts'); $('viewDebts').classList.toggle('hidden',v!=='debts'); $('stAppts').className='btn btn-sm '+(v==='appts'?'btn-primary':'btn-outline'); $('stDebts').className='btn btn-sm '+(v==='debts'?'btn-primary':'btn-outline'); if(v==='debts') renderDebts(); window.scrollTo(0,0); }
+function goDebts(q){ if($('mAppt').classList.contains('show')) closeM('mAppt'); secTab('debts'); $('dq').value=q||''; renderDebts(); }
+function renderDebts(){
+  const q=($('dq').value||'').trim().toLowerCase(), qd=q.replace(/\D/g,'');
+  let list=DEBTS.filter(d=>(Number(d.remaining)||0)>0).map(d=>Object.assign({},d,{pend:PENDPAY[d.id]||0,rem:(Number(d.remaining)||0)-(PENDPAY[d.id]||0),paid:(Number(d.paid)||0)+(PENDPAY[d.id]||0)}));
+  if(q) list=list.filter(d=>normName(d.patient_name).includes(normName(q))||(qd.length>=4&&String(d.phones||d.phone||'').replace(/\D/g,'').includes(qd)));
+  const g={}; list.forEach(d=>{ const k=(d.phone||'')+'|'+(d.patient_name||''); (g[k]=g[k]||{name:d.patient_name,phone:d.phone,visits:[]}).visits.push(d); });
+  const arr=Object.values(g).map(x=>{ x.visits.sort((a,b)=>(a.appt_date||'').localeCompare(b.appt_date||'')); x.total=x.visits.reduce((s,v)=>s+v.rem,0); return x; }).sort((a,b)=>b.total-a.total);
+  const grand=arr.reduce((s,x)=>s+x.total,0);
+  $('debtStats').innerHTML=`<span class="badge">👥 ${arr.length} مريض</span><span class="badge w">💳 إجمالي المتبقي: ${money(grand)} د.ع</span>`;
+  const n=DEBTS.filter(d=>(Number(d.remaining)||0)>0).length; $('debtBadge').textContent=n?'('+n+')':'';
+  $('debtList').innerHTML = arr.length ? arr.map(x=>`<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>${esc(x.name||'—')}<div class="hint">📞 ${esc(x.phone||'—')}</div></b><span class="badge c">المتبقي: ${money(x.total)} د.ع</span></div>
+    ${x.visits.map(v=>`<div style="border-top:1px dashed var(--line);margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><div><div>📅 ${esc(v.appt_date||'')} ${v.dept?'🏷️ '+esc(v.dept):''} ${v.reason?'• '+esc(v.reason):''}</div><div class="hint">السعر ${money(v.fee)} • المدفوع ${money(v.paid)} • <b style="color:var(--danger)">المتبقي ${money(v.rem)}</b></div>${payRows(v.id)}</div>${v.rem>0?`<button class="btn btn-primary btn-sm" onclick="openPay('${v.id}')">💵 تسديد</button>`:''}</div>`).join('')}</div>`).join('')
+    : '<div class="card hint" style="text-align:center">✅ لا توجد ديون'+(q?' مطابقة':' متبقية')+'.</div>';
+}
+function payRows(id){
+  return UNAPP.filter(x=>x.appt_id===id).map(x=>`<div class="hint" style="margin-top:4px"><span class="badge d">✅ سُجّل تسديد ${money(x.amount)} د.ع</span> بانتظار برنامج الطبيب${SESSION&&x.created_by===SESSION.uid?` <button class="btn btn-outline btn-sm" onclick="editPay('${x.id}')">✎ عدّل</button> <button class="btn btn-danger btn-sm" onclick="delPay('${x.id}')">🗑️ حذف</button>`:''}</div>`).join('');
+}
+async function editPay(id){
+  const x=UNAPP.find(y=>y.id===id); if(!x) return;
+  const n=prompt('المبلغ الجديد للدفعة (د.ع)', x.amount); if(n===null||String(n).trim()==='') return;
+  const v=parseInt(n,10); if(!(v>0)){ toast('❌ اكتب مبلغًا صحيحًا'); return; }
+  try{
+    const j=await R('PATCH','/rest/v1/debt_payments?id=eq.'+id+'&applied_at=is.null',{amount:v},{headers:{Prefer:'return=representation'}});
+    toast(j&&j.length?'✅ تم تعديل الدفعة':'⚠️ سحبها برنامج الطبيب للتو — لم يعد التعديل ممكنًا (يصحّحها الطبيب)');
+  }catch(e){ toast('❌ '+e.message); }
+  loadList(true);
+}
+async function delPay(id){
+  if(!confirm('حذف هذه الدفعة؟ استعملها فقط إذا سجّلتها بالخطأ ولم تُقبض.')) return;
+  try{
+    const j=await R('DELETE','/rest/v1/debt_payments?id=eq.'+id+'&applied_at=is.null',undefined,{headers:{Prefer:'return=representation'}});
+    toast(j&&j.length?'✅ تم حذف الدفعة':'⚠️ سحبها برنامج الطبيب للتو — لم يعد الحذف ممكنًا (يصحّحها الطبيب)');
+  }catch(e){ toast('❌ '+e.message); }
+  loadList(true);
+}
+function remOf(id){
+  const d=DEBTS.find(x=>x.id===id); if(d) return {name:d.patient_name,rem:(Number(d.remaining)||0)-(PENDPAY[id]||0)};
+  const a=LIST.find(x=>x.id===id); if(!a) return null; const f=Number(a.fee)||0;
+  return {name:a.patient_name,rem:Math.max(0,f-(a.payment_type==='installment'?Number(a.paid_now)||0:f))};
+}
+function openPay(id){ const r=remOf(id); if(!r) return; if(r.rem<=0){ toast('لا يوجد متبقٍّ على هذا الموعد'); return; } PAYID=id; $('payInfo').textContent=r.name; $('payRem').value=money(r.rem); $('payAmt').value=r.rem; $('payAmt').max=r.rem; $('payErr').classList.remove('show'); $('mPay').classList.add('show'); }
+async function savePay(){
+  const r=remOf(PAYID), v=parseInt($('payAmt').value,10)||0, err=m=>{ $('payErr').textContent=m; $('payErr').classList.add('show'); };
+  if(!r) return closeM('mPay'); if(v<=0) return err('اكتب مبلغًا صحيحًا'); if(v>r.rem) return err('المبلغ أكبر من المتبقي ('+money(r.rem)+')');
+  closeM('mPay');
+  try{ await R('POST','/rest/v1/debt_payments',{appt_id:PAYID,amount:v},{headers:{Prefer:'return=minimal'}}); toast('✅ سُجّل التسديد — ينعكس عند الطبيب أول ما يفتح برنامجه'); }catch(e){ toast('❌ '+e.message); }
+  loadList(true);
+}
+function renderDaySum(){
+  const d=$('dayPick').value||today(), rows=LIST.filter(a=>a.status!=='ملغى');
+  let exp=0,paid=0,free=0; rows.forEach(a=>{ if(a.is_free){ free++; return; } const f=Number(a.fee)||0; exp+=f; paid+=a.payment_type==='installment'?Math.min(Number(a.paid_now)||0,f):f; });
+  const old=(PAYS||[]).filter(x=>x.appt_date!==d).reduce((s,x)=>s+(Number(x.amount)||0),0)+(UNAPP||[]).filter(x=>x.pay_date===d&&x.appt_date!==d).reduce((s,x)=>s+(Number(x.amount)||0),0);
+  $('daySum').innerHTML = rows.length||old ? `<div class="card" style="background:var(--primary-light)"><b>💰 ملخص كشفيات ${d===today()?'اليوم':d}</b><div class="appt"><div class="meta"><span>👥 ${rows.length} موعد${free?' ('+free+' مجانية)':''}</span><span>💵 المجموع: ${money(exp)} د.ع</span><span>✅ المقبوض: ${money(paid)} د.ع</span><span>⏳ المتبقي (تقسيط): ${money(exp-paid)} د.ع</span>${old?`<span>🧾 تسديدات ديون سابقة: ${money(old)} د.ع</span>`:''}</div></div><div class="hint">إجمالي الصندوق: <b>${money(paid+old)} د.ع</b></div></div>` : '';
+}
+// ---------- الكشفية (السعر / مجانية / دفع كامل أو تقسيط) ----------
+const DEPTKEYS=['dept','proc_name','material','material_cost'], EXTRAKEYS=['fee','is_free','payment_type','paid_now','dept','proc_name','material','material_cost'];
+const DEPT_LBL={dental:'الأسنان',surgical:'الجراحي',cosmetic:'التجميل والحقن'}, DEPT_KEY={'الأسنان':'dental','الجراحي':'surgical','التجميل والحقن':'cosmetic'};
+function deptCalc(){ const c=$('aDept').value==='cosmetic'; $('aCosWrap').classList.toggle('hidden',!c); $('aFeeLbl').textContent=c?'السعر الكلي (د.ع)':'سعر الكشفية (د.ع)'; }
+function deptFromForm(){ const d=$('aDept').value; return d==='cosmetic'?{dept:d,proc_name:$('aProc').value.trim(),material:$('aMat').value.trim(),material_cost:Math.max(0,parseInt($('aMatCost').value,10)||0)}:{dept:d,proc_name:'',material:'',material_cost:0}; }
+function setDeptForm(a){ a=a||{}; const k=DEPT_KEY[a.dept]||''; $('aDept').value=k; $('aProc').value=k==='cosmetic'?(a.proc_name||''):''; $('aMat').value=a.material||''; $('aMatCost').value=a.material_cost||0; deptCalc(); }
+function applyDept(r,p){ if(p.dept===undefined||p.dept===null) return; r.dept=DEPT_LBL[p.dept]||''; r.proc_name=p.proc_name||''; r.material=p.material||''; r.material_cost=p.material_cost||0; if(p.dept==='cosmetic'&&p.proc_name) r.reason=p.proc_name; }
+const money=n=>Number(n||0).toLocaleString('en-US');
+function feeOf(p){ p=p||{}; return {fee:p.fee!=null?Number(p.fee):DEFAULT_FEE, is_free:!!p.is_free, payment_type:p.payment_type==='installment'?'installment':'full', paid_now:Number(p.paid_now)||0}; }
+function applyFee(r,p){ ['fee','is_free','payment_type','paid_now'].forEach(k=>{ if(p[k]!==undefined&&p[k]!==null) r[k]=p[k]; }); applyDept(r,p); }
+function feeSame(a,F){ const c=feeOf(a); return c.fee===F.fee&&c.is_free===F.is_free&&c.payment_type===F.payment_type&&c.paid_now===F.paid_now&&(DEPT_KEY[a.dept]||'')===F.dept&&(F.dept!=='cosmetic'||((a.proc_name||'')===F.proc_name&&(a.material||'')===F.material&&(Number(a.material_cost)||0)===F.material_cost)); }
+function feeHtml(a){
+  if(a.is_free) return '<span>🆓 كشفية مجانية</span>';
+  const cos=a.dept==='التجميل والحقن', fee=Number(a.fee)||0, inst=a.payment_type==='installment', paid=inst?Math.min(Number(a.paid_now)||0,fee):fee;
+  return '<span>💵 '+(cos?'السعر الكلي: ':'الكشفية: ')+money(fee)+' د.ع</span>'+(inst?'<span>🧾 تقسيط</span><span>✅ مدفوع '+money(paid)+' د.ع</span><span>⏳ متبقي '+money(Math.max(fee-paid,0))+' د.ع</span>':'<span>✅ دفع كامل</span>');
+}
+function feeFromForm(){
+  const free=$('aFree').checked, fee=free?0:Math.max(0,parseInt($('aFee').value,10)||0), inst=!free&&$('aPayType').value==='installment';
+  return {fee,is_free:free,payment_type:inst?'installment':'full',paid_now:inst?Math.max(0,parseInt($('aPaid').value,10)||0):0};
+}
+function feeCalc(){
+  const free=$('aFree').checked; $('aFee').disabled=free; $('aPayWrap').classList.toggle('hidden',free);
+  const inst=!free&&$('aPayType').value==='installment'; $('aInstWrap').classList.toggle('hidden',!inst);
+  if(inst){ const fee=parseInt($('aFee').value,10)||0, paid=parseInt($('aPaid').value,10)||0; $('aRemain').value=money(Math.max(fee-paid,0)); }
+}
+function toggleFree(){ if($('aFree').checked) $('aFee').value=0; else if(!(parseInt($('aFee').value,10)>0)) $('aFee').value=DEFAULT_FEE||0; feeCalc(); }
+function setFeeForm(a){
+  const f=feeOf(a); $('aFree').checked=f.is_free; $('aFee').value=f.is_free?0:f.fee; $('aPayType').value=f.payment_type; $('aPaid').value=f.paid_now;
+  feeCalc();
+}
 function lgErr(m){ const e=$('lgErr'); e.textContent=m; e.classList.toggle('show',!!m); }
 async function login(){
   lgErr('');
@@ -338,8 +482,8 @@ async function login(){
     $('lgPass').value=''; enter();
   }catch(e){ lgErr(e.status===400||e.status===401 ? 'الإيميل أو كلمة المرور غير صحيحة' : 'تعذر الاتصال: '+e.message); }
 }
-function logout(){ $('tabSec').textContent='دخول الطاقم الطبي'; SESSION=null; try{sessionStorage.removeItem('cl_sess');}catch(e){} clearInterval(poll); $('app').classList.add('hidden'); $('loginBox').classList.remove('hidden'); }
-function enter(){ $('loginBox').classList.add('hidden'); $('app').classList.remove('hidden'); $('tabSec').textContent='🗓️ لوحة الطاقم الطبي'; tab('sec'); if(!$('dayPick').value) $('dayPick').value=today(); loadList(); clearInterval(poll); poll=setInterval(()=>{ if(!document.querySelector('.modal.show')) loadList(true); },5000); }
+function logout(){ $('tabBook').classList.remove('hidden'); $('tabSec').textContent='دخول الطاقم الطبي'; SESSION=null; try{sessionStorage.removeItem('cl_sess');}catch(e){} clearInterval(poll); $('app').classList.add('hidden'); $('loginBox').classList.remove('hidden'); }
+function enter(){ $('tabBook').classList.add('hidden'); $('loginBox').classList.add('hidden'); $('app').classList.remove('hidden'); $('tabSec').textContent='🗓️ لوحة الطاقم الطبي'; tab('sec'); if(!$('dayPick').value) $('dayPick').value=today(); loadList(); clearInterval(poll); poll=setInterval(()=>{ if(!document.querySelector('.modal.show')) loadList(true); },3000); }
 function shiftDay(n){ $('dayPick').value=addDays($('dayPick').value||today(),n); loadList(); }
 function goToday(){ $('dayPick').value=today(); loadList(); }
 const QKINDS=['checkin','queue_up','queue_down','queue_set','queue_clear'];
@@ -366,20 +510,23 @@ function mergeList(rows, reqs, pubs, d){
   (reqs||[]).forEach(q=>{
     const p=q.payload||{};
     if(q.kind==='create'){
-      if(p.appt_date===d) extra.push({id:'req:'+q.id,patient_name:p.patient_name,phone:p.phone,age:p.age||'',reason:p.reason,appt_date:p.appt_date,appt_time:p.appt_time||'',status:'مجدول',dept:'',fee:0,is_free:false,file_count:0,queue_order:null,_pending:true,_src:'secretary'});
+      if(p.appt_date===d) extra.push({id:'req:'+q.id,patient_name:p.patient_name,phone:p.phone,age:p.age||'',reason:p.reason,appt_date:p.appt_date,appt_time:p.appt_time||'',status:'مجدول',dept:'',...feeOf(p),file_count:0,queue_order:null,_pending:true,_src:'secretary'}); applyDept(extra[extra.length-1],p);
     } else if(QKINDS.includes(q.kind)){
       /* تُحاكى بعد بناء القائمة كاملة */
     } else if(byId[q.appt_id]){
       const r=byId[q.appt_id]; r._pending=true; r._reqId=q.id;
       if(q.kind==='cancel') r.status='ملغى';
       else if(q.kind==='restore') r.status='مجدول';
+      else if(q.kind==='fee_edit') applyFee(r,p);
+      else if(q.kind==='pay'){ const f=Number(r.fee)||0, cur=r.payment_type==='installment'?Number(r.paid_now)||0:f; r.payment_type='installment'; r.paid_now=Math.min(f,cur+(Number(p.amount)||0)); }
       else if(q.kind==='update'){
-        ['patient_name','phone','age','appt_time'].forEach(k=>{ if(p[k]) r[k]=p[k]; }); if(p.reason) r.reason=p.reason;
+        ['patient_name','phone','age','appt_time'].forEach(k=>{ if(p[k]) r[k]=p[k]; }); if(p.reason) r.reason=p.reason; applyFee(r,p);
         if(p.appt_date && p.appt_date!==d) delete byId[q.appt_id];
       }
     }
   });
-  (pubs||[]).forEach(b=>extra.push({id:'pub:'+b.id,patient_name:b.patient_name,phone:b.phone,age:b.age||'',reason:b.reason,appt_date:b.appt_date,appt_time:b.appt_time||'',status:'مجدول',dept:'',fee:0,is_free:false,file_count:0,queue_order:null,_pending:true,_src:'online'}));
+  (pubs||[]).forEach(b=>extra.push({id:'pub:'+b.id,patient_name:b.patient_name,phone:b.phone,age:b.age||'',reason:b.reason,appt_date:b.appt_date,appt_time:b.appt_time||'',status:'مجدول',dept:'',...feeOf({}),file_count:0,queue_order:null,_pending:true,_src:'online'}));
+  (reqs||[]).filter(q=>q.kind==='update'&&/^pub:/.test(q.appt_id||'')).forEach(q=>{ const x=extra.find(e=>e.id===q.appt_id); if(x) applyFee(x,q.payload||{}); });
   const all=[...Object.values(byId),...extra];
   (reqs||[]).filter(q=>QKINDS.includes(q.kind)).forEach(q=>simQueue(all,d,q));
   all.sort((a,b)=>{
@@ -395,20 +542,26 @@ let LASTSIG='';
 async function loadList(silent){
   try{
     const d=$('dayPick').value||today();
-    const [rows, metas, st, mine, reqs, pubs] = await Promise.all([
+    const [rows, metas, st, mine, reqs, pubs, debts, pays, unapp] = await Promise.all([
       R('GET','/rest/v1/appt_mirror?select=*&appt_date=eq.'+d+'&order=appt_time.asc'),
       R('GET','/rest/v1/appt_files_meta?select=appt_id,title&limit=500'),
-      R('GET','/rest/v1/clinic_status?select=last_seen&limit=1'),
+      R('GET','/rest/v1/clinic_status?select=last_seen,default_fee&limit=1'),
       R('GET','/rest/v1/incoming_files?select=id,appt_id,title,received_at,deleted_at,created_at&order=created_at.desc&limit=200'),
       R('GET','/rest/v1/sec_requests?select=id,kind,appt_id,payload&status=eq.pending&order=created_at.asc'),
-      R('GET','/rest/v1/public_bookings?select=*&received_at=is.null&appt_date=eq.'+d+'&order=created_at.asc')
+      R('GET','/rest/v1/public_bookings?select=*&received_at=is.null&appt_date=eq.'+d+'&order=created_at.asc'),
+      R('GET','/rest/v1/debts_mirror?select=*&limit=2000').catch(()=>[]),
+      R('GET','/rest/v1/pay_mirror?select=*&pay_date=eq.'+d+'&limit=500').catch(()=>[]),
+      R('GET','/rest/v1/debt_payments?select=id,appt_id,amount,pay_date,appt_date,created_by&applied_at=is.null&limit=500').catch(()=>[])
     ]);
-    LIST=mergeList(rows,reqs,pubs,d); METAS={}; (metas||[]).forEach(m=>{ (METAS[m.appt_id]=METAS[m.appt_id]||[]).push(m.title); });
+    DEBTS=debts||[]; PAYS=pays||[]; UNAPP=unapp||[]; PENDPAY={}; UNAPP.forEach(x=>{ PENDPAY[x.appt_id]=(PENDPAY[x.appt_id]||0)+(Number(x.amount)||0); });
+    DEFAULT_FEE = st && st[0] && st[0].default_fee!=null ? Number(st[0].default_fee)||0 : DEFAULT_FEE;
+    LIST=mergeList(rows,reqs,pubs,d);
+    LIST.forEach(a=>{ const pp=PENDPAY[a.id]; if(pp&&a.payment_type==='installment'){ const f=Number(a.fee)||0; a.paid_now=Math.min(f,(Number(a.paid_now)||0)+pp); } });   // دفعات مسجّلة لم يطبّقها برنامج الطبيب بعد METAS={}; (metas||[]).forEach(m=>{ (METAS[m.appt_id]=METAS[m.appt_id]||[]).push(m.title); });
     MYFILES={}; (mine||[]).forEach(f=>{ (MYFILES[f.appt_id]=MYFILES[f.appt_id]||[]).push(f); });
     const nPend=(reqs||[]).filter(q=>!QKINDS.includes(q.kind)).length+(pubs||[]).length; $('pendBadge').textContent='⏳ '+nPend+' بانتظار الطبيب'; $('pendBadge').classList.toggle('hidden',!nPend);
     const age = st && st[0] ? (Date.now()-new Date(st[0].last_seen).getTime())/1000 : 1e9;
     $('docDot').className='dot '+(age<60?'on':'off'); $('docTxt').textContent = age<60 ? 'جهاز الطبيب نشط' : 'جهاز الطبيب غير نشط — الحجوزات تظهر بالقائمة وتُنفَّذ عند عودته';
-    const sig=JSON.stringify([LIST,METAS,MYFILES,$('q').value]);
+    const sig=JSON.stringify([LIST,METAS,MYFILES,$('q').value,DEBTS,PAYS,UNAPP,$('dq').value]);
     if(silent && sig===LASTSIG) return;
     LASTSIG=sig; const y=window.scrollY; renderList(); window.scrollTo(0,y);
   }catch(e){ if(!silent) toast('تعذر التحميل: '+e.message); if(e.message==='انتهت الجلسة'||e.status===401) logout(); }
@@ -445,13 +598,15 @@ async function qAct(kind,id){
   if(kind==='checkin'){ const b=LIST.find(x=>x.id===id); if(b&&b.queue_order!=null) toast('✅ تم تسجيل الحضور — رقم الدور: '+(b.queue_order+1)); }
 }
 function renderList(){
+  renderDaySum(); renderDebts();
   const q=$('q').value.trim().toLowerCase();
   const rows=LIST.filter(a=>!q||(a.patient_name||'').toLowerCase().includes(q)||(a.phone||'').includes(q));
   $('list').innerHTML = rows.length ? rows.map(a=>{
     const cls = a.status==='ملغى'?'c':(a.status==='مكتمل'?'d':'');
     const names = (METAS[a.id]||[]);
     return `<div class="card appt"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>${a.queue_order!=null?'<span class="qn">'+(a.queue_order+1)+'</span>':''}${esc(a.patient_name)}</b><span><span class="badge ${cls}">${esc(a.status)}</span>${a._src==='online'?' <span class="badge">🌐 حجز إلكتروني</span>':''}${a._pending?' <span class="badge w">⏳ بانتظار الطبيب</span>':''}</span></div>
-      <div class="meta"><span>📞 ${esc(a.phone)}</span><span>🕐 ${a.appt_time ? esc(a.appt_time.slice(0,5)) : 'الوقت غير محدد'}</span>${a.dept?`<span>🏷️ ${esc(a.dept)}</span>`:'<span>⏳ بانتظار التصنيف</span>'}${a.is_free?'<span>🆓 مجانية</span>':(a.fee?`<span>💵 ${Number(a.fee).toLocaleString('en-US')} د.ع</span>`:'')}</div>
+      <div class="meta"><span>📞 ${esc(a.phone)}</span><span>🕐 ${a.appt_time ? esc(a.appt_time.slice(0,5)) : 'الوقت غير محدد'}</span>${a.dept?`<span>🏷️ ${esc(a.dept)}</span>`:'<span>⏳ بانتظار التصنيف</span>'}${feeHtml(a)}${a.dept==='التجميل والحقن'?'<span>🧴 '+esc(a.material||'—')+' — سعر المادة '+money(a.material_cost)+' د.ع</span>':''}</div>
+      ${a.status!=='ملغى'?debtBar(a.phone,a.patient_name,a.id):''}
       ${a.reason?`<div class="hint">📝 ${esc(a.reason)}</div>`:''}
       ${names.length?`<div class="hint">📎 ${names.map(esc).join('، ')}</div>`:''}
       <div class="acts">
@@ -460,6 +615,8 @@ function renderList(){
         ${/^pub:/.test(a.id)?`<button class="btn btn-outline btn-sm" onclick="openEdit('${a.id}')">✎ تعديل</button><button class="btn btn-danger btn-sm" onclick="deletePub('${a.id}')">🗑️ حذف الطلب</button>`:''}
         ${((a.status==='مجدول'||(a.status==='مكتمل'&&a.queue_order!=null))&&(/^(req|pub):/.test(a.id)||!a._pending))?queueBtns(a):''}
         ${(a.status==='مجدول'&&!a._pending)?`<button class="btn btn-outline btn-sm" onclick="openEdit('${a.id}')">✎ تعديل</button><button class="btn btn-danger btn-sm" onclick="sendReq('cancel','${a.id}')">🚫 إلغاء الحجز</button>`:''}
+        ${(a.status==='مكتمل'&&!a._pending&&a.payment_type==='installment'&&!a.is_free&&(Number(a.fee)||0)>(Number(a.paid_now)||0))?`<button class="btn btn-primary btn-sm" onclick="openPay('${a.id}')">💵 تسديد</button>`:''}
+        ${(a.status==='مكتمل'&&!a._pending)?`<button class="btn btn-outline btn-sm" onclick="openFeeEdit('${a.id}')">✎ الكشفية</button>`:''}
         ${(a.status==='ملغى'&&!a._pending)?`<button class="btn btn-outline btn-sm" onclick="sendReq('restore','${a.id}')">↩ استرجاع الحجز</button>`:''}
         ${!/^(req|pub):/.test(a.id)?`<button class="btn btn-outline btn-sm" onclick="openFiles('${a.id}')">📎 الملفات${a.file_count?' ('+a.file_count+')':''}</button>`:''}
       </div></div>`;
@@ -474,7 +631,7 @@ async function sendReqRow(kind, appt_id, payload){
 async function watchReq(rid, kind){
   const t0=Date.now();
   while(Date.now()-t0 < 6*3600*1000){
-    await new Promise(r=>setTimeout(r,2000));
+    await new Promise(r=>setTimeout(r,1000));
     if(!SESSION) return;
     try{
       const j = await R('GET','/rest/v1/sec_requests?select=status,error&id=eq.'+rid);
@@ -528,28 +685,23 @@ async function deletePub(id){
 }
 let EDIT=null;
 function closeM(id){ $(id).classList.remove('show'); }
-let PREVT=null, PREVL=[];
-function prevSearch(){
-  clearTimeout(PREVT);
-  const q=$('aPrev').value.trim().replace(/[(),*%]/g,'');
-  const box=$('aPrevBox');
-  if(q.length<2){ box.style.display='none'; return; }
-  PREVT=setTimeout(async()=>{
-    try{
-      const all=await R('GET','/rest/v1/appt_mirror?select=patient_name,phone,age&or=(patient_name.ilike.*'+encodeURIComponent(q)+'*,phone.ilike.*'+encodeURIComponent(q)+'*)&order=appt_date.desc&limit=40');
-      const seen={}; PREVL=[]; (all||[]).forEach(r=>{ const k=(r.phone||'')+'|'+(r.patient_name||''); if(!seen[k]&&PREVL.length<8){ seen[k]=1; PREVL.push({name:r.patient_name,phone:r.phone,age:r.age}); } });
-      box.innerHTML=PREVL.length?PREVL.map((r,i)=>`<div style="padding:9px 12px;cursor:pointer;border-bottom:1px solid #eef2f8" onclick="prevPick(${i})"><b>${esc(r.name)}</b> <span style="color:#667;direction:ltr;unicode-bidi:embed">${esc(r.phone)}</span></div>`).join(''):'<div style="padding:9px 12px;color:#667">لا يوجد مطابق في الحجوزات الأخيرة والقادمة</div>';
-      box.style.display='block';
-    }catch(e){ box.innerHTML='<div style="padding:9px 12px;color:#b91c1c">تعذر البحث الآن، حاول مجددًا</div>'; box.style.display='block'; }
-  },250);
-}
-function prevPick(i){ const r=PREVL[i]; if(!r) return; $('aName').value=r.name||''; $('aPhone').value=r.phone||''; $('aAge').value=r.age||''; $('aPrev').value=''; $('aPrevBox').style.display='none'; }
-function openNew(){ EDIT=null; $('aPrevWrap').style.display=''; $('aPrev').value=''; $('aPrevBox').style.display='none'; $('mTitle').textContent='حجز جديد'; ['aName','aPhone','aAge','aReason'].forEach(i=>$(i).value=''); $('aDate').min=today(); $('aDate').value=$('dayPick').value||today(); $('aTime').value='10:00'; $('aErr').classList.remove('show'); $('mAppt').classList.add('show'); }
-function openEdit(id){ $('aPrevWrap').style.display='none'; const a=LIST.find(x=>x.id===id); if(!a) return; EDIT=a; $('mTitle').textContent='تعديل الحجز'; $('aName').value=a.patient_name; $('aPhone').value=a.phone; $('aAge').value=a.age||''; $('aReason').value=a.reason||''; $('aDate').min=''; $('aDate').value=a.appt_date; $('aTime').value=(a.appt_time||'').slice(0,5); $('aErr').classList.remove('show'); $('mAppt').classList.add('show'); }
+function showMain(on){ $('aMain').classList.toggle('hidden',!on); FEEONLY=!on; }
+function openFeeEdit(id){ const a=LIST.find(x=>x.id===id); if(!a) return; EDIT=a; showMain(false); $('mTitle').textContent='تعديل كشفية: '+a.patient_name; setFeeForm(a); $('aErr').classList.remove('show'); $('mAppt').classList.add('show'); }
+function openNew(){ showMain(true); EDIT=null; $('mTitle').textContent='حجز جديد'; ['aName','aPhone','aAge','aReason'].forEach(i=>$(i).value=''); $('aDate').min=today(); $('aDate').value=$('dayPick').value||today(); $('aTime').value='10:00'; setFeeForm({}); setDeptForm({}); debtAlert(); $('aErr').classList.remove('show'); $('mAppt').classList.add('show'); }
+function openEdit(id){ const a=LIST.find(x=>x.id===id); if(!a) return; showMain(true); EDIT=a; $('mTitle').textContent='تعديل الحجز'; $('aName').value=a.patient_name; $('aPhone').value=a.phone; $('aAge').value=a.age||''; $('aReason').value=a.reason||''; $('aDate').min=''; $('aDate').value=a.appt_date; $('aTime').value=(a.appt_time||'').slice(0,5); setFeeForm(a); setDeptForm(a); debtAlert(); $('aErr').classList.remove('show'); $('mAppt').classList.add('show'); }
 async function saveAppt(){
-  const p={patient_name:$('aName').value.trim(),phone:$('aPhone').value.trim().replace(/\s+/g,''),age:$('aAge').value.trim(),reason:$('aReason').value.trim(),appt_date:$('aDate').value,appt_time:$('aTime').value};
+  if(FEEONLY){
+    const F=feeFromForm(), err=m=>{ $('aErr').textContent=m; $('aErr').classList.add('show'); };
+    if(F.payment_type==='installment'&&F.paid_now>F.fee) return err('المبلغ المدفوع أكبر من سعر الكشفية');
+    closeM('mAppt');
+    try{ await sendReqRow('fee_edit',EDIT.id,F); toast('⏳ أُرسل تعديل الكشفية — ينفَّذ عند نشاط جهاز الطبيب'); }catch(e){ toast('❌ '+e.message); }
+    return loadList(true);
+  }
+  const p={patient_name:$('aName').value.trim(),phone:$('aPhone').value.trim().replace(/\s+/g,''),age:$('aAge').value.trim(),reason:$('aReason').value.trim(),appt_date:$('aDate').value,appt_time:$('aTime').value,...feeFromForm(),...deptFromForm()};
   const err=m=>{ const e=$('aErr'); e.textContent=m; e.classList.add('show'); };
   if(p.patient_name.length<2||p.phone.replace(/\D/g,'').length<10||p.reason.length<2||!p.appt_date||(!p.appt_time&&!(EDIT&&/^pub:/.test(EDIT.id)))) return err('أكمل الاسم والهاتف (10 أرقام) وسبب الزيارة والتاريخ'+(EDIT&&/^pub:/.test(EDIT.id)?'':' والوقت'));
+  if(p.payment_type==='installment' && p.paid_now>p.fee) return err('المبلغ المدفوع أكبر من سعر الكشفية');
+  if(p.dept==='cosmetic'&&p.proc_name.length<2) return err('اكتب اسم العملية التجميلية');
   closeM('mAppt');
   if(EDIT && /^req:/.test(EDIT.id)){
     try{
@@ -567,8 +719,11 @@ async function saveAppt(){
   }
   if(EDIT && /^pub:/.test(EDIT.id)){
     try{
-      const j = await R('PATCH','/rest/v1/public_bookings?id=eq.'+EDIT.id.slice(4)+'&received_at=is.null',p,{headers:{Prefer:'return=representation'}});
-      if(j && j.length){ toast('✅ تم تعديل الحجز'); $('dayPick').value=p.appt_date; }
+      const core=Object.assign({},p); EXTRAKEYS.forEach(k=>delete core[k]);
+      const j = await R('PATCH','/rest/v1/public_bookings?id=eq.'+EDIT.id.slice(4)+'&received_at=is.null',core,{headers:{Prefer:'return=representation'}});
+      if(j && j.length){
+        const F=Object.assign(feeFromForm(),deptFromForm()); if(!feeSame(EDIT,F)) await sendReqRow('update', EDIT.id, F);   // الكشفية تصل الطبيب كطلب يُنفَّذ بعد استلامه الحجز
+        toast('✅ تم تعديل الحجز'); $('dayPick').value=p.appt_date; }
       else {   // استلمه جهاز الطبيب: نحوّل التعديل تلقائيًا إلى طلب تعديل على الموعد نفسه
         toast('⏳ استلمه جهاز الطبيب — جارِ تحويل التعديل على الموعد...');
         const row = await findReceived(EDIT.id.slice(4));
@@ -579,6 +734,7 @@ async function saveAppt(){
     return loadList(true);
   }
   try{
+    if(EDIT && p.reason===EDIT.reason && EDIT.dept==='التجميل والحقن') delete p.reason;   // سبب الزيارة المعروض للتجميل هو اسم العملية، لا نكتبه فوق سبب المريض
     await sendReqRow(EDIT?'update':'create', EDIT&&EDIT.id, p);
     toast('⏳ أُرسل الطلب — يظهر بالقائمة وينفَّذ عند نشاط جهاز الطبيب');
     $('dayPick').value=p.appt_date;
