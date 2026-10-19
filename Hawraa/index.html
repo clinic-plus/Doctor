@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1D5FC9">
+<title>عيادة د. حوراء عبدالله — السكرتيرة</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{--bg:#F2F6FC;--p:#1D5FC9;--pd:#0E3B85;--pl:#DCE9FB;--ac:#2FB7E6;--tx:#132338;--mu:#5A6C85;--ln:#DCE6F4;--dg:#D2574F;--dgb:#FBEAEA;--ok:#2E9E6B;--okb:#E6F6EE;--wn:#9A6A00;--wnb:#FFF3D6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:manipulation;overflow-x:hidden}
+body{overflow-x:hidden;max-width:100vw;touch-action:manipulation}
+input,select,textarea{font-size:16px!important}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--tx);font-size:15px}
+header{background:var(--p);color:#fff;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:20}
+header b{font-size:16px}.sub{font-size:12px;opacity:.85;margin-top:2px}
+main{padding:12px;max-width:600px;margin:auto;padding-bottom:100px}
+.card{background:#fff;border:1px solid var(--ln);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 4px 14px rgba(14,59,133,.08)}
+input,select,button,textarea{font:inherit}
+input,select{width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--ln);background:#fff;margin-top:6px;color:var(--tx)}
+input:focus,select:focus{outline:none;border-color:var(--p)}
+label.l{display:block;font-size:12.5px;font-weight:bold;color:var(--mu);margin-top:10px}
+button{border:0;border-radius:12px;padding:12px 14px;font-weight:bold;cursor:pointer;background:var(--p);color:#fff}
+button:active{filter:brightness(.92)}button:disabled{opacity:.6}
+button.full{width:100%;margin-top:10px}
+button.sec{background:#E9F1FB;color:var(--pd)}
+button.sm{padding:8px 11px;font-size:13px;border-radius:10px;background:#E9F1FB;color:var(--pd)}
+button.sm.dg{color:var(--dg)}button.sm.pr{background:var(--p);color:#fff}
+#logout{padding:6px 12px;background:transparent;border:1px solid rgba(255,255,255,.7);font-size:13px}
+.small{font-size:13px;color:var(--mu)}.ok{color:var(--ok)}.err{color:var(--dg)}
+.datebar{display:flex;gap:8px;align-items:center}
+.datebar input{margin:0;text-align:center;flex:1}
+.datebar button{white-space:nowrap}
+.row2{display:flex;gap:8px;margin-top:8px}.row2 input{margin:0}
+.row2>*{flex:1}
+.appt{background:#fff;border:1px solid var(--ln);border-radius:16px;padding:12px 14px;margin-bottom:10px}
+.appt.cx{opacity:.6}
+.appt .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.appt .nm{font-size:15.5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.qn{background:var(--pl);color:var(--pd);border-radius:99px;padding:2px 10px;font-weight:bold;min-width:26px;text-align:center}
+.bd{font-size:12px;font-weight:bold;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.bd.s{background:var(--pl);color:var(--p)}.bd.d{background:var(--okb);color:var(--ok)}.bd.e{background:#fff4d6;color:#8a5a00}.bd.c{background:var(--dgb);color:var(--dg)}.bd.new{background:var(--pl);color:var(--p)}
+.meta{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:13px;color:var(--mu)}
+.meta a{color:var(--p);text-decoration:none;font-weight:bold}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.empty{text-align:center;color:var(--mu);padding:40px 10px;font-size:15px;line-height:2}
+.item{padding:12px;border-bottom:1px solid #E8ECF3}.item:active{background:#E8F0FD}
+.warn{background:var(--wnb);color:var(--wn);border-radius:12px;padding:10px;margin-top:10px;font-size:13px}
+.warn .w{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;color:var(--tx)}
+#fab{position:fixed;left:16px;bottom:calc(20px + env(safe-area-inset-bottom));background:#2FB7E6;color:#fff;border-radius:99px;padding:14px 20px;box-shadow:0 8px 20px rgba(14,59,133,.3);z-index:15}
+.sheet{position:fixed;inset:0;background:rgba(19,35,56,.5);z-index:30;display:none;overflow:auto}
+.sheetbox{background:#fff;border-radius:20px 20px 0 0;margin-top:40px;min-height:calc(100% - 40px);padding:16px;padding-bottom:40px;max-width:600px;margin-left:auto;margin-right:auto}
+.sheetbox h3{margin:0 0 4px;color:var(--pd);display:flex;justify-content:space-between;align-items:center}
+.sheetbox h3 button{padding:4px 12px;background:#E9F1FB;color:var(--mu)}
+.qs{background:#E9F1FB;border-radius:14px;padding:10px;margin:8px 0}
+.chk{display:flex;align-items:center;gap:8px;margin-top:10px}.chk input{width:20px;height:20px;margin:0}
+.frow{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #E8ECF3}
+.frow .th{width:64px;height:64px;border-radius:10px;background:#E9F1FB;display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;flex:0 0 64px;cursor:pointer}
+.frow .th img{width:100%;height:100%;object-fit:cover}
+.frow .inf{flex:1;min-width:0}.frow .inf b{display:block;word-break:break-word}
+.frow input{margin:0}
+#viewer{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center}
+#viewer img{max-width:100%;max-height:82%;object-fit:contain}
+#viewer .vt{color:#fff;font-weight:bold;margin:10px;text-align:center}
+#viewer a.open{background:#fff;color:var(--pd);padding:14px 22px;border-radius:12px;font-weight:bold;text-decoration:none;margin:10px}
+#viewer button{background:#fff;color:#000;margin-top:10px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));background:var(--pd);color:#fff;padding:10px 18px;border-radius:14px;font-weight:bold;font-size:14px;z-index:70;display:none;max-width:90%;text-align:center}
+</style></head><body>
+<header><div><b>🩺 عيادة د. حوراء عبدالله</b><div class="sub" id="who"></div></div><button id="logout" style="display:none">خروج</button></header>
+<main>
+<div id="loginBox" class="card">
+  <b>تسجيل دخول السكرتيرة</b>
+  <input id="u" type="email" placeholder="البريد الإلكتروني" autocapitalize="none" autocomplete="username" inputmode="email" enterkeyhint="next" dir="ltr">
+  <input id="p" type="password" placeholder="كلمة المرور" autocomplete="current-password" enterkeyhint="go" dir="ltr">
+  <button class="full" id="loginBtn">دخول</button><div id="loginMsg" class="err small" style="margin-top:8px"></div>
+</div>
+
+<div id="appBox" style="display:none">
+  <div id="hb" class="warn" style="display:none;margin-top:0;margin-bottom:10px">⚠️ برنامج الطبيبة غير متصل حاليًا — طلباتك تُحفظ وتصل للطبيبة تلقائيًا عند تشغيل البرنامج، والمواعيد المعروضة قد لا تكون الأحدث.</div>
+  <div id="fails"></div>
+  <div class="card">
+    <div class="datebar"><button class="sm" id="dPrev">▸ السابق</button><input id="dIn" type="date"><button class="sm" id="dNext">التالي ◂</button></div>
+    <div class="row2"><input id="sq" type="search" placeholder="🔍 ابحث بالاسم أو الهاتف"><button class="sm" id="dToday" style="flex:0 0 auto">اليوم</button></div>
+    <div class="small" id="dayLbl" style="margin-top:8px"></div>
+  </div>
+  <div id="list"></div>
+</div>
+</main>
+
+<button id="fab" style="display:none">+ حجز جديد</button>
+
+<!-- ============ استمارة الحجز ============ -->
+<div class="sheet" id="sheet"><div class="sheetbox">
+  <h3><span id="fTitle">حجز جديد</span><button id="fClose">✕</button></h3>
+  <label class="l">الاسم *</label><input id="fName" placeholder="الاسم الكامل" enterkeyhint="next">
+  <div class="row2" style="margin-top:0">
+    <div><label class="l">التاريخ *</label><input id="fDate" type="date"></div>
+    <div><label class="l">الوقت *</label><input id="fTime" type="time"></div>
+  </div>
+  <div class="row2" style="margin-top:0">
+    <div><label class="l">رقم الهاتف</label><input id="fPhone" type="tel" placeholder="07xxxxxxxxx"></div>
+    <div><label class="l">العمر</label><input id="fAge" type="text" inputmode="numeric" placeholder="مثال: 34"></div>
+  </div>
+  <label class="l">العنوان</label><input id="fAddr" placeholder="اختياري">
+  <label class="l">سعر الكشفية (د.ع)</label><input id="fFee" type="number" inputmode="numeric" min="0" step="500" enterkeyhint="done">
+  <label class="chk"><input type="checkbox" id="fFree"> كشفية مجانية</label>
+  <div id="stBox" style="display:none"><label class="l">الحالة</label><select id="fStatus"></select></div>
+  <button class="full" id="fSave">حفظ الموعد</button>
+  <button class="sec full" id="fCancel">إلغاء</button>
+</div></div>
+
+<!-- ============ ملفات الموعد ============ -->
+<div class="sheet" id="fsheet"><div class="sheetbox">
+  <h3><span id="fsTitle">ملفات الموعد</span><button id="fsClose">✕</button></h3>
+  <div class="small" id="fsSub"></div>
+  <button class="full" id="camBtn">📷 التقاط صورة</button>
+  <button class="sec full" id="galBtn">🖼️ اختيار من المعرض / ملف PDF</button>
+  <input id="cam" type="file" accept="image/*" capture="environment" hidden>
+  <input id="gal" type="file" accept="image/*,application/pdf" multiple hidden>
+  <div id="fsList" style="margin-top:12px"></div>
+</div></div>
+
+<!-- ============ تسمية الملفات قبل الرفع ============ -->
+<div class="sheet" id="nsheet" style="z-index:40"><div class="sheetbox">
+  <h3><span>تسمية الملفات قبل الرفع</span><button id="nsClose">✕</button></h3>
+  <div class="small">اكتب اسماً لكل ملف (مثال: تحليل CBC، أشعة الصدر). يمكنك تركه فارغاً.</div>
+  <div id="nsList"></div>
+  <button class="full" id="nsUp">رفع</button>
+  <button class="sec full" id="nsCancel">إلغاء</button>
+  <div id="nsLog" class="small" style="margin-top:10px;line-height:2"></div>
+</div></div>
+
+<div id="viewer"><div class="vt" id="vTitle"></div><div id="vBody"></div><button id="vClose">إغلاق</button></div>
+<div id="toast"></div>
+<script>
+(function(){var pz=function(e){e.preventDefault()};
+document.addEventListener('gesturestart',pz,{passive:false});document.addEventListener('gesturechange',pz,{passive:false});
+document.addEventListener('touchmove',function(e){if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
+})();
+(function(){
+var SB_URL='https://oqedoinmaotambosahxp.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9xZWRvaW5tYW90YW1ib3NhaHhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMDE5OTAsImV4cCI6MjEwNDc3Nzk5MH0.u1-sD07ZbEv_MUKjRdqn2Mh2SwMq3vA-Q9YG49qTRRM',DEF_FEE=15000,BUCKET='desk-files';
+var $=function(i){return document.getElementById(i)};
+function p2(n){return (n<10?'0':'')+n}
+function fmt(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())}
+function td(){return fmt(new Date())}
+function shift(s,n){var a=s.split('-');return fmt(new Date(+a[0],+a[1]-1,+a[2]+n))}
+function nowT(){var d=new Date();return p2(d.getHours())+':'+p2(d.getMinutes())}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function uid(){try{if(window.crypto&&crypto.randomUUID)return crypto.randomUUID().replace(/-/g,'')}catch(e){}
+  var s='';for(var i=0;i<32;i++)s+=Math.floor(Math.random()*16).toString(16);return s}
+var sb=null,DOC='',who='',day=td(),items=[],cmds=[],editing=null,curAppt=null,pending=[],blobUrls=[],signedCache={};
+try{sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'hawraa-secretary-auth'}})}catch(e){sb=null}
+
+var tt=null;
+function toast(m){var t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(function(){t.style.display='none'},3000)}
+function enterOn(ids,fn){ids.forEach(function(id){$(id).addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();fn(id)}})})}
+function netMsg(e){return (e&&e.message)||'تعذّر الاتصال — تحقق من الإنترنت'}
+
+/* ---------- الدخول ---------- */
+function showLogin(){DOC='';who='';items=[];cmds=[];
+  $('loginBox').style.display='';$('appBox').style.display='none';$('logout').style.display='none';
+  $('fab').style.display='none';$('who').textContent=''}
+function showApp(){$('loginBox').style.display='none';$('appBox').style.display='';$('logout').style.display='';
+  $('fab').style.display='';$('who').textContent=who;loadAppts();checkBeat()}
+function loadAccount(userId){
+  return sb.from('desk_accounts').select('doctor_id,role,full_name').eq('user_id',userId).maybeSingle().then(function(r){
+    if(r.error)throw new Error('تعذّر التحقق من الحساب — تأكد من إعداد الربط (supabase_setup.sql)');
+    var a=r.data;
+    if(!a)throw new Error('هذا الحساب غير مربوط بالعيادة (link_accounts.sql)');
+    if(a.role!=='secretary')throw new Error('هذه الصفحة للسكرتيرة فقط — حساب الطبيبة يعمل من برنامج الكمبيوتر');
+    DOC=a.doctor_id;who=a.full_name||''})}
+function doLogin(){
+  $('loginMsg').textContent='';
+  if(!sb){$('loginMsg').textContent='تعذّر تحميل مكتبة الاتصال — تحقق من الإنترنت وأعد تحميل الصفحة';return}
+  var em=$('u').value.trim(),pw=$('p').value;
+  if(!em||!pw){$('loginMsg').textContent='اكتب البريد وكلمة المرور';return}
+  $('loginBtn').disabled=true;
+  sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){
+    if(r.error)throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+    return loadAccount(r.data.user.id)})
+  .then(function(){$('p').value='';showApp()})
+  .catch(function(e){$('loginMsg').textContent=netMsg(e);try{sb.auth.signOut()}catch(x){}})
+  .then(function(){$('loginBtn').disabled=false})}
+$('loginBtn').onclick=doLogin;
+enterOn(['u','p'],function(id){if(id==='u')$('p').focus();else doLogin()});
+$('logout').onclick=function(){if(sb)sb.auth.signOut();showLogin()};
+function boot(){
+  if(!sb){showLogin();$('loginMsg').textContent='تعذّر تحميل مكتبة الاتصال — تحقق من الإنترنت وأعد تحميل الصفحة';return}
+  sb.auth.onAuthStateChange(function(ev){if(ev==='SIGNED_OUT')showLogin()});
+  sb.auth.getSession().then(function(r){
+    if(r.data&&r.data.session){loadAccount(r.data.session.user.id).then(showApp).catch(function(e){showLogin();$('loginMsg').textContent=netMsg(e)})}
+    else showLogin()})}
+
+/* ---------- المواعيد: مرآة الطبيبة + طلباتك التي لم تصل بعد ---------- */
+function blank(id){return {id:id,name:'',phone:'',age:'',address:'',date:'',time:'',status:'مجدول',queue:null,fee:DEF_FEE,is_free:false,visit_type:'',files:0,flist:[]}}
+function applyPayload(a,p){
+  if(p.name!=null)a.name=p.name;if(p.phone!=null)a.phone=p.phone;if(p.age!=null)a.age=p.age;if(p.address!=null)a.address=p.address;
+  if(p.date!=null)a.date=p.date;if(p.time!=null)a.time=p.time;
+  if(p.is_free!=null)a.is_free=!!p.is_free;
+  if(p.fee!=null)a.fee=a.is_free?0:(Number(p.fee)||0);
+  if(a.is_free)a.fee=0;
+  if(p.status!=null)a.status=p.status}
+/* يطبّق طلبات الحضور/الدور المعلّقة على أرقام الدور المعروضة (نفس قواعد برنامج الطبيبة) */
+function simQueue(list,map,pend){
+  var ql=function(){return list.filter(function(x){return x.queue!=null}).sort(function(x,y){return x.queue-y.queue})};
+  pend.forEach(function(c){
+    if(c.kind!=='checkin'&&c.kind!=='queue')return;
+    var a=map[c.appt_id],p=c.payload||{};if(!a)return;
+    if(c.kind==='checkin'){
+      if(a.queue==null&&a.status!=='ملغى'){var mx=-1;list.forEach(function(x){if(x.queue!=null&&x.queue>mx)mx=x.queue});a.queue=mx+1}
+    }else if(p.action==='clear'){a.queue=null}
+    else if(p.action==='up'||p.action==='down'){
+      var l=ql(),i=l.indexOf(a),j=i+(p.action==='up'?-1:1);
+      if(i>=0&&j>=0&&j<l.length){var t=l[i].queue;l[i].queue=l[j].queue;l[j].queue=t}
+    }else if(p.action==='set'){
+      var n=parseInt(p.n,10),others=ql().filter(function(x){return x!==a});
+      if(n>=1&&n<=others.length+1){others.splice(n-1,0,a);others.forEach(function(x,k){x.queue=k})}
+    }
+    a.pend=(a.pend||0)+1;
+  });
+}
+function fetchDay(d,q){
+  var since=new Date(Date.now()-2*86400000).toISOString();
+  return Promise.all([
+    sb.from('desk_mirror').select('appt_id,data').eq('doctor_id',DOC).eq('day',d),
+    sb.from('desk_commands').select('id,kind,appt_id,payload,status,error,created_at').eq('doctor_id',DOC).in('status',['pending','failed']).order('created_at',{ascending:true}),
+    sb.from('desk_files').select('id,appt_id').eq('doctor_id',DOC).eq('deleted',false).gte('created_at',since)
+  ]).then(function(rs){
+    if(rs[0].error||rs[1].error||rs[2].error)throw new Error('تعذّر تحميل المواعيد — تحقق من الإنترنت');
+    var map={},list=[];
+    (rs[0].data||[]).forEach(function(r){var a=r.data||{};a.id=r.appt_id;a.flist=a.flist||[];map[a.id]=a;list.push(a)});
+    cmds=rs[1].data||[];
+    var pend=cmds.filter(function(c){return c.status==='pending'});
+    pend.forEach(function(c){
+      if(c.kind!=='appt_save')return;
+      var a=map[c.appt_id],p=c.payload||{};
+      if(!a){
+        if(p._create&&p.date===d){a=blank(c.appt_id);a.pnew=true;map[a.id]=a;list.push(a)}else return}
+      applyPayload(a,p);a.pend=(a.pend||0)+1;if(p._create)a.cmdCreateId=c.id;a.cmdPayload=p
+    });
+    list=list.filter(function(a){return a.date===d});
+    simQueue(list,map,pend);                      // الحضور والدور يتغيّران فورًا بشاشتها قبل ما يصلن للطبيبة
+    var seen={};(map?Object.keys(map):[]).forEach(function(k){(map[k].flist||[]).forEach(function(f){if(f.cid)seen[f.cid]=1})});
+    (rs[2].data||[]).forEach(function(f){var a=map[f.appt_id];if(a&&!seen[f.id]){a.files=(a.files||0)+1;a.upl=(a.upl||0)+1}});
+    var t=(q||'').toLowerCase();
+    if(t)list=list.filter(function(a){return (a.name||'').toLowerCase().indexOf(t)>=0||(a.phone||'').indexOf(t)>=0});
+    list.sort(function(x,y){
+      var xq=x.queue!=null,yq=y.queue!=null;
+      if(xq&&yq)return x.queue-y.queue;if(xq)return -1;if(yq)return 1;
+      return String(x.time).localeCompare(String(y.time))});
+    return list})}
+var lastSig='';
+function loadAppts(){
+  $('dIn').value=day;
+  fetchDay(day,$('sq').value.trim()).then(function(l){lastSig=JSON.stringify(l)+JSON.stringify(cmds);items=l;render();renderFails()})
+  .catch(function(e){$('list').innerHTML='<div class="empty err">'+esc(netMsg(e))+'</div>'})}
+/* تحديث تلقائي هادئ كل 5 ثواني (والصفحة ظاهرة): نعيد الرسم فقط إذا تغيّر شي */
+function pollAppts(){
+  if(document.hidden||!DOC||$('appBox').style.display==='none')return;
+  fetchDay(day,$('sq').value.trim()).then(function(l){var sig=JSON.stringify(l)+JSON.stringify(cmds);
+    if(sig!==lastSig){lastSig=sig;items=l;render();renderFails()}}).catch(function(){})}
+setInterval(pollAppts,2000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden){pollAppts();checkBeat()}});
+function checkBeat(){
+  if(!DOC)return;
+  sb.from('desk_heartbeat').select('beat').eq('doctor_id',DOC).maybeSingle().then(function(r){
+    var stale=true;if(r.data&&r.data.beat)stale=(Date.now()-new Date(r.data.beat).getTime())>180000;
+    $('hb').style.display=stale?'block':'none'}).catch(function(){})}
+setInterval(function(){if(!document.hidden)checkBeat()},20000);
+
+function stCls(s){return s==='مكتمل'?'d':(s==='ملغى'?'c':(s==='تم الفحص'?'e':'s'))}
+function render(){
+  $('dayLbl').textContent=(day===td()?'مواعيد اليوم — ':'مواعيد يوم ')+day+' ('+items.length+')';
+  if(!items.length){$('list').innerHTML='<div class="empty">📅<br>لا توجد حجوزات في هذا اليوم</div>';return}
+  $('list').innerHTML=items.map(function(a){
+    var h='<div class="appt'+(a.status==='ملغى'?' cx':'')+'" data-id="'+esc(a.id)+'"><div class="top"><div class="nm">';
+    if(a.queue!=null)h+='<span class="qn" data-act="qnum">'+(a.queue+1)+'</span>';
+    h+='<b>'+esc(a.name)+'</b>'+(a.visit_type==='new'?'<span class="bd new">جديد</span>':'')+(a.pend?'<span class="bd e">⏳ بانتظار الطبيبة</span>':'')+'</div><span class="bd '+stCls(a.status)+'">'+esc(a.status)+'</span></div>';
+    h+='<div class="meta"><span>'+(a.phone?'📞 <a href="tel:'+esc(a.phone)+'">'+esc(a.phone)+'</a>':'📞 —')+'</span><span>🕐 '+esc(a.time)+'</span><span>'+(a.is_free?'🆓 كشفية مجانية':'💵 '+Number(a.fee||0).toLocaleString('en-US')+' د.ع')+'</span></div>';
+    h+='<div class="acts">';
+    if(a.status!=='ملغى'){
+      if(a.queue!=null)h+='<button class="sm" data-act="up">⬆ تقديم</button><button class="sm" data-act="down">⬇ تأخير</button><button class="sm" data-act="qnum">🔢 رقم الدور</button><button class="sm" data-act="clear">↩ إلغاء الدور</button>';
+      else h+='<button class="sm pr" data-act="checkin">✅ تسجيل حضور</button><button class="sm" data-act="qnum">🔢 رقم الدور</button>';
+    }
+    if(a.status==='تم الفحص')h+='<button class="sm pr" data-act="done">✔️ مكتمل</button>';
+    h+='<button class="sm" data-act="edit">✎ تعديل</button><button class="sm" data-act="files">📎 الملفات ('+(a.files||0)+')</button>';
+    if(a.pnew)h+='<button class="sm dg" data-act="unsend">🗑 إلغاء الإرسال</button>';
+    else if(a.status==='مجدول')h+='<button class="sm dg" data-act="cancel">🚫 إلغاء الحجز</button>';
+    if(!a.pnew&&a.status==='ملغى')h+='<button class="sm" data-act="restore">↩ استرجاع الحجز</button>';
+    return h+'</div></div>'}).join('')}
+
+function renderFails(){
+  var f=cmds.filter(function(c){return c.status==='failed'});
+  $('fails').innerHTML=f.map(function(c){var p=c.payload||{};
+    return '<div class="warn" style="margin-top:0;margin-bottom:10px;background:#FBEAEA;color:#8a2a24"><b>⚠️ لم يُنفَّذ الطلب'+(p.name?' ('+esc(p.name)+')':'')+'</b><div style="margin-top:4px">'+esc(c.error||'رفضته الطبيبة')+'</div><div class="w"><span></span><button class="sm" data-fail="'+esc(c.id)+'">حذف التنبيه</button></div></div>'}).join('')}
+$('fails').onclick=function(e){var b=e.target.closest('[data-fail]');if(!b)return;
+  sb.from('desk_commands').delete().eq('id',b.getAttribute('data-fail')).then(function(){loadAppts()})};
+
+/* ---------- إرسال الطلبات للطبيبة ---------- */
+function sendCmd(kind,apptId,payload){
+  return sb.from('desk_commands').insert({doctor_id:DOC,kind:kind,appt_id:apptId,payload:payload||{}}).then(function(r){
+    if(r.error)throw new Error('تعذّر إرسال الطلب — تحقق من الإنترنت');return r})}
+function sent(msg){toast(msg||'تم الإرسال — يصل للطبيبة خلال ثوانٍ');loadAppts()}
+$('list').onclick=function(e){var b=e.target.closest('[data-act]');if(!b)return;
+  var c=b.closest('.appt'),id=c.getAttribute('data-id'),act=b.getAttribute('data-act'),a=items.filter(function(x){return x.id===id})[0];
+  if(!a)return;
+  var fail=function(x){toast(netMsg(x))};
+  if(act==='checkin')sendCmd('checkin',id,{}).then(function(){sent('تم إرسال تسجيل الحضور — يظهر رقم الدور خلال ثوانٍ')}).catch(fail);
+  else if(act==='up'||act==='down'||act==='clear')sendCmd('queue',id,{action:act}).then(function(){sent()}).catch(fail);
+  else if(act==='qnum'){
+    var n=prompt('رقم الدور الجديد لـ '+a.name+'\n(عند اختيار رقم مشغول يُزاح باقي المرضى تلقائيًا)',a.queue!=null?a.queue+1:'');
+    if(n===null||String(n).trim()==='')return;
+    var k=parseInt(n,10);if(!(k>=1)){toast('أدخل رقمًا صحيحًا');return}
+    sendCmd('queue',id,{action:'set',n:k}).then(function(){sent()}).catch(fail)}
+  else if(act==='edit')openForm(a);
+  else if(act==='done'){if(confirm('تأكيد إكمال حجز «'+a.name+'»؟\n(بعدها لا يمكن للسكرتيرة إرجاعه — الطبيبة فقط)'))sendCmd('appt_save',id,{status:'مكتمل'}).then(function(){sent('تم إرسال «مكتمل»')}).catch(fail)}
+  else if(act==='cancel'){if(confirm('إلغاء حجز «'+a.name+'»؟'))sendCmd('appt_save',id,{status:'ملغى'}).then(function(){sent('تم إرسال الإلغاء')}).catch(fail)}
+  else if(act==='restore')sendCmd('appt_save',id,{status:'مجدول'}).then(function(){sent('تم إرسال الاسترجاع')}).catch(fail);
+  else if(act==='unsend'){if(a.cmdCreateId&&confirm('إلغاء إرسال حجز «'+a.name+'» (لم يصل للطبيبة بعد)؟'))
+    sb.from('desk_commands').delete().eq('id',a.cmdCreateId).eq('status','pending').select('id').then(function(r){
+      if(r.error)return fail(r.error);
+      if(!r.data||!r.data.length)toast('وصل الحجز للطبيبة قبل لحظات — ألغِه من زر «إلغاء الحجز»');else toast('تم إلغاء الإرسال');
+      loadAppts()})}
+  else if(act==='files'){openFiles(a)}};
+$('dPrev').onclick=function(){day=shift(day,-1);loadAppts()};
+$('dNext').onclick=function(){day=shift(day,1);loadAppts()};
+$('dToday').onclick=function(){day=td();loadAppts()};
+$('dIn').onchange=function(){if($('dIn').value){day=$('dIn').value;loadAppts()}};
+var st=null;$('sq').oninput=function(){clearTimeout(st);st=setTimeout(loadAppts,300)};
+enterOn(['sq'],function(){clearTimeout(st);loadAppts();$('sq').blur()});
+
+/* ---------- استمارة الحجز ---------- */
+function openForm(a){editing=a||null;
+  $('fTitle').textContent=a?'تعديل الحجز':'حجز جديد';
+  $('stBox').style.display=(a&&!a.pnew)?'':'none';
+  $('fName').value=a?a.name:'';$('fPhone').value=a?a.phone:'';$('fAge').value=a?a.age:'';$('fAddr').value=a?a.address:'';
+  $('fDate').value=a?a.date:day;$('fTime').value=a?a.time:nowT();
+  $('fFree').checked=a?!!a.is_free:false;$('fFee').value=a?a.fee:DEF_FEE;freeToggle();
+  if(a&&!a.pnew){var opts=a.status==='تم الفحص'?['تم الفحص','مكتمل']:(a.status==='مكتمل'?['مكتمل']:['مجدول','ملغى']);
+    $('fStatus').innerHTML=opts.map(function(o){return '<option'+(o===a.status?' selected':'')+'>'+o+'</option>'}).join('');
+    $('fStatus').disabled=(a.status==='مكتمل')}
+  $('sheet').style.display='block';document.body.style.overflow='hidden'}
+function closeForm(){$('sheet').style.display='none';document.body.style.overflow=''}
+function freeToggle(){var f=$('fFree').checked;$('fFee').disabled=f;if(f)$('fFee').value=0;else if(Number($('fFee').value)===0&&!editing)$('fFee').value=DEF_FEE}
+$('fFree').onchange=freeToggle;
+$('fab').onclick=function(){openForm(null)};
+$('fClose').onclick=$('fCancel').onclick=closeForm;
+function saveForm(){
+  var name=$('fName').value.trim(),d=$('fDate').value,t=$('fTime').value;
+  if(!name||!d||!t){toast('الاسم والتاريخ والوقت مطلوبة');return}
+  var full={name:name,date:d,time:t,phone:$('fPhone').value.trim(),age:$('fAge').value.trim(),address:$('fAddr').value.trim(),
+    is_free:$('fFree').checked,fee:$('fFree').checked?0:Math.max(0,parseInt($('fFee').value,10)||0)};
+  var done=function(msg){toast(msg);closeForm();day=d;loadAppts()};
+  var fin=function(){$('fSave').disabled=false};
+  $('fSave').disabled=true;
+  if(!editing){
+    full._create=true;
+    sendCmd('appt_save',uid(),full).then(function(){done('تم الحفظ — يصل للطبيبة خلال ثوانٍ')}).catch(function(e){toast(netMsg(e))}).then(fin);
+  }else if(editing.pnew){
+    full._create=true;
+    sb.from('desk_commands').update({payload:full}).eq('id',editing.cmdCreateId).eq('status','pending').select('id').then(function(r){
+      if(r.error)throw new Error('تعذّر الحفظ — تحقق من الإنترنت');
+      if(!r.data||!r.data.length)throw new Error('وصل الحجز للطبيبة قبل لحظات — افتحه وعدّله من جديد');
+      done('تم تعديل الحجز قبل وصوله')}).catch(function(e){toast(netMsg(e));loadAppts()}).then(fin);
+  }else{
+    var diff={},cur=editing;
+    ['name','date','time','phone','age','address'].forEach(function(k){if(String(full[k])!==String(cur[k]==null?'':cur[k]))diff[k]=full[k]});
+    if(!!full.is_free!==!!cur.is_free)diff.is_free=full.is_free;
+    if(Number(full.fee)!==Number(cur.fee||0)||diff.is_free!==undefined){diff.fee=full.fee;diff.is_free=full.is_free}
+    if(!$('fStatus').disabled&&$('fStatus').value!==cur.status)diff.status=$('fStatus').value;
+    if(!Object.keys(diff).length){closeForm();fin();return}
+    sendCmd('appt_save',editing.id,diff).then(function(){done('تم إرسال التعديل — يصل للطبيبة خلال ثوانٍ')}).catch(function(e){toast(netMsg(e))}).then(fin)}}
+$('fSave').onclick=saveForm;
+enterOn(['fName','fDate','fTime','fPhone','fAge','fAddr','fFee'],saveForm);
+
+/* ---------- ملفات الموعد ---------- */
+function freeBlobs(){blobUrls.forEach(function(u){URL.revokeObjectURL(u)});blobUrls=[]}
+function signed(path){
+  var c=signedCache[path];if(c&&c.exp>Date.now())return Promise.resolve(c.url);
+  return sb.storage.from(BUCKET).createSignedUrl(path,900).then(function(r){
+    if(r.error||!r.data)throw new Error('تعذّر تحميل الملف');
+    signedCache[path]={url:r.data.signedUrl,exp:Date.now()+800000};return r.data.signedUrl})}
+function openFiles(a){
+  curAppt=a;$('fsTitle').textContent='📎 ملفات '+a.name;
+  $('fsSub').textContent=(a.pnew?'الحجز لم يصل للطبيبة بعد — الملفات تُحفظ وتصل معه تلقائيًا. ':'')+'الملفات المرفوعة لهذا الموعد — راجعها قبل الرفع حتى لا تتكرر الصورة. تقدرين تغيّرين اسم الملف أو تحذفينه خلال يوم من رفعه.';
+  $('fsList').innerHTML='<div class="small">جارِ التحميل...</div>';$('fsheet').style.display='block';document.body.style.overflow='hidden';loadFiles()}
+function closeFiles(){$('fsheet').style.display='none';document.body.style.overflow='';freeBlobs();curAppt=null;loadAppts()}
+$('fsClose').onclick=closeFiles;
+var fileRows=[];
+function loadFiles(){
+  if(!curAppt)return;var a=curAppt,id=a.id;
+  sb.from('desk_files').select('id,path,title,ext,created_at,pulled_at,deleted').eq('doctor_id',DOC).eq('appt_id',id).eq('deleted',false).order('created_at',{ascending:false}).then(function(r){
+    if(r.error)throw new Error('تعذّر تحميل الملفات');
+    var cloud={};(r.data||[]).forEach(function(c){cloud[c.id]=c});
+    var seen={},rows=[];
+    (a.flist||[]).forEach(function(x){
+      var c=x.cid?cloud[x.cid]:null;if(x.cid)seen[x.cid]=1;
+      rows.push({title:(c?c.title:x.n)||'',at:x.at||'',kind:x.k,cloud:c||null,waiting:false})});
+    (r.data||[]).forEach(function(c){if(seen[c.id])return;
+      rows.push({title:c.title||'',at:String(c.created_at||'').replace('T',' ').slice(0,16),kind:c.ext==='.pdf'?'pdf':'image',cloud:c,waiting:!c.pulled_at})});
+    fileRows=rows;freeBlobs();
+    if(!rows.length){$('fsList').innerHTML='<div class="empty">📎<br>لا توجد ملفات لهذا الموعد بعد</div>';return}
+    $('fsList').innerHTML=rows.map(function(x,i){
+      var tools=x.cloud?'<div style="margin-top:6px;display:flex;gap:6px"><button class="sm" data-ren="'+i+'">✎ اسم</button><button class="sm dg" data-del="'+i+'">🗑 حذف</button></div>':'';
+      var note=x.cloud?(x.waiting?'⏳ بانتظار وصوله لجهاز الطبيبة':'✅ محفوظ عند الطبيبة'):'✅ محفوظ عند الطبيبة';
+      return '<div class="frow"><div class="th" data-th="'+i+'">'+(x.kind==='pdf'?'📄':(x.cloud?'⏳':'📎'))+'</div><div class="inf"><b>'+esc(x.title||'بدون اسم')+'</b><div class="small">'+esc(x.at)+' — '+note+'</div>'+tools+'</div></div>'}).join('');
+    rows.forEach(function(x,i){
+      var th=document.querySelector('[data-th="'+i+'"]');
+      if(x.cloud&&x.kind==='image'){signed(x.cloud.path).then(function(u){th.innerHTML='<img src="'+esc(u)+'">';th.onclick=function(){viewFile(x,u)}}).catch(function(){th.textContent='⚠️'})}
+      else if(x.cloud&&x.kind==='pdf'){th.onclick=function(){signed(x.cloud.path).then(function(u){viewFile(x,u)}).catch(function(e){toast(netMsg(e))})}}
+      else{th.onclick=function(){toast('هذا الملف محفوظ بجهاز الطبيبة (لا يُعرض هنا بعد يوم من رفعه)')}}})
+  }).catch(function(e){$('fsList').innerHTML='<div class="empty err">'+esc(netMsg(e))+'</div>'})}
+function viewFile(x,u){$('vTitle').textContent=x.title||'بدون اسم';$('viewer').style.display='flex';
+  $('vBody').innerHTML=x.kind==='pdf'?'<a class="open" target="_blank" rel="noopener" href="'+esc(u)+'">📄 فتح ملف PDF</a>':'<img src="'+esc(u)+'">'}
+$('vClose').onclick=function(){$('viewer').style.display='none';$('vBody').innerHTML=''};
+$('fsList').onclick=function(e){
+  var rn=e.target.closest('[data-ren]'),dl=e.target.closest('[data-del]');
+  if(rn){var x=fileRows[+rn.getAttribute('data-ren')];var nt=prompt('اسم الملف',x.title||'');if(nt===null)return;
+    sb.from('desk_files').update({title:nt.replace(/\s+/g,' ').trim().slice(0,80)}).eq('id',x.cloud.id).then(function(r){toast(r.error?'تعذّر تغيير الاسم':'تم تغيير الاسم');loadFiles()})}
+  if(dl){var y=fileRows[+dl.getAttribute('data-del')];if(!confirm('حذف هذا الملف؟ سيُحذف من ملفات الطبيبة أيضًا.'))return;
+    sb.from('desk_files').update({deleted:true}).eq('id',y.cloud.id).then(function(r){
+      if(r.error){toast('تعذّر الحذف');return}
+      sb.storage.from(BUCKET).remove([y.cloud.path]);toast('تم حذف الملف');loadFiles()})}};
+
+/* ---------- اختيار الملفات + تسميتها + الرفع ---------- */
+$('camBtn').onclick=function(){$('cam').click()};$('galBtn').onclick=function(){$('gal').click()};
+var OKEXT={'.jpg':1,'.jpeg':1,'.png':1,'.webp':1,'.heic':1,'.pdf':1};
+$('cam').onchange=$('gal').onchange=function(ev){var files=Array.prototype.slice.call(ev.target.files);ev.target.value='';if(!files.length)return;
+  $('nsList').innerHTML='<div class="small" style="padding:10px">جارِ تجهيز الملفات...</div>';$('nsLog').textContent='';$('nsheet').style.display='block';
+  Promise.all(files.map(function(f){return shrink(f).then(function(o){o.orig=f.name;return o})})).then(function(list){
+    var bad=list.filter(function(o){return !OKEXT[o.ext]}).length;
+    list=list.filter(function(o){return OKEXT[o.ext]});
+    if(bad)toast('تم تجاهل '+bad+' ملف بنوع غير مدعوم (الصور وPDF فقط)');
+    if(!list.length){closeNames();return}
+    pending=list;
+    $('nsList').innerHTML=list.map(function(o,i){var isImg=o.ext!=='.pdf';
+      return '<div class="frow"><div class="th">'+(isImg?'<img data-pv="'+i+'">':'📄')+'</div><div class="inf"><input class="nm" data-i="'+i+'" maxlength="80" placeholder="اسم الملف (اختياري)" enterkeyhint="'+(i===list.length-1?'done':'next')+'"></div></div>'}).join('');
+    list.forEach(function(o,i){if(o.ext!=='.pdf'){var u=URL.createObjectURL(o.blob);blobUrls.push(u);var im=document.querySelector('[data-pv="'+i+'"]');if(im)im.src=u}});
+    var first=document.querySelector('#nsList input');if(first)first.focus()})};
+$('nsList').addEventListener('keydown',function(e){if(e.key!=='Enter'||e.target.tagName!=='INPUT')return;e.preventDefault();
+  var ins=Array.prototype.slice.call(document.querySelectorAll('#nsList input')),i=ins.indexOf(e.target);
+  if(i<ins.length-1)ins[i+1].focus();else uploadAll()});
+function closeNames(){$('nsheet').style.display='none';pending=[];$('nsList').innerHTML=''}
+$('nsClose').onclick=$('nsCancel').onclick=closeNames;
+$('nsUp').onclick=uploadAll;
+function ctype(ext){return ext==='.pdf'?'application/pdf':(ext==='.png'?'image/png':(ext==='.webp'?'image/webp':(ext==='.heic'?'image/heic':'image/jpeg')))}
+function uploadOne(apptId,o,title){
+  var path=DOC+'/'+apptId+'/'+uid()+o.ext;
+  return sb.storage.from(BUCKET).upload(path,o.blob,{contentType:ctype(o.ext),upsert:false}).then(function(r){
+    if(r.error)throw new Error('تعذّر رفع الملف');
+    return sb.from('desk_files').insert({doctor_id:DOC,appt_id:apptId,path:path,title:title,ext:o.ext,size_bytes:o.blob.size}).then(function(r2){
+      if(r2.error){sb.storage.from(BUCKET).remove([path]);throw new Error('تعذّر تسجيل الملف')}})})}
+function uploadAll(){if(!pending.length||!curAppt)return;var id=curAppt.id,list=pending.slice(),names=[];
+  Array.prototype.forEach.call(document.querySelectorAll('#nsList input'),function(inp){names.push(inp.value.trim())});
+  $('nsUp').disabled=true;$('nsLog').innerHTML='';var chain=Promise.resolve(),failed=0;
+  list.forEach(function(o,i){chain=chain.then(function(){var line=document.createElement('div');line.textContent='⏳ جارِ رفع '+(names[i]||o.orig)+' ...';$('nsLog').appendChild(line);
+    return uploadOne(id,o,names[i]||'')
+    .then(function(){line.className='ok';line.textContent='✅ تم رفع '+(names[i]||o.orig)})
+    .catch(function(e){failed++;line.className='err';line.textContent='❌ فشل '+(names[i]||o.orig)+': '+e.message})})});
+  chain.then(function(){$('nsUp').disabled=false;if(!failed){closeNames();toast('تم رفع الملفات — تصل لجهاز الطبيبة خلال ثوانٍ')}loadFiles()})}
+function shrink(file){return new Promise(function(res){
+  var ext0='.'+((file.name.split('.').pop()||'jpg').toLowerCase());
+  if(!/^image\//.test(file.type)){return res({blob:file,ext:(file.type==='application/pdf'||ext0==='.pdf')?'.pdf':ext0})}
+  var img=new Image(),url=URL.createObjectURL(file);
+  img.onload=function(){var m=1800,s=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement('canvas');
+    c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    c.toBlob(function(b){URL.revokeObjectURL(url);res(b?{blob:b,ext:'.jpg'}:{blob:file,ext:ext0})},'image/jpeg',0.82)};
+  img.onerror=function(){URL.revokeObjectURL(url);res({blob:file,ext:ext0})};
+  img.src=url})}
+
+boot();
+})();
+</script></body></html>
