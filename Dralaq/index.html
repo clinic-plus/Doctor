@@ -261,10 +261,10 @@
   <h3 id="mTitle">حجز جديد</h3>
   <div id="aMain">
   <div class="field"><label>الاسم *</label><input id="aName" maxlength="80" oninput="debtAlert()"></div>
-  <div class="form-grid"><div class="field"><label>الهاتف</label><input id="aPhone" type="tel" style="direction:ltr;text-align:right" oninput="debtAlert()"></div><div class="field"><label>العمر</label><input id="aAge" maxlength="10"></div></div>
+  <div class="form-grid"><div class="field"><label>الهاتف *</label><input id="aPhone" type="tel" style="direction:ltr;text-align:right" oninput="debtAlert()"></div><div class="field"><label>العمر</label><input id="aAge" maxlength="10"></div></div>
   <div id="aDebt"></div>
-  <div class="field"><label>سبب الزيارة</label><textarea id="aReason" rows="2" maxlength="500"></textarea></div>
-  <div class="form-grid"><div class="field"><label>التاريخ</label><input id="aDate" type="date"></div><div class="field"><label>الوقت</label><input id="aTime" type="time"></div></div>
+  <div class="field"><label>سبب الزيارة *</label><textarea id="aReason" rows="2" maxlength="500"></textarea></div>
+  <div class="form-grid"><div class="field"><label>التاريخ *</label><input id="aDate" type="date"></div><div class="field"><label>الوقت *</label><input id="aTime" type="time"></div></div>
   <div class="field"><label>القسم</label><select id="aDept" onchange="deptCalc()"><option value="">— يحدده الطبيب عند الكشف —</option><option value="dental">🦷 الأسنان</option><option value="surgical">🔪 الجراحي</option><option value="cosmetic">✨ التجميل والحقن</option></select></div>
   <div class="hidden" id="aCosWrap">
     <div class="field"><label>اسم العملية التجميلية *</label><input id="aProc" maxlength="120"></div>
@@ -605,7 +605,7 @@ function renderList(){
     const cls = a.status==='ملغى'?'c':(a.status==='مكتمل'?'d':'');
     const names = (METAS[a.id]||[]);
     return `<div class="card appt"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>${a.queue_order!=null?'<span class="qn">'+(a.queue_order+1)+'</span>':''}${esc(a.patient_name)}</b><span><span class="badge ${cls}">${esc(a.status)}</span>${a._src==='online'?' <span class="badge">🌐 حجز إلكتروني</span>':''}${a._pending?' <span class="badge w">⏳ بانتظار الطبيب</span>':''}</span></div>
-      <div class="meta">${a.phone?`<span>📞 ${esc(a.phone)}</span>`:''}<span>🕐 ${a.appt_time ? esc(a.appt_time.slice(0,5)) : 'الوقت غير محدد'}</span>${a.dept?`<span>🏷️ ${esc(a.dept)}</span>`:'<span>⏳ بانتظار التصنيف</span>'}${feeHtml(a)}${a.dept==='التجميل والحقن'?'<span>🧴 '+esc(a.material||'—')+' — سعر المادة '+money(a.material_cost)+' د.ع</span>':''}</div>
+      <div class="meta"><span>📞 ${esc(a.phone)}</span><span>🕐 ${a.appt_time ? esc(a.appt_time.slice(0,5)) : 'الوقت غير محدد'}</span>${a.dept?`<span>🏷️ ${esc(a.dept)}</span>`:'<span>⏳ بانتظار التصنيف</span>'}${feeHtml(a)}${a.dept==='التجميل والحقن'?'<span>🧴 '+esc(a.material||'—')+' — سعر المادة '+money(a.material_cost)+' د.ع</span>':''}</div>
       ${a.status!=='ملغى'?debtBar(a.phone,a.patient_name,a.id):''}
       ${a.reason?`<div class="hint">📝 ${esc(a.reason)}</div>`:''}
       ${names.length?`<div class="hint">📎 ${names.map(esc).join('، ')}</div>`:''}
@@ -697,10 +697,9 @@ async function saveAppt(){
     try{ await sendReqRow('fee_edit',EDIT.id,F); toast('⏳ أُرسل تعديل الكشفية — ينفَّذ عند نشاط جهاز الطبيب'); }catch(e){ toast('❌ '+e.message); }
     return loadList(true);
   }
-  const p={patient_name:$('aName').value.trim(),phone:$('aPhone').value.trim().replace(/\s+/g,''),age:$('aAge').value.trim(),reason:$('aReason').value.trim(),appt_date:$('aDate').value||$('dayPick').value||today(),appt_time:$('aTime').value,...feeFromForm(),...deptFromForm()};
+  const p={patient_name:$('aName').value.trim(),phone:$('aPhone').value.trim().replace(/\s+/g,''),age:$('aAge').value.trim(),reason:$('aReason').value.trim(),appt_date:$('aDate').value,appt_time:$('aTime').value,...feeFromForm(),...deptFromForm()};
   const err=m=>{ const e=$('aErr'); e.textContent=m; e.classList.add('show'); };
-  if(p.patient_name.length<2) return err('اكتب اسم المريض');
-  if(p.phone&&p.phone.replace(/\D/g,'').length<10) return err('رقم الهاتف غير مكتمل (10 أرقام) — أو اتركه فارغًا');
+  if(p.patient_name.length<2||p.phone.replace(/\D/g,'').length<10||p.reason.length<2||!p.appt_date||(!p.appt_time&&!(EDIT&&/^pub:/.test(EDIT.id)))) return err('أكمل الاسم والهاتف (10 أرقام) وسبب الزيارة والتاريخ'+(EDIT&&/^pub:/.test(EDIT.id)?'':' والوقت'));
   if(p.payment_type==='installment' && p.paid_now>p.fee) return err('المبلغ المدفوع أكبر من سعر الكشفية');
   if(p.dept==='cosmetic'&&p.proc_name.length<2) return err('اكتب اسم العملية التجميلية');
   closeM('mAppt');
@@ -720,7 +719,7 @@ async function saveAppt(){
   }
   if(EDIT && /^pub:/.test(EDIT.id)){
     try{
-      const core=Object.assign({},p); EXTRAKEYS.forEach(k=>delete core[k]); if(!core.phone) delete core.phone; if(!core.reason) delete core.reason;   /* حجز المريض العام يبقى بهاتفه وسببه */
+      const core=Object.assign({},p); EXTRAKEYS.forEach(k=>delete core[k]);
       const j = await R('PATCH','/rest/v1/public_bookings?id=eq.'+EDIT.id.slice(4)+'&received_at=is.null',core,{headers:{Prefer:'return=representation'}});
       if(j && j.length){
         const F=Object.assign(feeFromForm(),deptFromForm()); if(!feeSame(EDIT,F)) await sendReqRow('update', EDIT.id, F);   // الكشفية تصل الطبيب كطلب يُنفَّذ بعد استلامه الحجز
