@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>عيادة د. ولاء — تغذية علاجية</title>
+<style>
+:root{--bg:#F2F6FC;--pri:#1D5FC9;--pri-d:#0E3B85;--pri-l:#DCE9FB;--txt:#132338;--mut:#5A6C85;--line:#DCE6F4;--bad:#D2574F;--bad-bg:#FBEAEA;--ok:#2E9E6B;--ok-bg:#E6F6EE}
+*{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+input,select,textarea{min-width:0;max-width:100%}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-height:44px;display:block}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:Tahoma,"Segoe UI",system-ui,sans-serif;font-size:15px}
+#login{max-width:380px;margin:calc(12vh + env(safe-area-inset-top,0px)) auto 0;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+#login h2{margin-top:0;color:var(--pri-d)}
+#login label{display:block;font-size:12px;color:var(--mut);margin:10px 0 4px;font-weight:700}
+#login input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit}
+#login button{width:100%;margin-top:14px;border:0;border-radius:10px;padding:14px;font:inherit;font-size:16px;font-weight:700;background:var(--pri);color:#fff;cursor:pointer}
+#login button:disabled{opacity:.6}
+.msg{padding:9px 12px;border-radius:10px;margin:10px 0 0;font-size:13px;font-weight:700;background:var(--bad-bg);color:var(--bad)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<!-- ⚙️ مشروع Supabase الخاص بالعيادة: الرابط والمفتاح العام (anon) فقط، آمنان بالنشر. لا تضع هنا service_role أبدًا -->
+<script>
+const SUPABASE_URL = "https://facwcfxsubqxctmtrslm.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhY3djZnhzdWJxeGN0bXRyc2xtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODAxNDYsImV4cCI6MjEwMzI1NjE0Nn0.GTAEFP6QWKB6lh3VTmgduPl3ylYE9EZIzpRGvJ7DYiw";
+</script>
+
+<section id="login">
+  <h2>🥗 عيادة د. ولاء — تغذية علاجية</h2>
+  <div style="color:var(--mut);font-size:13px">سجّل الدخول بحساب السكرتيرة</div>
+  <label>الإيميل</label><input id="em" type="email" dir="ltr" autocomplete="username">
+  <label>كلمة المرور</label><input id="pw" type="password" dir="ltr" autocomplete="current-password">
+  <div id="loginMsg"></div>
+  <button id="loginBtn">دخول</button>
+</section>
+<div id="wrap"></div>
+
+
+
+<template id="tpl-secretary"><style>
+:host{--bg:#F2F6FC;--card:#fff;--pri:#1D5FC9;--pri-d:#0E3B85;--pri-l:#DCE9FB;--txt:#132338;--mut:#5A6C85;--line:#DCE6F4;
+--ok:#2E9E6B;--ok-bg:#E6F6EE;--bad:#D2574F;--bad-bg:#FBEAEA;--warn:#9A6A00;--warn-bg:#FFF3D6}
+*{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+input,select,textarea{min-width:0;max-width:100%}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-height:44px;display:block}
+:host{display:block;margin:0;background:var(--bg);color:var(--txt);font-family:Tahoma,"Segoe UI",system-ui,sans-serif;font-size:15px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 70px)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:6}
+header h1{font-size:15px;margin:0;color:var(--pri-d);flex:1}
+.dev{font-size:12px;font-weight:700;border-radius:12px;padding:3px 10px}
+.dev.on{background:var(--ok-bg);color:var(--ok)}.dev.off{background:var(--bad-bg);color:var(--bad)}
+main{max-width:640px;margin:0 auto;padding:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:9px}
+button,input,select{font:inherit}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--txt)}
+label{display:block;font-size:12px;color:var(--mut);margin:9px 0 3px;font-weight:700}
+.btn{border:0;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer;background:var(--pri);color:#fff;font-size:13px}
+.btn.soft{background:var(--pri-l);color:var(--pri-d)}.btn.bad{background:var(--bad-bg);color:var(--bad)}.btn.ok{background:var(--ok)}
+.btn.big{padding:13px;font-size:15px;width:100%}
+.btn:disabled{opacity:.55}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.sp{flex:1}
+.mut{color:var(--mut);font-size:12px}
+.bd{display:inline-block;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:700;background:var(--pri-l);color:var(--pri)}
+.bd.d{background:var(--ok-bg);color:var(--ok)}.bd.c{background:var(--bad-bg);color:var(--bad)}.bd.e{background:var(--warn-bg);color:var(--warn)}.bd.n{background:var(--pri-l);color:var(--pri)}
+.qn{background:var(--pri-l);color:var(--pri-d);border-radius:50%;min-width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;border:0;cursor:pointer}
+.nm{font-weight:700;font-size:16px}
+.cx{opacity:.6}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.empty{text-align:center;color:var(--mut);padding:34px 10px}
+.msg{padding:9px 12px;border-radius:10px;margin:8px 0;font-size:13px;font-weight:700}
+.msg.e{background:var(--bad-bg);color:var(--bad)}.msg.s{background:var(--ok-bg);color:var(--ok)}.msg.w{background:var(--warn-bg);color:var(--warn)}
+
+.hidden{display:none!important}
+.fab{position:fixed;inset-inline-start:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:7;border-radius:28px;padding:14px 20px;font-size:15px;box-shadow:0 4px 14px rgba(14,59,133,.3)}
+.modal{position:fixed;inset:0;background:rgba(10,25,50,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.modal .box{background:#fff;width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:0;display:flex;flex-direction:column;overflow:hidden;
+  height:auto;max-height:calc(100% - 16px)}
+.modal .box *{min-width:0}
+.modal .fi{overflow-wrap:anywhere;word-break:break-word;flex:1}
+.modal input,.modal select,.modal textarea{max-width:100%}
+.modal .mscroll{overflow-y:auto;overflow-x:hidden;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));flex:1 1 auto;min-height:0;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.mfoot{flex:none;margin:0!important;background:#fff;border-top:1px solid #e1e8e4;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.modal{touch-action:none;overscroll-behavior:contain}
+.modal .mscroll{touch-action:pan-y}
+@media(min-width:600px){.modal{align-items:center}.modal .box{border-radius:18px}}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.g2>*{min-width:0}
+.inp-red{border-color:var(--bad)!important;background:var(--bad-bg)!important}
+.warnline{color:var(--bad);font-size:12px;font-weight:700;margin-top:4px}
+.okline{color:var(--ok);font-size:12px;font-weight:700;margin-top:4px}
+.sug{display:flex;justify-content:space-between;align-items:center;gap:6px;border:1px solid var(--warn);background:var(--warn-bg);border-radius:10px;padding:8px 10px;margin-top:6px;font-size:13px}
+.frow{padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.files .fr{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.th{width:56px;height:56px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:22px;flex:none}
+.th img{width:100%;height:100%;object-fit:cover}
+.fi{flex:1;min-width:0}.fb{display:flex;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:16px;padding:5px 11px;cursor:pointer;font-size:12px}
+</style>
+<!-- ⚙️ مفتاح المشروع العام (anon) — آمن بالنشر (المفتاح العام آمن بالنشر) -->
+
+
+<header>
+  <h1>🗓️ عيادة د. ولاء — تغذية علاجية</h1>
+  <span class="dev off" id="dev"></span>
+  <button class="btn soft" id="logout">خروج</button>
+</header>
+<main>
+  
+
+  <section id="app">
+    <div class="card">
+      <div class="row">
+        <button class="btn soft" id="prev">‹</button>
+        <input id="day" type="date" style="flex:1;min-width:0">
+        <button class="btn soft" id="next">›</button>
+        <button class="btn" id="today">اليوم</button>
+      </div>
+      <input id="q" placeholder="🔍 بحث بالاسم أو الهاتف..." style="margin-top:8px">
+      <div class="mut" id="dayInfo" style="margin-top:6px"></div>
+    </div>
+    <div id="pend"></div>
+    <div id="err"></div>
+    <div id="list"></div>
+  </section>
+</main>
+<button class="btn fab" id="addBtn">＋ حجز جديد</button>
+<div class="modal hidden" id="modal"><div class="box" id="box"></div></div></template>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const SESSION_KEY = "clinic_session";
+let session = null, stopView = null;
+
+// ---------- المصادقة والشبكة (مشتركة بين كل الشاشات) ----------
+async function authCall(grant, body) {
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=${grant}`, {method: "POST",
+    headers: {apikey: SUPABASE_KEY, "Content-Type": "application/json"}, body: JSON.stringify(body)});
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.error_description || d.msg || "فشل الدخول");
+  session = {token: d.access_token, refresh: d.refresh_token, exp: Date.now() + (d.expires_in - 120) * 1000};
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+}
+async function ensure() { if (Date.now() > session.exp) await authCall("refresh_token", {refresh_token: session.refresh}); }
+const hdr = (extra = {}) => ({apikey: SUPABASE_KEY, Authorization: "Bearer " + session.token, ...extra});
+async function api(method, path, body, prefer) {
+  if (!session) throw new Error("no session");
+  await ensure();
+  const r = await fetch(SUPABASE_URL + "/rest/v1/" + path, {method, headers: hdr({"Content-Type": "application/json", ...(prefer ? {Prefer: prefer} : {})}), body: body ? JSON.stringify(body) : undefined});
+  if (r.status === 401) { logout(); throw new Error("انتهت الجلسة"); }
+  const t = await r.text();
+  if (!r.ok) { let m = t; try { m = JSON.parse(t).message || t } catch (e) {} throw new Error(m); }
+  return t ? JSON.parse(t) : null;
+}
+let _lockY = 0, _locked = false;
+function lockPage() {
+  if (_locked) return; _locked = true;
+  _lockY = window.scrollY || document.documentElement.scrollTop || 0;
+  const b = document.body; b.style.position = "fixed"; b.style.top = (-_lockY) + "px"; b.style.left = "0"; b.style.right = "0"; b.style.width = "100%"; b.style.overflow = "hidden";
+  document.documentElement.style.overscrollBehavior = "none";
+}
+function unlockPage() {
+  if (!_locked) return; _locked = false;
+  const b = document.body; b.style.position = b.style.top = b.style.left = b.style.right = b.style.width = b.style.overflow = "";
+  document.documentElement.style.overscrollBehavior = ""; window.scrollTo(0, _lockY);
+}
+function logout(msg) {
+  unlockPage(); session = null; localStorage.removeItem(SESSION_KEY);
+  if (stopView) { try { stopView(); } catch (e) {} stopView = null; }
+  $("wrap").innerHTML = ""; $("login").classList.remove("hidden");
+  $("loginMsg").innerHTML = typeof msg === "string" ? `<div class="msg">${esc(msg)}</div>` : "";
+}
+
+$("loginBtn").onclick = async () => {
+  $("loginMsg").innerHTML = ""; $("loginBtn").disabled = true;
+  try { await authCall("password", {email: $("em").value.trim(), password: $("pw").value}); $("pw").value = ""; await start(); }
+  catch (e) { $("loginMsg").innerHTML = `<div class="msg">${esc(e.message)}</div>`; }
+  $("loginBtn").disabled = false;
+};
+$("pw").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
+
+// ---------- ملفاتي: تسمية وحذف خلال 24 ساعة من الرفع (مشترك بين السكرتيرة والمختبر ووظائف الرئة) ----------
+const FILE_TTL_H = 24;
+const hoursLeft = r => Math.max(0, FILE_TTL_H - (Date.now() - new Date(r.created_at).getTime()) / 3.6e6);
+async function listMine(apptId) {
+  const f = apptId ? `&appt_id=eq.${encodeURIComponent(apptId)}` : "";
+  return api("GET", `nu_files?select=*&deleted_at=is.null${f}&order=created_at.desc&limit=30`);
+}
+async function renameFile(id, title) {
+  await api("PATCH", "nu_files?id=eq." + encodeURIComponent(id), {title: title.trim()}, "return=minimal");
+}
+async function deleteFile(r) {
+  await api("PATCH", "nu_files?id=eq." + encodeURIComponent(r.id), {deleted_at: new Date().toISOString()}, "return=minimal");
+  try { await ensure(); await fetch(`${SUPABASE_URL}/storage/v1/object/nutri-files/${r.storage_path}`, {method: "DELETE", headers: hdr()}); } catch (e) {}
+}
+async function thumbUrl(r) {
+  await ensure();
+  const x = await fetch(`${SUPABASE_URL}/storage/v1/object/authenticated/nutri-files/${r.storage_path}`, {headers: hdr()});
+  if (!x.ok) throw new Error("thumb");
+  return URL.createObjectURL(await x.blob());
+}
+const isPdfFile = r => /\.pdf$/i.test(r.storage_path || "");
+function fileRowsHtml(rows, withPatient) {
+  if (!rows.length) return '<div class="mut">لا شيء بعد</div>';
+  return rows.map(r => {
+    const h = hoursLeft(r), left = h >= 1 ? `${Math.floor(h)} س` : `${Math.max(1, Math.round(h * 60))} د`;
+    return `<div class="fr" data-fid="${esc(r.id)}"><div class="th" data-th="${esc(r.id)}">${isPdfFile(r) ? "📄" : (thumbCache.has(r.id) ? `<img src="${thumbCache.get(r.id)}" alt="">` : "⏳")}</div>
+      <div class="fi"><b>${withPatient ? esc(r.patient_name) + " — " : ""}${esc(r.title || "بدون اسم")}</b>
+        <div class="mut">${r.received_at ? "✓ وصل للطبيبة" : "بانتظار الاستلام"} · يتبقى للتعديل ${left}</div></div>
+      <div class="fb"><button class="btn soft" data-ren="${esc(r.id)}" type="button">✎</button><button class="btn bad" data-delf="${esc(r.id)}" type="button">🗑️</button></div></div>`;
+  }).join("");
+}
+const thumbCache = new Map();
+async function fillThumbs(box, rows) {
+  const keep = new Set(rows.map(r => r.id));
+  for (const [id, u] of thumbCache) if (!keep.has(id)) { URL.revokeObjectURL(u); thumbCache.delete(id); }
+  for (const r of rows) {
+    if (isPdfFile(r) || thumbCache.has(r.id)) continue;
+    const el = box.querySelector(`[data-th="${r.id}"]`);
+    try { const u = await thumbUrl(r); thumbCache.set(r.id, u); if (el) el.innerHTML = `<img src="${u}" alt="">`; } catch (e) { if (el) el.textContent = "🖼️"; }
+  }
+}
+// يربط أزرار ✎ و 🗑️ داخل حاوية؛ after() تُستدعى بعد أي تغيير لإعادة التحميل
+function wireFileActions(box, getRows, after, onError) {
+  box.onclick = async e => {
+    const b = e.target.closest("[data-ren],[data-delf]"); if (!b) return;
+    const r = getRows().find(x => x.id === (b.dataset.ren || b.dataset.delf)); if (!r) return;
+    try {
+      if (b.dataset.ren) {
+        const t = prompt("الاسم الجديد للملف", r.title || ""); if (t === null) return;
+        await renameFile(r.id, t);
+      } else {
+        if (!confirm(`حذف الملف «${r.title || "بدون اسم"}»؟ سيُحذف نهائيًا من الإنترنت ومن ملف المريض عند الطبيبة.`)) return;
+        await deleteFile(r);
+      }
+      await after();
+    } catch (er) { onError(er.message); }
+  };
+}
+
+// ---------- توجيه كل حساب لشاشته حسب دوره ----------
+const ROUTES = {nutri_secretary: ["tpl-secretary", mountSecretary]};
+async function start() {
+  await ensure();
+  const u = await (await fetch(SUPABASE_URL + "/auth/v1/user", {headers: hdr()})).json();
+  const st = await api("GET", "staff?select=role,display_name&user_id=eq." + u.id);
+  if (!st.length) return logout("هذا الحساب غير مربوط بدور بعد — تواصل مع الطبيب");
+  const role = st[0].role, route = ROUTES[role];
+  if (!route) return logout("هذه الصفحة لحساب سكرتيرة د. ولاء فقط. حساب الطبيبة يُستخدم من برنامج العيادة على الحاسبة");
+  $("login").classList.add("hidden");
+  $("wrap").innerHTML = '<div id="host"></div>';
+  const root = $("host").attachShadow({mode: "open"});
+  root.appendChild($(route[0]).content.cloneNode(true));
+  document.title = "السكرتيرة" + " — عيادة د. ولاء — تغذية علاجية";
+  stopView = route[1](root, {id: u.id, role, name: st[0].display_name || ""});
+}
+
+// ===================== شاشة السكرتيرة =====================
+function mountSecretary(root, me) {
+  const $ = id => root.getElementById(id);
+  const todayStr = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  const nowHM = () => new Date().toTimeString().slice(0, 5);
+  const MAX_BYTES = 10 * 1024 * 1024;
+  let day = todayStr(), items = [], defaultFee = 15000, devOnline = false;
+  let pending = {}, pendCmds = [];
+  let timers = [], modalOpen = false;
+async function refreshAll() { await loadPending(); await Promise.all([loadStatus(), loadDay()]); }
+// حجوزاتي وتعديلاتي التي لم يستلمها جهاز الطبيب بعد (تظهر كبطاقات عادية، وأقدر أعدّلها أو ألغيها)
+async function loadPending() {
+  try { pendCmds = await api("GET", "nu_commands?select=id,kind,appt_id,payload,created_at&kind=in.(save,checkin,queue)&done_at=is.null&order=created_at.asc"); } catch (e) {}
+  renderPend();
+}
+const isNewPend = c => c.kind === "save" && (c.payload || {}).create === true;
+const OVERLAY = {name: "patient_name", date: "appt_date", time: "appt_time", phone: "phone", age: "age", sex: "sex", address: "address", fee: "fee", is_free: "is_free", status: "status"};
+function withPending(a) {
+  const ps = pendCmds.filter(c => c.appt_id === a.id); if (!ps.length) return a;
+  const o = {...a}; for (const c of ps) if (c.kind === "save") for (const k in (c.payload || {})) if (OVERLAY[k]) o[OVERLAY[k]] = k === "inbody" ? JSON.stringify(c.payload[k] || {}) : c.payload[k];
+  return o;
+}
+const getItem = id => { const a = items.find(x => x.id === id); return a ? withPending(a) : null; };
+const pendAsAppt = c => { const p = c.payload || {}; return {id: c.appt_id || null, inbody: JSON.stringify(p.inbody || {}), patient_name: p.name || "", appt_date: p.date || day, appt_time: p.time || "", phone: p.phone || "", age: p.age || "", sex: p.sex || "", address: p.address || "", fee: p.fee || 0, is_free: !!p.is_free, status: "مجدول", visit_type: "", queue_order: null, file_count: null, inbody_count: Object.keys(p.inbody || {}).length ? 1 : 0, patient_id: p.patient_id || ""}; };
+
+// الدور «الافتراضي»: يحاكي ما سيفعله برنامج الطبيبة بالطلبات المعلّقة بنفس الترتيب، فيظهر الرقم فورًا حتى لو حاسبتها مطفأة
+function virtualQueue() {
+  const st = new Map(items.map(a => [a.id, a.queue_order === undefined ? null : a.queue_order]));
+  for (const c of pendCmds) if (isNewPend(c) && (c.payload || {}).date === day) st.set(c.appt_id, null);
+  const order = () => [...st].filter(([, v]) => v !== null).sort((x, y) => x[1] - y[1]).map(([id]) => id);
+  for (const c of pendCmds) {
+    if (!st.has(c.appt_id)) continue;
+    const id = c.appt_id, p = c.payload || {};
+    if (c.kind === "checkin") {
+      if (st.get(id) === null) { const vs = [...st.values()].filter(v => v !== null); st.set(id, vs.length ? Math.max(...vs) + 1 : 0); }
+    } else if (c.kind === "queue") {
+      if (p.action === "clear") st.set(id, null);
+      else if (p.action === "up" || p.action === "down") {
+        const o = order(), i = o.indexOf(id), j = i + (p.action === "up" ? -1 : 1);
+        if (i >= 0 && j >= 0 && j < o.length) { const tmp = st.get(o[i]); st.set(o[i], st.get(o[j])); st.set(o[j], tmp); }
+      } else if (p.action === "set") {
+        const n = parseInt(p.n, 10), o = order().filter(x => x !== id);
+        if (n >= 1 && n <= o.length + 1) { o.splice(n - 1, 0, id); o.forEach((x, i) => st.set(x, i)); }
+      }
+    }
+  }
+  return st;
+}
+const findCard = id => {
+  const m = items.find(x => x.id === id); if (m) return {a: withPending(m), pc: null};
+  const c = pendCmds.find(x => isNewPend(x) && x.appt_id === id); return c ? {a: pendAsAppt(c), pc: c} : null;
+};
+
+async function loadStatus() {
+  try {
+    const s = await api("GET", "nu_status?select=*&id=eq.1");
+    if (s.length) {
+      defaultFee = s[0].default_fee || defaultFee;
+      const age = (Date.now() - new Date(s[0].last_seen).getTime()) / 1000;
+      devOnline = age < 25;
+    } else devOnline = false;
+  } catch (e) { devOnline = false; }
+  if (devHook) devHook();
+  $("dev").className = "dev " + (devOnline ? "on" : "off");
+  $("dev").textContent = devOnline ? "🟢 جهاز الطبيب متصل" : "🔴 جهاز الطبيب غير متصل — الطلبات تنتظر";
+  renderPend();
+}
+
+async function loadDay() {
+  try {
+    items = await api("GET", `nu_appt_mirror?select=*&appt_date=eq.${day}&order=queue_order.asc.nullslast,appt_time.asc`);
+    $("err").innerHTML = ""; render();
+  } catch (e) { $("err").innerHTML = `<div class="msg e">تعذّر التحميل: ${esc(e.message)}</div>`; }
+}
+
+// ---------- عرض ----------
+const stCls = s => s === "مكتمل" ? "d" : s === "ملغى" ? "c" : "n";
+function render() {
+  const q = $("q").value.trim().toLowerCase();
+  const match = (n, ph) => !q || String(n || "").toLowerCase().includes(q) || String(ph || "").includes(q);
+  const busyIds = new Set(Object.values(pending).map(p => p.appt).filter(Boolean));
+  const vq = virtualQueue();
+  const mir = items.map(withPending).filter(a => match(a.patient_name, a.phone)).map(a => ({a, pc: null, t: a.appt_time || ""}));
+  const pn = pendCmds.filter(c => isNewPend(c) && (c.payload || {}).date === day && match(c.payload.name, c.payload.phone)).map(c => ({a: pendAsAppt(c), pc: c, t: (c.payload || {}).time || ""}));
+  const qv = x => { const v = vq.get(x.a.id); return v === undefined ? null : v; };
+  const all = mir.concat(pn).sort((x, y) => {
+    const qx = qv(x), qy = qv(y);
+    if (qx !== null && qy !== null) return qx - qy;
+    if ((qx !== null) !== (qy !== null)) return qx !== null ? -1 : 1;
+    return x.t < y.t ? -1 : x.t > y.t ? 1 : 0;
+  });
+  const total = items.length + pendCmds.filter(c => isNewPend(c) && (c.payload || {}).date === day).length;
+  $("dayInfo").textContent = (day === todayStr() ? "مواعيد اليوم — " : "مواعيد يوم ") + day + ` (${total})`;
+  if (!all.length) { $("list").innerHTML = '<div class="empty">📅<br>لا توجد حجوزات في هذا اليوم</div>'; return; }
+  $("list").innerHTML = all.map(x => {
+    const a = x.a, pc = x.pc, qo = qv(x), queued = qo !== null, cancelled = a.status === "ملغى";
+    const busy = !pc && (busyIds.has(a.id) || pendCmds.some(c => c.appt_id === a.id));
+    let h = `<div class="card ${cancelled ? "cx" : ""}" data-id="${esc(a.id)}"><div class="row">`;
+    if (queued) h += `<button class="qn" data-act="qnum">${qo + 1}</button>`;
+    h += `<span class="nm">${esc(a.patient_name)}</span>${a.visit_type === "new" ? '<span class="bd n">جديد</span>' : ""}${a.patient_id ? '<span class="bd n">🔗 مريض سابق</span>' : ""}<span class="sp"></span>
+      ${pc ? '<span class="bd e">⏳ بانتظار استلام الطبيبة</span>' : (busy ? '<span class="bd e">⏳</span>' : "")}<span class="bd ${stCls(a.status)}">${esc(a.status)}</span></div>`;
+    h += `<div class="row mut" style="margin-top:6px;gap:14px"><span>${a.phone ? `📞 <a href="tel:${esc(a.phone)}">${esc(a.phone)}</a>` : "📞 —"}</span><span>🕐 ${esc(a.appt_time)}</span>
+      <span>${a.is_free ? "🆓 كشفية مجانية" : "💵 " + Number(a.fee || 0).toLocaleString("en-US") + " د.ع"}</span></div>`;
+    h += '<div class="acts">';
+    if (!cancelled) {
+      if (queued) h += '<button class="btn soft" data-act="up">⬆ تقديم</button><button class="btn soft" data-act="down">⬇ تأخير</button><button class="btn soft" data-act="qnum">🔢 رقم الدور</button><button class="btn soft" data-act="qclear">↩ إلغاء الدور</button>';
+      else h += '<button class="btn ok" data-act="checkin">✅ تسجيل حضور</button><button class="btn soft" data-act="qnum">🔢 رقم الدور</button>';
+    }
+    h += `<button class="btn soft" data-act="edit">✎ تعديل</button><button class="btn soft" data-act="files">📎 الملفات${a.file_count === null ? "" : ` (${a.file_count})`}</button>${a.inbody_count ? `<span class="bd n">📊 InBody (${a.inbody_count})</span>` : ""}`;
+    if (a.status === "مجدول") h += '<button class="btn bad" data-act="cancel">🚫 إلغاء الحجز</button>';
+    if (cancelled) h += '<button class="btn soft" data-act="restore">↩ استرجاع الحجز</button>';
+    return h + "</div></div>";
+  }).join("");
+}
+$("q").oninput = render;
+$("day").onchange = () => { if ($("day").value) { day = $("day").value; loadDay(); } };
+$("prev").onclick = () => shift(-1); $("next").onclick = () => shift(1);
+$("today").onclick = () => { day = todayStr(); $("day").value = day; loadDay(); };
+function shift(n) { const d = new Date(day + "T12:00:00"); d.setDate(d.getDate() + n); day = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); $("day").value = day; loadDay(); }
+
+// ---------- الطلبات (تنفّذ على جهاز الطبيب) ----------
+async function send(kind, appt, payload, label) {
+  const id = crypto.randomUUID().replaceAll("-", "");
+  try {
+    await api("POST", "nu_commands", {id, kind, appt_id: appt || null, payload: payload || {}}, "return=minimal");
+    pending[id] = {label, appt}; await loadPending(); render(); setTimeout(pollCmds, 600);
+  } catch (e) { $("err").innerHTML = `<div class="msg e">تعذّر الإرسال: ${esc(e.message)}</div>`; }
+}
+function renderPend() {
+  const n = new Set([...pendCmds.map(c => c.id), ...Object.keys(pending)]).size;
+  $("pend").innerHTML = n ? `<div class="msg w">⏳ ${n} طلب بانتظار التنفيذ على جهاز الطبيب${devOnline ? "" : " — الجهاز غير متصل حاليًا، وسيُنفَّذ أول ما يفتح"}</div>` : "";
+}
+let polling = false;
+async function pollCmds() {
+  const ids = Object.keys(pending); if (!ids.length || polling) return;
+  polling = true;
+  try {
+    const rows = await api("GET", `nu_commands?select=id,done_at,ok,message&id=in.(${ids.map(i => '"' + i + '"').join(",")})`);
+    let any = false;
+    for (const r of rows) if (r.done_at) {
+      const p = pending[r.id]; if (!p) continue; delete pending[r.id]; any = true;
+      $("err").innerHTML = r.ok ? `<div class="msg s">✅ ${esc(p.label)}</div>` : `<div class="msg e">❌ ${esc(p.label)}: ${esc(r.message || "فشل")}</div>`;
+      setTimeout(() => { if (!Object.keys(pending).length) $("err").innerHTML = ""; }, 5000);
+    }
+    if (any) { await loadPending(); await loadDay(); }
+  } catch (e) {} finally { polling = false; }
+}
+
+$("list").onclick = e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const card = b.closest(".card"); const f = findCard(card.dataset.id); if (!f) return;
+  const a = f.a, pc = f.pc, act = b.dataset.act, vq = virtualQueue(), nm = a.patient_name;
+  if (act === "checkin") send("checkin", a.id, {}, `تسجيل حضور ${nm}`);
+  else if (act === "up" || act === "down") send("queue", a.id, {action: act}, `تغيير دور ${nm}`);
+  else if (act === "qclear") send("queue", a.id, {action: "clear"}, `إلغاء دور ${nm}`);
+  else if (act === "qnum") {
+    const cur = vq.get(a.id), has = cur !== undefined && cur !== null;
+    const others = [...vq.entries()].filter(([id, v]) => v !== null && id !== a.id).length;
+    const n = prompt(`رقم الدور لـ ${nm} (من 1 إلى ${others + 1})`, has ? cur + 1 : "");
+    if (!n) return;
+    const k = parseInt(n, 10);
+    if (!(k >= 1 && k <= others + 1)) { $("err").innerHTML = `<div class="msg e">رقم غير صالح — أدخل رقمًا بين 1 و${others + 1}</div>`; setTimeout(() => { $("err").innerHTML = ""; }, 4000); return; }
+    send("queue", a.id, {action: "set", n: k}, `رقم دور ${nm}`);
+  }
+  else if (act === "cancel") { if (pc) cancelPending(pc); else if (confirm(`إلغاء حجز ${nm}؟`)) send("save", a.id, {status: "ملغى"}, `إلغاء حجز ${nm}`); }
+  else if (act === "restore") send("save", a.id, {status: "مجدول"}, `استرجاع حجز ${nm}`);
+  else if (act === "edit") openForm(a, pc || undefined);
+  else if (act === "files") openFiles(a);
+};
+
+// ---------- إلغاء حجز لم يستلمه الطبيب بعد ----------
+async function cancelPending(c) {
+  const nm = (c.payload || {}).name || "";
+  if (!confirm(`إلغاء حجز ${nm}؟ لم تستلمه الطبيبة بعد فيُحذف بدون أثر.`)) return;
+  try {
+    const r = await api("DELETE", `nu_commands?appt_id=eq.${encodeURIComponent(c.appt_id)}&done_at=is.null`, null, "return=representation");
+    delete pending[c.id];
+    $("err").innerHTML = r && r.length ? '<div class="msg s">✅ أُلغي الحجز قبل استلام الطبيب</div>' : '<div class="msg w">استلمه الطبيب قبل لحظات — ألغِه من بطاقته بعد ظهورها</div>';
+    setTimeout(() => { if (!Object.keys(pending).length) $("err").innerHTML = ""; }, 5000);
+    await loadPending(); await loadDay();
+  } catch (e) { $("err").innerHTML = `<div class="msg e">تعذّر الإلغاء: ${esc(e.message)}</div>`; }
+}
+
+// ---------- نافذة الحجز ----------
+// يضبط ارتفاع الطبقة على الشاشة المرئية فعليًا (يتغير مع شريط المتصفح ولوحة المفاتيح) فلا تتجاوز النافذة الشاشة
+function fitModal() {
+  const m = $("modal"); if (!m || m.classList.contains("hidden")) return;
+  const vv = window.visualViewport, h = vv ? vv.height : window.innerHeight;
+  m.style.inset = "auto"; m.style.left = "0"; m.style.right = "0"; m.style.top = (vv ? vv.offsetTop : 0) + "px"; m.style.height = h + "px";
+}
+function openModal(html) {
+  const box = $("box"); box.innerHTML = '<div class="mscroll">' + html + '</div>';
+  const row = box.querySelector(".stickyrow");                // صف الأزرار يصير تذييلًا ثابتًا خارج المحتوى المتمرّر
+  if (row) { row.classList.remove("stickyrow"); row.classList.add("mfoot"); box.appendChild(row); }
+  $("modal").classList.remove("hidden"); modalOpen = true; lockPage(); fitModal();
+}
+// عند التركيز على حقل: نعيد ضبط الحجم بعد ظهور الكيبورد ونمرّر الحقل لمنتصف المساحة المرئية فوقه
+$("modal").addEventListener("focusin", e => {
+  const el = e.target; if (!/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+  [250, 650].forEach(ms => setTimeout(() => { fitModal(); try { el.scrollIntoView({block: "center"}); } catch (x) {} }, ms));
+});
+$("modal").addEventListener("focusout", () => setTimeout(fitModal, 350));
+window.addEventListener("resize", fitModal);
+if (window.visualViewport) { visualViewport.addEventListener("resize", fitModal); visualViewport.addEventListener("scroll", fitModal); }
+function closeModal() { $("modal").classList.add("hidden"); $("modal").style.cssText = ""; modalOpen = false; devHook = null; $("box").innerHTML = ""; unlockPage(); }
+let devHook = null;
+// a = موعد للتعديل (أو null لحجز جديد)، pc = طلب حجز معلّق لم تستلمه الطبيبة بعد (تعديله قبل الاستلام)
+const IB_FIELDS = [["weight", "الوزن (كغم)"], ["height", "الطول (سم)"], ["fat_pct", "الدهون %"], ["fat_kg", "كتلة الدهون (كغم)"], ["muscle_kg", "العضل الهيكلي (كغم)"],
+  ["lean_kg", "الخالية من الدهون (كغم)"], ["visceral", "الدهون الحشوية"], ["water_pct", "الماء %"], ["bmr", "BMR"], ["score", "نقاط InBody"]];
+const parseIb = v => { try { const o = typeof v === "string" ? JSON.parse(v || "{}") : (v || {}); return o && typeof o === "object" ? o : {}; } catch (e) { return {}; } };
+function openForm(a, pc) {
+  const ibm = parseIb(a?.inbody), isNew = !a || !!pc && isNewPend(pc);
+  const newId = a?.id || crypto.randomUUID().replaceAll("-", "");
+  let linkPid = (pc && (pc.payload || {}).patient_id) || "";
+  openModal(`<h3 style="margin-top:0;color:var(--pri-d)">${a ? "تعديل حجز" : "حجز جديد"}</h3>
+    ${isNew ? `<div class="card" style="margin:0 0 10px"><b>🔗 مريض سابق؟ (ربط بسجله)</b>
+      <div id="lnkStat" class="warnline" style="margin:6px 0 0"></div>
+      <div class="row" style="margin-top:6px"><input id="lnkQ" placeholder="اسم المريض أو رقم هاتفه" autocomplete="off" style="flex:1"><button type="button" class="btn soft" id="lnkGo">🔎 بحث</button></div>
+      <div id="lnkRes"></div><div id="lnkSel"></div></div>` : ""}
+    <label>الاسم *</label>
+    <input id="fName" value="${esc(a?.patient_name)}" autocomplete="off">
+    <div id="devWarn" class="warnline"></div>
+    <div class="g2"><div><label>التاريخ *</label><input id="fDate" type="date" value="${esc(a?.appt_date || day)}"></div>
+      <div><label>الوقت *</label><input id="fTime" type="time" value="${esc(a?.appt_time || nowHM())}"></div></div>
+    <div class="g2"><div><label>رقم الهاتف</label><input id="fPhone" type="tel" value="${esc(a?.phone)}"></div>
+      <div><label>العمر</label><input id="fAge" inputmode="numeric" value="${esc(a?.age)}"></div></div>
+    <label>الجنس</label><select id="fSex"><option value="">—</option><option value="أنثى" ${a?.sex === "أنثى" ? "selected" : ""}>أنثى</option><option value="ذكر" ${a?.sex === "ذكر" ? "selected" : ""}>ذكر</option></select>
+    <label>العنوان</label><input id="fAddr" value="${esc(a?.address)}">
+    <label>سعر الكشفية (د.ع)</label><input id="fFee" type="number" inputmode="numeric" step="500" value="${a ? a.fee : defaultFee}">
+    <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="fFree" style="width:auto" ${a?.is_free ? "checked" : ""}> كشفية مجانية</label>
+    <details id="ibD" style="margin-top:10px" ${Object.keys(ibm).length ? "open" : ""}><summary style="cursor:pointer;font-weight:700">📊 قراءات InBody (اختياري)</summary>
+      <div class="g2" style="margin-top:6px">${IB_FIELDS.map(([k, l]) => `<div><label>${l}</label><input id="ib_${k}" type="number" step="0.01" min="0" inputmode="decimal" value="${esc(ibm[k] ?? "")}"></div>`).join("")}</div>
+      <div class="mut">الـ BMI يُحسب تلقائيًا من الوزن والطول. وتقدرين ترفعين ورقة الـ InBody كملف من زر «الملفات» في بطاقة الحجز.</div></details>
+    <div id="fMsg"></div>
+    <div class="row stickyrow" style="margin-top:12px"><button class="btn" id="fSave" style="flex:1">${a ? "حفظ التعديل" : "حفظ الحجز"}</button><button class="btn soft" id="fCancel">إلغاء</button></div>`);
+  $("fCancel").onclick = closeModal;
+  const free = () => { $("fFee").disabled = $("fFree").checked; if ($("fFree").checked) $("fFee").value = 0; };
+  $("fFree").onchange = free; free();
+  // حالة حاسبة الطبيب: نشطة (أخضر) أو غير نشطة (أحمر) — الحجز يبقى متاحًا ويُنفَّذ لاحقًا
+  const paintDev = () => {
+    const w = $("devWarn"); if (!w) return;
+    w.className = devOnline ? "okline" : "warnline";
+    w.textContent = devOnline ? "🟢 حاسبة الطبيبة نشطة" : "🔴 حاسبة الطبيبة غير نشطة — يُنفَّذ الحجز أول ما تفتح";
+    const ls = $("lnkStat");   // حالة البحث بالسجل: يشترط أن تكون الحاسبة نشطة
+    if (ls) { ls.className = devOnline ? "okline" : "warnline"; ls.textContent = devOnline ? "🟢 حاسبة الطبيبة نشطة — يمكن البحث بالسجل" : "🔴 حاسبة الطبيبة غير نشطة — لا يمكن البحث بسجل المرضى حتى تعمل"; }
+  };
+  devHook = paintDev; paintDev();
+  // ---- ربط بمريض سابق: بحث على سجل الطبيبة (يحتاج حاسبتها نشطة) ----
+  const showSel = (p) => { $("lnkSel").innerHTML = p ? `<div class="msg s" style="margin-top:6px">🔗 مربوط بسجل: <b>${esc(p.name)}</b> <button type="button" class="btn soft" id="lnkX" style="padding:2px 8px">✕ فك الربط</button></div>` : "";
+    if (p) $("lnkX").onclick = () => { linkPid = ""; showSel(null); }; };
+  if (isNew && $("lnkGo")) {
+    $("lnkGo").onclick = async () => {
+      const q = $("lnkQ").value.trim(), res = $("lnkRes");
+      if (q.length < 2) { res.innerHTML = '<div class="msg w">اكتب حرفين على الأقل</div>'; return; }
+      const NOT_ACTIVE = '<div class="msg e" style="border:1px solid #c0504d">🔴 حاسبة الطبيبة غير نشطة — يشترط أن تكون نشطة (مفتوحة ومتصلة بالإنترنت) للبحث عن مريض سابق. لم يُرسل أي طلب بحث.</div>';
+      res.innerHTML = '<div class="mut">⏳ جارِ التحقق من حالة حاسبة الطبيبة...</div>';
+      await loadStatus();      // حالة طازجة قبل البحث (لا نعتمد على آخر تحديث قديم)
+      if (!devOnline) { res.innerHTML = NOT_ACTIVE; return; }
+      res.innerHTML = '<div class="mut">⏳ جارِ البحث بسجل الطبيبة...</div>';
+      const isPhone = /^[\d+\s-]{4,}$/.test(q), id = crypto.randomUUID().replaceAll("-", "");
+      try {
+        await api("POST", "nu_commands", {id, kind: "search", payload: isPhone ? {phone: q} : {name: q}}, "return=minimal");
+        let row = null;
+        let lost = false;
+        for (let i = 0; i < 20 && !row && !lost; i++) { await new Promise(r => setTimeout(r, 1000));
+          const r = await api("GET", `nu_commands?select=done_at,ok,message,result&id=eq.${id}`); if (r.length && r[0].done_at) row = r[0];
+          if (!row && i % 3 === 2) { await loadStatus(); if (!devOnline) lost = true; }   // انقطعت الحاسبة أثناء الانتظار
+        }
+        if (lost && !row) { try { await api("DELETE", `nu_commands?id=eq.${id}&done_at=is.null`, null, "return=minimal"); } catch (e) {} res.innerHTML = NOT_ACTIVE; return; }
+        if (!row) { res.innerHTML = '<div class="msg e">🔴 لم تستجب حاسبة الطبيبة خلال المدة المحددة — حاول لاحقًا</div>'; return; }
+        if (!row.ok) { res.innerHTML = `<div class="msg e">${esc(row.message || "فشل البحث")}</div>`; return; }
+        const list = row.result || [];
+        res.innerHTML = list.length ? list.map((p, i) => `<div class="row" style="justify-content:space-between;border-top:1px solid #e1e8e4;padding:6px 0"><span><b>${esc(p.name)}</b> <small class="mut">${esc(p.phone || "بدون هاتف")}${p.age ? " — " + esc(p.age) : ""} (${esc(p.reason)})</small></span><button type="button" class="btn ok" data-pick="${i}" style="padding:4px 10px">ربط</button></div>`).join("") : '<div class="msg w">لا يوجد سجل مطابق</div>';
+        res.onclick = e => { const b = e.target.closest("[data-pick]"); if (!b) return; const p = list[+b.dataset.pick];
+          linkPid = p.id; $("fName").value = p.name; $("fPhone").value = p.phone || ""; $("fAge").value = p.age || ""; $("fSex").value = p.sex || ""; $("fAddr").value = p.address || "";
+          res.innerHTML = ""; showSel(p); };
+      } catch (e) { res.innerHTML = `<div class="msg e">${esc(e.message)}</div>`; }
+    };
+    $("lnkQ").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); $("lnkGo").click(); } };
+    if (linkPid) showSel({name: "(سجل مختار سابقًا)"});
+  }
+  $("fSave").onclick = async () => {
+    const ib = {}; IB_FIELDS.forEach(([k]) => { const v = $("ib_" + k).value.trim(); if (v !== "") ib[k] = v; });
+    const v = {name: $("fName").value.trim(), date: $("fDate").value, time: $("fTime").value, phone: $("fPhone").value.trim(),
+      age: $("fAge").value.trim(), sex: $("fSex").value, address: $("fAddr").value.trim(), is_free: $("fFree").checked, fee: $("fFree").checked ? 0 : Number($("fFee").value || 0), inbody: ib};
+    if (linkPid) v.patient_id = linkPid;
+    if (!v.name) { $("fMsg").innerHTML = '<div class="msg e">الاسم مطلوب</div>'; return; }
+    if (!v.date || !v.time) { $("fMsg").innerHTML = '<div class="msg e">التاريخ والوقت مطلوبان</div>'; return; }
+    if (pc) {   // تعديل حجز لم تستلمه الطبيبة: نبدّل محتوى الطلب نفسه
+      const pv = isNewPend(pc) ? {...v, create: true} : v;
+      try {
+        const r = await api("PATCH", `nu_commands?id=eq.${encodeURIComponent(pc.id)}&done_at=is.null`, {payload: pv}, "return=representation");
+        if (!r || !r.length) { $("fMsg").innerHTML = '<div class="msg w">استلمته الطبيبة قبل لحظات — أغلق هذه النافذة وعدّله من بطاقته</div>'; return; }
+      } catch (e) { $("fMsg").innerHTML = `<div class="msg e">${esc(e.message)}</div>`; return; }
+      closeModal(); if (v.date !== day) { day = v.date; $("day").value = day; }
+      await loadPending(); await loadDay(); return;
+    }
+    let payload = v;
+    if (a) {   // تعديل: نرسل الحقول التي تغيّرت فقط
+      const cur = {name: a.patient_name, date: a.appt_date, time: a.appt_time, phone: a.phone, age: a.age, sex: a.sex || "", address: a.address, is_free: a.is_free, fee: a.fee, inbody: JSON.stringify(parseIb(a.inbody))};
+      const cmp = {...v, inbody: JSON.stringify(v.inbody)};
+      payload = {}; for (const k in v) if (String(cmp[k]) !== String(cur[k])) payload[k] = v[k];
+      if (!Object.keys(payload).length) { closeModal(); return; }
+    } else payload = {...v, create: true};      // حجز جديد: المعرّف جاهز مسبقًا لتتمكن من الملفات والحضور والدور قبل الاستلام
+    closeModal();
+    send("save", a ? a.id : newId, payload, (a ? "تعديل حجز " : "حجز جديد: ") + v.name);
+    if (!a && v.date !== day) { day = v.date; $("day").value = day; }
+  };
+  // Enter يحفظ من أي حقل
+  $("box").onkeydown = e => { if (e.key === "Enter" && e.target.tagName === "INPUT" && e.target.type !== "checkbox") { e.preventDefault(); $("fSave").click(); } };
+  setTimeout(() => { const f = $("fName"); if (f) f.focus(); }, 100);
+}
+$("addBtn").onclick = () => openForm(null);
+
+// ---------- ملفات الموعد (عرض الأسماء + رفع) ----------
+let upFiles = [];
+async function openFiles(a) {
+  upFiles = [];
+  openModal(`<h3 style="margin-top:0;color:var(--pri-d)">📎 ملفات ${esc(a.patient_name)}</h3>
+    <div class="mut">الملفات ونتائج InBody اللي وصلت للطبيبة (أسماؤها فقط) — راجعها قبل الرفع حتى لا تتكرر.</div>
+    <div id="fl" style="margin:8px 0"><div class="mut">جارِ التحميل...</div></div>
+    <div class="card" style="margin-top:10px"><b>ملفاتي لهذا الموعد (آخر 24 ساعة)</b>
+      <div class="mut" style="margin-top:2px">تعدّل الاسم أو تحذف خلال 24 ساعة من الرفع، وبعدها يُحذف من الخادم.</div>
+      <div id="mineF" class="files"><div class="mut">لا شيء بعد</div></div></div>
+    <div class="card" style="margin-top:10px"><b>رفع ملفات</b>
+      <div class="row" id="chips" style="margin:8px 0"></div>
+      <div class="row" style="margin:6px 0"><label style="display:flex;gap:6px;align-items:center;margin:0"><input type="radio" name="upKind" value="file" checked style="width:auto"> ملف عادي</label>
+        <label style="display:flex;gap:6px;align-items:center;margin:0"><input type="radio" name="upKind" value="inbody" style="width:auto"> 📊 نتيجة InBody</label></div>
+      <input id="upTitle" placeholder="اسم الملف (مثال: تحليل دم)">
+      <div class="row" style="margin-top:8px"><button class="btn soft" id="camB">📷 تصوير</button><button class="btn soft" id="galB">🖼️ معرض / PDF</button></div>
+      <input id="camI" type="file" accept="image/*" capture="environment" class="hidden"><input id="galI" type="file" accept="image/*,application/pdf" multiple class="hidden">
+      <div id="picked" class="mut" style="margin-top:6px"></div><div id="upMsg"></div>
+      <button class="btn ok big" id="upGo" style="margin-top:8px" disabled>⬆️ رفع</button></div>
+    <div class="row stickyrow" style="margin-top:10px"><button class="btn soft" id="fRef">🔄 تحديث</button><span class="sp"></span><button class="btn soft" id="fClose">إغلاق</button></div>`);
+  $("fClose").onclick = closeModal;
+  const load = async () => { try {
+    const rows = await api("GET", `nu_appt_files_meta?select=*&appt_id=eq.${a.id}&order=uploaded_at.desc`);
+    $("fl").innerHTML = rows.length ? rows.map(r => `<div class="frow">📄 ${esc(r.title || "بدون اسم")} <span class="mut">${new Date(r.uploaded_at).toLocaleString("ar-IQ", {hour: "2-digit", minute: "2-digit", day: "numeric", month: "numeric"})}</span></div>`).join("") : '<div class="mut">لا توجد ملفات لهذا الموعد بعد</div>';
+  } catch (e) { $("fl").innerHTML = `<div class="msg e">${esc(e.message)}</div>`; } };
+  let mineF = [];
+  const loadMineF = async () => { try { mineF = await listMine(a.id); $("mineF").innerHTML = fileRowsHtml(mineF, false); fillThumbs($("mineF"), mineF); } catch (e) {} };
+  wireFileActions($("mineF"), () => mineF, async () => { await loadMineF(); await load(); }, m => { $("upMsg").innerHTML = `<div class="msg e">${esc(m)}</div>`; });
+  load(); loadMineF(); $("fRef").onclick = () => { load(); loadMineF(); };
+  $("chips").innerHTML = ["InBody", "تحليل دم", "تحليل ادرار", "أشعة", "تقرير"].map(c => `<button class="chip" type="button">${c}</button>`).join("");
+  $("chips").onclick = e => { if (e.target.classList.contains("chip")) { $("upTitle").value = e.target.textContent; if (e.target.textContent === "InBody") root.querySelector('input[name="upKind"][value="inbody"]').checked = true; } };
+  const upd = () => { $("picked").innerHTML = upFiles.map((f, i) => `• ${esc(f.name)} <a href="#" data-rm="${i}" style="color:var(--bad)">حذف</a>`).join("<br>"); $("upGo").disabled = !upFiles.length; };
+  $("picked").onclick = e => { if (e.target.dataset.rm !== undefined) { e.preventDefault(); upFiles.splice(+e.target.dataset.rm, 1); upd(); } };
+  $("camB").onclick = () => $("camI").click(); $("galB").onclick = () => $("galI").click();
+  for (const id of ["camI", "galI"]) $(id).onchange = e => { upFiles = upFiles.concat([...e.target.files]); e.target.value = ""; upd(); };
+  $("upGo").onclick = async () => {
+    $("upGo").disabled = true; const title = $("upTitle").value.trim() || (root.querySelector('input[name="upKind"]:checked').value === "inbody" ? "InBody" : ""); const kind = root.querySelector('input[name="upKind"]:checked').value; let ok = 0;
+    try {
+      for (const [i, f] of upFiles.entries()) {
+        $("upMsg").innerHTML = `<div class="msg s">جاري رفع ${i + 1} من ${upFiles.length}...</div>`;
+        const {blob, ext, type} = await shrink(f);
+        if (blob.size > MAX_BYTES) throw new Error(`الملف أكبر من 10 ميغا: ${f.name}`);
+        const fid = crypto.randomUUID().replaceAll("-", ""), path = `${me.id}/${fid}${ext}`;
+        await ensure();
+        const r = await fetch(`${SUPABASE_URL}/storage/v1/object/nutri-files/${path}`, {method: "POST", headers: hdr({"Content-Type": type}), body: blob});
+        if (!r.ok) throw new Error("فشل رفع الملف: " + (await r.text()));
+        await api("POST", "nu_files", {id: fid, appt_id: a.id, title, kind, storage_path: path, size_bytes: blob.size}, "return=minimal");
+        ok++;
+      }
+      $("upMsg").innerHTML = `<div class="msg s">✅ تم رفع ${ok} ملف — يظهر بالقائمة بعد استلام الطبيب (اضغط تحديث)</div>`;
+      upFiles = []; $("upTitle").value = ""; upd(); loadMineF();
+    } catch (e) { $("upMsg").innerHTML = `<div class="msg e">${esc(e.message)}${ok ? ` (تم رفع ${ok} قبل الخطأ)` : ""}</div>`; upFiles = upFiles.slice(ok); upd(); loadMineF(); }
+  };
+}
+async function shrink(f) {
+  if (f.type === "application/pdf") return {blob: f, ext: ".pdf", type: "application/pdf"};
+  const bmp = await createImageBitmap(f).catch(() => null);
+  if (!bmp) throw new Error(`تعذّر قراءة الصورة: ${f.name}`);
+  const k = Math.min(1, 1800 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  return {blob: await new Promise(r => c.toBlob(r, "image/jpeg", 0.82)), ext: ".jpg", type: "image/jpeg"};
+}
+
+
+  $("logout").onclick = logout;
+  $("day").value = day;
+  refreshAll();
+  timers = [setInterval(() => { if (!modalOpen) refreshAll(); else loadStatus(); }, 4000), setInterval(pollCmds, 1000)];
+  return () => timers.forEach(clearInterval);
+}
+
+// ---------- استعادة الجلسة ----------
+(async () => {
+  if (SUPABASE_URL.startsWith("PASTE") || SUPABASE_KEY.startsWith("PASTE")) { logout("الصفحة غير مُعدّة بعد (المفتاح ناقص)"); return; }
+  try { session = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); } catch (e) {}
+  if (session) { try { await start(); } catch (e) { logout(); } }
+})();
+</script>
+</body>
+</html>
