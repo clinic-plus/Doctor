@@ -857,12 +857,13 @@ function openModal(html) { $("box").innerHTML = html; $("modal").classList.remov
 function closeModal() { $("modal").classList.add("hidden"); modalOpen = false; devHook = null; $("box").innerHTML = ""; }
 let devHook = null;
 // a = موعد للتعديل (أو null لحجز جديد)، pc = طلب حجز معلّق لم تستلمه الطبيبة بعد (تعديله قبل الاستلام)
-const DIS = ["السكري", "الضغط", "الغدة الدرقية", "تكيس المبايض", "فقر الدم", "الربو", "أمراض القلب", "أمراض الكلى", "ارتفاع البرولاكتين", "الصرع", "التهابات متكررة", "الأورام الليفية"];
+const DIS = [["Diabetes", "السكري"], ["Hypertension", "الضغط"], ["Thyroid disease", "الغدة الدرقية"], ["PCOS", "تكيس المبايض"], ["Anemia", "فقر الدم"], ["Asthma", "الربو"], ["Heart disease", "أمراض القلب"], ["Kidney disease", "أمراض الكلى"], ["Hyperprolactinemia", "ارتفاع البرولاكتين"], ["Epilepsy", "الصرع"], ["Recurrent infections", "التهابات متكررة"], ["Uterine fibroids", "الأورام الليفية"]];
+const DIS_EN = Object.fromEntries(DIS), DIS_FROM_AR = Object.fromEntries(DIS.map(([e, a]) => [a, e]));
 const FLAGS = [["pregnant", "حامل حاليًا"], ["breastfeeding", "مرضعة"], ["infertility", "تأخر إنجاب / عقم"], ["prev_cs", "متزوجة"]];
 const BLOOD = ["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const REASONS = ["متابعة حمل", "مراجعة نسائية", "تأخر إنجاب / عقم", "اضطراب الدورة الشهرية", "إفرازات / التهابات", "ألم الحوض", "سونار", "فحص قبل الزواج / استشارة", "مراجعة بعد الولادة", "مراجعة بعد عملية", "أخرى"];
 const optList = (arr, cur) => arr.map(o => `<option value="${o}"${o === (cur || "") ? " selected" : ""}>${o || "—"}</option>`).join("");
-const splitDis = t => (t || "").split(/[،,\n]+/).map(x => x.trim()).filter(Boolean);
+const splitDis = t => (t || "").split(/[;،,\n]+/).map(x => x.trim()).filter(Boolean).map(x => DIS_FROM_AR[x] || x);
 function openForm(a, pc) {
   const isNew = !a || !!pc && isNewPend(pc);
   const newId = a?.id || crypto.randomUUID().replaceAll("-", "");
@@ -891,8 +892,9 @@ function openForm(a, pc) {
     <div class="g2"><div><label>فصيلة الدم</label><select id="fBlood">${optList(BLOOD, a?.blood_group)}</select></div>
       <div><label>ضغط الدم</label><input id="fBp" autocomplete="off" placeholder="120/80" value="${esc(a?.bp)}"></div></div>
     ${FLAGS.map(([k, l]) => `<label class="fchk"><input type="checkbox" id="fl_${k}" ${a?.[k] ? "checked" : ""}> ${l}</label>`).join("")}
-    <label>أمراض مزمنة</label><input id="fChronic" autocomplete="off" placeholder="لا يوجد" value="${esc(a?.chronic)}">
-    <div class="hchips" id="hChips">${DIS.map(d => `<span class="hchip" data-d="${d}">${d}</span>`).join("")}</div>
+    <label>أمراض مزمنة</label>
+    <div class="hchips" id="hChips">${DIS.map(([e, a]) => `<span class="hchip" data-d="${e}">${a}</span>`).join("")}</div>
+    <input id="fChronic" autocomplete="off" placeholder="أمراض أخرى (اختياري)" value="${esc(splitDis(a?.chronic).filter(x => !DIS_EN[x]).join("، "))}">
     <div class="g2"><div><label>عمليات سابقة</label><input id="fSurg" autocomplete="off" placeholder="لا يوجد" value="${esc(a?.surgeries)}"></div>
       <div><label>حساسية من علاج</label><input id="fAllergy" autocomplete="off" placeholder="لا يوجد" value="${esc(a?.allergy)}"></div></div>
     <label>سعر الكشفية (د.ع)</label><input id="fFee" type="number" inputmode="numeric" step="500" value="${a ? a.fee : defaultFee}">
@@ -951,7 +953,7 @@ function openForm(a, pc) {
     const v = {name: $("fName").value.trim(), date: $("fDate").value, time: $("fTime").value, phone: $("fPhone").value.trim(),
       age: $("fAge").value.trim(), address: $("fAddr").value.trim(), reason: $("fReason").value.trim(), bp: $("fBp").value.trim(),
       gravida: $("fG").value.trim(), para: $("fP").value.trim(), abortions: $("fA").value.trim(), lmp: $("fLmp").value.trim(), cycle: $("fCycle").value.trim(), contraception: $("fContra").value.trim(), blood_group: $("fBlood").value,
-      chronic: $("fChronic").value.trim(), surgeries: $("fSurg").value.trim(), allergy: $("fAllergy").value.trim(), ...Object.fromEntries(FLAGS.map(([k]) => [k, $("fl_" + k).checked ? 1 : 0])), is_free: $("fFree").checked, fee: $("fFree").checked ? 0 : Number($("fFee").value || 0)};
+      chronic: chronicValue(), surgeries: $("fSurg").value.trim(), allergy: $("fAllergy").value.trim(), ...Object.fromEntries(FLAGS.map(([k]) => [k, $("fl_" + k).checked ? 1 : 0])), is_free: $("fFree").checked, fee: $("fFree").checked ? 0 : Number($("fFee").value || 0)};
     if (linkPid) v.patient_id = linkPid;
     if (!v.name) { $("fMsg").innerHTML = '<div class="msg e">الاسم مطلوب</div>'; rel(); return; }
     if (!v.date || !v.time) { $("fMsg").innerHTML = '<div class="msg e">التاريخ والوقت مطلوبان</div>'; rel(); return; }
@@ -975,9 +977,11 @@ function openForm(a, pc) {
     send("save", a ? a.id : newId, payload, (a ? "تعديل حجز " : "حجز جديد: ") + v.name);
     if (!a && v.date !== day) { day = v.date; $("day").value = day; }
   };
-  const syncChips = () => { const on = new Set(splitDis($("fChronic").value)); $("hChips").querySelectorAll(".hchip").forEach(c => c.classList.toggle("on", on.has(c.dataset.d))); };
-  $("hChips").onclick = e => { const c = e.target.closest(".hchip"); if (!c) return; const l = splitDis($("fChronic").value), d = c.dataset.d; $("fChronic").value = (l.includes(d) ? l.filter(x => x !== d) : [...l, d]).join("، "); syncChips(); };
-  $("fChronic").oninput = syncChips; syncChips();
+  const chronicOn = new Set(splitDis(a?.chronic).filter(x => DIS_EN[x]));
+  const chronicValue = () => [...DIS.map(d => d[0]).filter(e => chronicOn.has(e)), ...splitDis($("fChronic").value)].join("; ");
+  const syncChips = () => $("hChips").querySelectorAll(".hchip").forEach(c => c.classList.toggle("on", chronicOn.has(c.dataset.d)));
+  $("hChips").onclick = e => { const c = e.target.closest(".hchip"); if (!c) return; const d = c.dataset.d; chronicOn.has(d) ? chronicOn.delete(d) : chronicOn.add(d); syncChips(); };
+  syncChips();
   // Enter يحفظ من أي حقل
   $("box").onkeydown = e => { if (e.key === "Enter" && e.target.tagName === "INPUT" && e.target.type !== "checkbox") { e.preventDefault(); $("fSave").click(); } };
   setTimeout(() => { const f = $("fName"); if (f) f.focus(); }, 100);
